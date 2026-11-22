@@ -32,7 +32,7 @@ EyeCash fa il contrario:
 
 - **Gira a casa tua**, su un mini PC, un NAS o qualsiasi macchina Linux. Dal telefono la raggiungi con una rete privata come [Tailscale](https://tailscale.com): niente è esposto su internet.
 - **I dati sono cifrati sul tuo dispositivo** con una chiave che deriva dalla tua password. Il server conserva solo dati cifrati: chi rubasse il disco o un backup non leggerebbe nulla.
-- **L'AI aiuta senza vedere le tue finanze.** Trasforma *"12 euro pizza"* in una spesa, oppure scrive la *ricetta* per rispondere a *"quanto ho speso in ristoranti quest'anno?"*. I conti li fa il telefono: saldi, conti e importi non arrivano mai all'AI.
+- **L'AI aiuta senza vedere le tue finanze.** Trasforma *"12 euro pizza"* in una spesa, oppure scrive la *ricetta* per rispondere a *"quanto ho speso in ristoranti quest'anno?"* o a *"posso comprare l'auto l'anno prossimo?"*. I conti li fa il telefono: saldi, conti e importi non arrivano mai all'AI.
 - **L'AI è facoltativa e può essere tutta locale.** Puoi usare Claude o un'API compatibile OpenAI, oppure un modello aperto con [Ollama](https://ollama.com) sul tuo server. O nessuna AI: tutto il resto funziona uguale.
 
 **Chiedigli quello che stai per decidere:** *"Posso permettermi un mutuo da 200.000 €?"*, *"Posso comprare un'auto da 25.000 € a rate?"*. La risposta nasce dai tuoi numeri reali (entrate, abitudini di spesa, risparmi, investimenti e finanziamenti) ed è calcolata sul tuo dispositivo. L'AI, se la usi, legge solo la frase.
@@ -69,6 +69,12 @@ EyeCash fa il contrario:
   - plusvalenze realizzate anno per anno.
 - **Simulatore FIRE:** simulazione Monte Carlo dell'indipendenza finanziaria, con scenari di stress. Gira tutta sul dispositivo.
 - **Chiedi ai tuoi dati:** domande in italiano, con risposta in una frase, un grafico e una tabella.
+- **Consulente:** puoi chiedere un parere, non solo una cifra. Per esempio: *"Tra un mese spendo 15.000 €, il prossimo anno vorrei un PC da 3.000: conviene?"*.
+  - L'AI trasforma la domanda in una ricetta: gli eventi futuri e le regole da verificare (non andare in rosso, tenere il fondo emergenza, rate sotto un terzo del reddito…).
+  - Il telefono simula la liquidità mese per mese sui numeri reali e risponde *Sì / Sì, ma da marzo / No*, con i motivi e un grafico.
+  - Puoi continuare con domande come *"e se lo prendo a rate?"*.
+
+  Esce solo la domanda, mai un numero.
 - **"Posso permettermelo?"** Mutuo, auto o qualsiasi grande acquisto, simulati sulle tue entrate, spese, risparmi e rate reali. Ottieni:
   - un verdetto chiaro e la rata mensile;
   - i controlli che farebbe una banca: rate sul reddito, mutuo sul prezzo, fondo di emergenza che resta, risparmio dopo l'acquisto;

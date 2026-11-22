@@ -16,7 +16,13 @@ http
         else
           out =
             '{"queries":[],"clarify":"Posso rispondere solo a domande sui tuoi movimenti o investimenti."}';
-      } else if (/parametri di un acquisto/.test(u))
+      } else if (/RICETTA/.test(u))
+        out = /«[^»]*meteo[^»]*»/.test(u)
+          ? '{"events":[],"checks":[],"clarify":"Posso aiutarti solo con domande sui tuoi soldi."}'
+          : '{"title":"PC dopo una spesa grande","events":[{"label":"Spesa","amount":15000,"month":1},{"label":"PC","amount":3000,"month":' +
+            (/«[^»]*rate[^»]*»/.test(u) ? '1,"financed":{"months":12,"ratePct":0,"down":0}' : '1') +
+            '}],"target":1,"checks":[{"expr":"cash_min >= 0","ok":"Non vai mai in rosso.","ko":"Andresti in rosso a {first_negative_month}."},{"expr":"cash_after_target >= emergency_target","soft":true,"ok":"Dopo il PC resti sopra il fondo emergenza di {emergency_target}.","ko":"Dopo il PC, a {target_month}, scenderesti a {cash_after_target}: sotto il fondo emergenza di {emergency_target}."}],"answer":{"yes":"Sì, puoi prenderlo.","careful":"Sì, ma aspetta: da {best_month} è sicuro.","no":"No, non adesso."},"show":["cash_after_target","emergency_target","best_month","saving"],"clarify":""}';
+      else if (/parametri di un acquisto/.test(u))
         out = /«[^»]*mutuo[^»]*»/.test(u)
           ? '{"kind":"mortgage","loanAmount":200000,"price":null,"years":20}'
           : !/«[^»]*casa[^»]*»/.test(u)

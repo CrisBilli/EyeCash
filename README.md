@@ -40,7 +40,7 @@ EyeCash turns that around:
 
 - **It runs at home.** On a mini PC, a NAS or any Linux machine. You reach it from your phone through a private network such as [Tailscale](https://tailscale.com). Nothing is exposed to the internet.
 - **Your data is encrypted on your device** with a key derived from your password. The server only ever stores ciphertext. Whoever steals the disk or a backup reads nothing.
-- **The AI helps without seeing your finances.** It can turn "12 euro pizza" into an expense or write the *recipe* for answering "how much did I spend on restaurants this year?". The numbers are computed on your phone, so balances, accounts and amounts never reach the AI.
+- **The AI helps without seeing your finances.** It can turn "12 euro pizza" into an expense, or write the *recipe* for answering "how much did I spend on restaurants this year?" or "can I buy a car next year?". The numbers are computed on your phone, so balances, accounts and amounts never reach the AI.
 - **AI is optional, and can be fully local.** Use Claude or any OpenAI-compatible API, or run an open model with [Ollama](https://ollama.com) on your own server. Or use no AI at all: everything else works the same.
 
 **Ask it what you are about to decide:** *"Can I afford a €200,000 mortgage?"*, *"Can I buy a €25,000 car in instalments?"*. The answer comes from your real numbers (income, spending habits, savings, investments and loans) and is computed on your device. The AI, if you use it, only reads the sentence.
@@ -62,6 +62,7 @@ EyeCash turns that around:
 - **Investment history:** trades rebuilt from your statements, value vs money invested over time, annual return (XIRR), realised gains per year.
 - **FIRE simulator:** a Monte Carlo simulation of financial independence with stress scenarios. It runs entirely on your device.
 - **Ask your data:** questions in plain language, answered with a sentence, a chart and a table.
+- **Advisor:** ask for an opinion, not just a figure. Example: *"Next month I'll spend €15,000, next year I'd like a €3,000 PC: is it a good idea?"*. The AI turns the question into a recipe: the future events and the rules to check (stay out of the red, keep the emergency fund, payments under a third of income…). Your phone then simulates your cash month by month on the real numbers and answers *Yes / Yes, but from March / No*, with the reasons and a chart. Follow-ups work too (*"what if I pay in instalments?"*). Only the question leaves, never a number.
 - **"Can I afford it?"** A mortgage, a car or any big purchase simulated on your real income, spending, savings and current loans. You get a clear verdict, the monthly payment, the checks a bank would make (payments on income, loan to price, emergency fund left, saving afterwards), the highest price that passes, how long until you would have the money, and your cash over the next 3 years. Ask in plain words, with or without AI.
 - **Reports for you or your advisor** (month, year or last 12 months, print or PDF), with the indicators a financial planner looks at: saving rate, emergency fund in months, fixed costs and loan payments on income, the **extra monthly payment you can sustain** (a first answer to *"can I afford this mortgage?"*), debts on assets, investment return and costs. A *summary only* mode leaves out merchants and single transactions, for sharing.
 

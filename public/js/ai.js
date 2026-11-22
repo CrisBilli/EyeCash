@@ -506,6 +506,7 @@ function askRender() {
   if (!askCur) return '';
   if (askCur.err)
     return `<div class="card" style="margin-top:14px"><b>Non sono riuscito a rispondere</b><div class="hint" style="margin-top:6px">${esc(askCur.err)}</div></div>`;
+  if (askCur.advice) return adviceRender(askCur);
   const sp = askCur.spec;
   if (sp.clarify && !sp.queries.length)
     return `<div class="card" style="margin-top:14px"><b>Mi serve un chiarimento</b><div class="hint" style="margin-top:6px;line-height:1.6">${esc(sp.clarify)}</div></div>`;
@@ -533,7 +534,7 @@ function askRender() {
 function vAsk() {
   const canAI = perm('ask') && !OFFLINE,
     hist = (S.askHist || []).slice(0, 8);
-  return `<div class="card"><h3>Fai una domanda sui tuoi soldi</h3><div class="hint" style="margin:4px 0 12px;line-height:1.5">${canAI ? "L'AI riceve solo la domanda e scrive il calcolo; i numeri li calcola il tuo dispositivo e non escono mai." : OFFLINE ? 'Sei offline: funzionano le domande rapide.' : AI ? 'Attiva “Chiedi ai tuoi dati” in Impostazioni → Privacy AI per le domande libere.' : "Le domande libere richiedono l'AI sul server; le domande rapide funzionano sempre."}</div>
+  return `<div class="card"><h3>Fai una domanda sui tuoi soldi</h3><div class="hint" style="margin:4px 0 12px;line-height:1.5">${canAI ? "Chiedi cifre («quanto ho speso in ristoranti?») o un parere («tra un mese spendo 15.000 €: conviene un PC da 3.000 a gennaio?»). L'AI riceve solo la domanda e scrive il calcolo o le regole da verificare; i numeri li calcola il tuo dispositivo e non escono mai." : OFFLINE ? 'Sei offline: funzionano le domande rapide.' : AI ? 'Attiva “Chiedi ai tuoi dati” in Impostazioni → Privacy AI per le domande libere.' : "Le domande libere richiedono l'AI sul server; le domande rapide funzionano sempre."}</div>
     ${canAI ? `<form id="askform" style="display:flex;gap:8px"><input class="inp" id="askq" maxlength="300" placeholder="es. quanto ho speso al supermercato quest'anno rispetto all'anno scorso?" style="flex:1" autocomplete="off"><button class="btn pri" type="submit" ${askBusy ? 'disabled' : ''}>${askBusy ? '…' : 'Chiedi'}</button></form>` : ''}
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px">${quickAsks()
       .map(([l], i) => `<button class="btn sm" data-act="ask-quick" data-i="${i}">${esc(l)}</button>`)
@@ -546,7 +547,12 @@ function vAsk() {
 /** Sends only the question, category names and account aliases; runs the returned recipe locally. */
 async function askAI(q) {
   if (askBusy) return;
-  // "posso permettermi…?" is answered by the planner, which sends even less
+  const canAI = perm('ask') && !OFFLINE;
+  const prevAdv = askCur && askCur.advice ? askCur : null;
+  // judgements ("conviene…?", "posso permettermi…?") and follow-ups go to the advisor
+  if (canAI && (isAdviceQ(q) || isAffordQ(q) || (prevAdv && isFollowUp(q))))
+    return adviseAI(q, prevAdv && isFollowUp(q) ? prevAdv : null);
+  // without AI, "posso permettermi…?" is still understood by the planner on the device
   if (isAffordQ(q)) return affordAsk(q);
   askBusy = true;
   askCur = null;
@@ -558,6 +564,11 @@ async function askAI(q) {
       `Domanda: «${q.slice(0, 200)}» · più l'elenco delle categorie e i tipi dei conti (${accounts.map(a => a.alias + ' ' + a.type).join(', ')}). Nessun importo o movimento.`
     );
     const spec = await api('POST', '/api/ai/ask', { question: q, accounts, lang: LANG });
+    // not a question about figures: let the advisor try
+    if (!(spec.queries && spec.queries.length) && canAI) {
+      askBusy = false;
+      return adviseAI(q, null);
+    }
     askCur = { q, spec, ai: true };
     if (spec.queries && spec.queries.length) {
       S.askHist = [{ id: uid(), q, d: today(), spec }, ...(S.askHist || []).filter(h => h.q !== q)].slice(

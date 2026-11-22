@@ -1,5 +1,15 @@
 # EyeCash · Novità
 
+## 1.3.0 · Il consulente
+- **Chiedi un parere, non solo una cifra.** In "Chiedi ai tuoi dati" puoi scrivere *"Tra un mese spendo 15.000 €, il prossimo anno vorrei un PC da 3.000: conviene?"*. La risposta contiene:
+  - un verdetto chiaro (Sì / Sì, ma da… / No);
+  - i motivi con i tuoi numeri veri;
+  - i valori principali e il grafico della liquidità mese per mese, con le spese segnate.
+- **Funziona senza far uscire i tuoi dati.** L'AI riceve solo la domanda e restituisce una "ricetta": le spese future (anche a rate, mensili o entrate) e le regole da verificare. Il telefono simula sui dati reali e scrive la risposta. In *Come è stato calcolato* vedi eventi e regole usati.
+- **Domande di seguito:** *"e se lo prendo a rate?"*, *"e tra sei mesi?"*.
+- **Collegato al simulatore:** le domande su un acquisto mostrano anche *Apri nel simulatore*.
+- **AI locale più affidabile:** con Ollama il server del modello è obbligato a restituire JSON valido, e il prompt contiene un esempio completo. Consigliati modelli da 7–8B.
+
 ## 1.2.1 · Domande più libere
 - **"Posso permettermelo?" capisce più domande:**
   - *"Posso fare un mutuo da 200k in 20 anni?"*: 200.000 € è l'importo del mutuo, non il prezzo della casa; anche "in 20" senza "anni" vale come durata;
