@@ -110,12 +110,12 @@ function vAllocAsset() {
   const tot = hs.reduce((s, h) => s + h.value, 0),
     sum = hs.reduce((s, h) => s + (+W[h.id] || 0), 0),
     has = sum > 0;
-  const f1 = v => v.toFixed(1).replace('.', ',');
+  const f1 = v => v.toFixed(1).replace('.', DEC);
   if (!hs.length)
     return `<div class="card"><div class="empty">Aggiungi o importa le tue posizioni per impostare l'allocazione.</div></div>`;
   const editor = `<div class="card"><div class="card-h"><div><h3>Allocazione obiettivo · ${esc(invPf == null ? 'tutti i portafogli' : pfName(invPf))}</h3><div class="hint">Che peso vuoi dare a ogni titolo. La somma deve fare 100%.</div></div></div>
    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><button class="btn sm" data-act="aw-cur">Usa i pesi attuali</button><button class="btn sm" data-act="aw-eq">Pesi uguali</button></div>
-   ${hs.map(h => `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-top:1px solid var(--line)"><div style="flex:1;min-width:0"><div style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(h.name)}</div><div class="hint">ora <span class="num">${f1((h.value / tot) * 100)}%</span> · ${clsLabel(h.cls)}</div></div><input class="inp num" data-aw="${h.id}" data-cur="${((h.value / tot) * 100).toFixed(4)}" value="${W[h.id] ? String(W[h.id]).replace('.', ',') : ''}" inputmode="decimal" placeholder="0" style="width:84px;font-size:15px;text-align:right"><span class="hint">%</span></div>`).join('')}
+   ${hs.map(h => `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-top:1px solid var(--line)"><div style="flex:1;min-width:0"><div style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(h.name)}</div><div class="hint">ora <span class="num">${f1((h.value / tot) * 100)}%</span> · ${clsLabel(h.cls)}</div></div><input class="inp num" data-aw="${h.id}" data-cur="${((h.value / tot) * 100).toFixed(4)}" value="${W[h.id] ? String(W[h.id]).replace('.', DEC) : ''}" inputmode="decimal" placeholder="0" style="width:84px;font-size:15px;text-align:right"><span class="hint">%</span></div>`).join('')}
    <div class="grid g2" style="gap:10px;margin-top:10px"><div class="fld" style="margin:0"><label>Tolleranza (punti %)</label><input class="inp num" id="tg-tol" value="${T.tol ?? 5}" style="font-size:15px"></div>
     <div class="fld" style="margin:0"><label>&nbsp;</label><button class="btn pri" data-act="aw-save" style="justify-content:center">Salva obiettivo · totale <span id="aw-sum">${f1(sum)}</span>%</button></div></div></div>`;
   if (!has)
@@ -230,7 +230,7 @@ function vAlloc() {
   <div class="card" style="margin-top:14px"><div class="card-h"><div><h3>Attuale vs obiettivo</h3><div class="hint">Tolleranza ±${T.tol || 5} punti</div></div>${outN ? `<span class="chip c-warn">! ${outN} ${outN === 1 ? 'classe fuori' : 'classi fuori'} soglia</span>` : '<span class="chip c-good">✓ In equilibrio</span>'}</div>
    ${d
      .map(
-       x => `<div style="padding:8px 0;border-top:1px solid var(--line)"><div style="display:flex;justify-content:space-between;font-size:13px"><span>${clsLabel(x.k)}</span><span class="num">${eur0(x.value)} · <b>${x.cur.toFixed(1).replace('.', ',')}%</b> <span class="hint">/ ${x.tgt.toFixed(0)}%</span> ${x.out ? `<span class="chip ${x.diff > 0 ? 'c-warn' : 'c-info'}">${x.diff > 0 ? '▲ +' : '▼ '}${x.diff.toFixed(1).replace('.', ',')}</span>` : ''}</span></div>
+       x => `<div style="padding:8px 0;border-top:1px solid var(--line)"><div style="display:flex;justify-content:space-between;font-size:13px"><span>${clsLabel(x.k)}</span><span class="num">${eur0(x.value)} · <b>${x.cur.toFixed(1).replace('.', DEC)}%</b> <span class="hint">/ ${x.tgt.toFixed(0)}%</span> ${x.out ? `<span class="chip ${x.diff > 0 ? 'c-warn' : 'c-info'}">${x.diff > 0 ? '▲ +' : '▼ '}${x.diff.toFixed(1).replace('.', DEC)}</span>` : ''}</span></div>
      <div style="position:relative;height:8px;background:var(--line);border-radius:4px;margin-top:6px"><div style="height:100%;width:${Math.min(100, x.cur)}%;background:${x.out ? 'var(--warn)' : 'var(--s-blue)'};border-radius:4px"></div><div style="position:absolute;top:-3px;left:${Math.min(100, x.tgt)}%;width:2px;height:14px;background:var(--tx)" data-tip="Obiettivo ${x.tgt.toFixed(0)}%"></div></div></div>`
      )
      .join('')}</div>
@@ -293,11 +293,11 @@ function vTaxes() {
     <div class="card kpi"><div class="lbl">Plusvalenze latenti</div><div class="val num up">${eur0(plus)}</div><div class="foot">minus latenti ${eur0(minus)}</div></div>
     <div class="card kpi"><div class="lbl">Tasse se vendessi tutto oggi</div><div class="val num">${eur0(all.tax)}</div><div class="foot">${all.zainettoUsed ? 'usando ' + eur0(all.zainettoUsed) + ' di zainetto' : 'zainetto non utilizzabile'}</div></div>
     <div class="card kpi"><div class="lbl">Valore netto liquidabile</div><div class="val num">${eur0(iv - all.tax)}</div><div class="foot">valore ${eur0(iv)} − tasse</div></div>
-    <div class="card kpi"><div class="lbl">Costi annui</div><div class="val num">${eur0((iv * ter) / 100 + bollo)}</div><div class="foot">TER ${ter.toFixed(2).replace('.', ',')}% · bollo ${eur0(bollo)}</div></div>
+    <div class="card kpi"><div class="lbl">Costi annui</div><div class="val num">${eur0((iv * ter) / 100 + bollo)}</div><div class="foot">TER ${ter.toFixed(2).replace('.', DEC)}% · bollo ${eur0(bollo)}</div></div>
   </div>
   <div class="card" style="margin-top:14px"><h3>Fiscalità per posizione</h3><p class="hint" style="margin:4px 0 6px">Tocca una posizione per cambiare tipo fiscale, classe, TER o dividendi.</p>
    <table class="tbl"><thead><tr><th>Posizione</th><th class="hide-m">Regime</th><th class="r">Valore</th><th class="r">Plus/minus</th><th class="r">Aliquota</th><th class="r">Tassa stimata</th></tr></thead><tbody>
-   ${rows.map(r => `<tr data-act="edit-hold" data-id="${r.h.id}" style="cursor:pointer"><td>${esc(r.h.name)}<div class="hint">${clsLabel(hCls(r.h))}${r.h.ter ? ' · TER ' + String(r.h.ter).replace('.', ',') + '%' : ''}</div></td><td class="hide-m hint">${esc(r.t.label)}</td><td class="r num">${eur0(r.v)}</td><td class="r num ${r.g >= 0 ? 'up' : 'down'}">${r.g >= 0 ? '+' : ''}${eur0(r.g)}</td><td class="r num">${String(r.t.rate).replace('.', ',')}%</td><td class="r num">${r.g > 0 ? eur0(EN.taxOnSales([{ taxClass: r.tc, gain: r.g }], S.zainetto || [], yr).tax) : '—'}</td></tr>`).join('') || '<tr><td colspan="6" class="hint">Nessuna posizione</td></tr>'}
+   ${rows.map(r => `<tr data-act="edit-hold" data-id="${r.h.id}" style="cursor:pointer"><td>${esc(r.h.name)}<div class="hint">${clsLabel(hCls(r.h))}${r.h.ter ? ' · TER ' + String(r.h.ter).replace('.', DEC) + '%' : ''}</div></td><td class="hide-m hint">${esc(r.t.label)}</td><td class="r num">${eur0(r.v)}</td><td class="r num ${r.g >= 0 ? 'up' : 'down'}">${r.g >= 0 ? '+' : ''}${eur0(r.g)}</td><td class="r num">${String(r.t.rate).replace('.', DEC)}%</td><td class="r num">${r.g > 0 ? eur0(EN.taxOnSales([{ taxClass: r.tc, gain: r.g }], S.zainetto || [], yr).tax) : '—'}</td></tr>`).join('') || '<tr><td colspan="6" class="hint">Nessuna posizione</td></tr>'}
    </tbody></table>
    <p class="hint" style="margin-top:8px;line-height:1.5">Le plusvalenze di ETF e fondi armonizzati sono redditi di capitale: lo zainetto non le riduce. Le loro minusvalenze però entrano nello zainetto e si usano su azioni, ETC, obbligazioni (titoli di Stato al 48,08%). Le crypto hanno uno zainetto a parte.</p></div>
   <div class="grid g2" style="margin-top:14px">
@@ -312,7 +312,7 @@ function vTaxes() {
     }</div>
     ${zAvail.length ? `<p class="hint" style="margin-top:8px">Disponibile: ${eur0(zAvail.filter(z => z.bucket !== 'crypto').reduce((s, z) => s + z.amount, 0))} redditi diversi · ${eur0(zAvail.filter(z => z.bucket === 'crypto').reduce((s, z) => s + z.amount, 0))} crypto</p>` : ''}</div>
    <div class="card"><h3>Costi e dividendi</h3>
-    <div class="hbar" style="grid-template-columns:1fr auto"><span class="nm">Costo medio dei fondi (TER ponderato)</span><span class="num">${ter.toFixed(2).replace('.', ',')}%</span></div>
+    <div class="hbar" style="grid-template-columns:1fr auto"><span class="nm">Costo medio dei fondi (TER ponderato)</span><span class="num">${ter.toFixed(2).replace('.', DEC)}%</span></div>
     <div class="hbar" style="grid-template-columns:1fr auto"><span class="nm">Commissioni annue stimate</span><span class="num">${eur0((iv * ter) / 100)}</span></div>
     <div class="hbar" style="grid-template-columns:1fr auto"><span class="nm">Bollo 0,2% annuo</span><span class="num">${eur0(bollo)}</span></div>
     <div class="hbar" style="grid-template-columns:1fr auto"><span class="nm">Costo delle commissioni in 20 anni*</span><span class="num down">${eur0(EN.feeDrag(iv, ter, 20))}</span></div>
@@ -320,7 +320,7 @@ function vTaxes() {
       .filter(r => +r.h.ter > 0.5)
       .map(
         r =>
-          `<div class="hint" style="margin-top:4px">⚠️ ${esc(r.h.name)}: TER ${String(r.h.ter).replace('.', ',')}%, alto rispetto agli ETF indicizzati (spesso sotto 0,3%)</div>`
+          `<div class="hint" style="margin-top:4px">⚠️ ${esc(r.h.name)}: TER ${String(r.h.ter).replace('.', DEC)}%, alto rispetto agli ETF indicizzati (spesso sotto 0,3%)</div>`
       )
       .join('')}
     <div style="height:10px"></div>
@@ -339,7 +339,7 @@ function zainForm(z) {
         k: 'amount',
         label: 'Importo residuo (€)',
         type: 'number',
-        v: z.amount === '' ? '' : String(z.amount).replace('.', ',')
+        v: z.amount === '' ? '' : String(z.amount).replace('.', DEC)
       },
       { k: 'year', label: 'Anno di realizzo', type: 'number', v: String(z.year) },
       {

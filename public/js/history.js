@@ -128,7 +128,7 @@ function histScope(portfolio = invPf) {
 async function loadPriceHistory(manual) {
   if (PHIST_BUSY) return;
   if (!perm('quotes')) {
-    if (manual) toast('Attiva le automatic prices in Impostazioni → Privacy');
+    if (manual) toast('Attiva le quotazioni automatiche in Impostazioni → Privacy');
     return;
   }
   if (OFFLINE) {
@@ -258,7 +258,7 @@ function vInvHist() {
     )
   ];
   const noTrades = hsScope().filter(h => !P.some(p => p.key === 'h:' + h.id));
-  const pct = v => (v >= 0 ? '+' : '') + v.toFixed(1).replace('.', ',') + '%';
+  const pct = v => (v >= 0 ? '+' : '') + v.toFixed(1).replace('.', DEC) + '%';
   const kpi = (l, v, f, cls = '') =>
     `<div class="card kpi sens"><div class="lbl">${l}</div><div class="val num ${cls}">${v}</div><div class="hint">${f}</div></div>`;
   return `<div class="grid g4">
@@ -279,7 +279,7 @@ function vInvHist() {
      .map(p => {
        const v = p.qty * (now[p.key] || p.avg),
          g = v - p.cost + p.realized;
-       return `<tr><td>${esc(keyName(p.key))}<div class="hint">dal ${dLabel(p.first)}</div></td><td class="r num">${p.buys + p.sells}</td><td class="r num">${String(+p.qty.toFixed(4)).replace('.', ',')}</td><td class="r num">${eur(p.avg)}</td><td class="r num ${g >= 0 ? 'up' : 'down'}">${g >= 0 ? '+' : ''}${eur0(g)}<div class="hint">${p.cost ? pct(((v - p.cost) / p.cost) * 100) : ''}</div></td></tr>`;
+       return `<tr><td>${esc(keyName(p.key))}<div class="hint">dal ${dLabel(p.first)}</div></td><td class="r num">${p.buys + p.sells}</td><td class="r num">${String(+p.qty.toFixed(4)).replace('.', DEC)}</td><td class="r num">${eur(p.avg)}</td><td class="r num ${g >= 0 ? 'up' : 'down'}">${g >= 0 ? '+' : ''}${eur0(g)}<div class="hint">${p.cost ? pct(((v - p.cost) / p.cost) * 100) : ''}</div></td></tr>`;
      })
      .join('')}</tbody></table></div>
    <div class="card sens"><h3>Plus e minusvalenze realizzate</h3>${
@@ -317,7 +317,7 @@ function vInvHist() {
      .slice(0, trAll ? 1e4 : 10)
      .map(
        t =>
-         `<div class="row" ${t.src === 'manual' ? `data-act="tr-edit" data-id="${t.id}"` : 'style="cursor:default"'}><div class="av">${t.side === 'buy' ? '↑' : '↓'}</div><div class="main"><div class="t1">${t.side === 'buy' ? 'Acquisto' : 'Vendita'} · ${esc(keyName(t.key))}</div><div class="t2">${dLabel(t.date)} · ${String(t.qty).replace('.', ',')} × ${eur(t.amount / t.qty)}${t.src === 'manual' ? ' · a mano' : ''}</div></div><div class="amt num ${t.side === 'sell' ? 'up' : ''}">${t.side === 'buy' ? '−' : '+'}${eur(t.amount)}</div></div>`
+         `<div class="row" ${t.src === 'manual' ? `data-act="tr-edit" data-id="${t.id}"` : 'style="cursor:default"'}><div class="av">${t.side === 'buy' ? '↑' : '↓'}</div><div class="main"><div class="t1">${t.side === 'buy' ? 'Acquisto' : 'Vendita'} · ${esc(keyName(t.key))}</div><div class="t2">${dLabel(t.date)} · ${String(t.qty).replace('.', DEC)} × ${eur(t.amount / t.qty)}${t.src === 'manual' ? ' · a mano' : ''}</div></div><div class="amt num ${t.side === 'sell' ? 'up' : ''}">${t.side === 'buy' ? '−' : '+'}${eur(t.amount)}</div></div>`
      )
      .join('')}</div>
    ${T.length > 10 ? `<button class="btn sm" data-act="tr-all" style="margin-top:10px">${trAll ? 'Mostra solo le ultime 10' : 'Mostra tutte (' + T.length + ')'}</button>` : ''}</div>`;
@@ -391,7 +391,7 @@ function trMapForm() {
     'Abbina i titoli',
     names.map((n, i) => ({
       k: 'm' + i,
-      label: `${n} · ${String(+b.pos[n].qty.toFixed(4)).replace('.', ',')} quote${b.pos[n].closed ? ' (chiusa)' : ''}`,
+      label: `${n} · ${String(+b.pos[n].qty.toFixed(4)).replace('.', DEC)} quote${b.pos[n].closed ? ' (chiusa)' : ''}`,
       type: 'select',
       v: (S.trMap || {})[n] || '',
       options: [

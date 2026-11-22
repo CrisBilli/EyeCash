@@ -131,8 +131,8 @@ const HEALTH_CHIP = {
 
 /** Formats an indicator value by its unit. */
 function healthValue(x) {
-  if (x.unit === 'pct') return (Math.round(x.value * 1000) / 10).toLocaleString('it-IT') + '%';
-  if (x.unit === 'months') return (Math.round(x.value * 10) / 10).toLocaleString('it-IT') + ' mesi';
+  if (x.unit === 'pct') return (Math.round(x.value * 1000) / 10).toLocaleString(LOCALE) + '%';
+  if (x.unit === 'months') return (Math.round(x.value * 10) / 10).toLocaleString(LOCALE) + ' mesi';
   if (x.unit === 'eurm') return eur0(x.value) + ' / mese';
   return (x.value > 0 ? '+' : '') + eur0(x.value);
 }

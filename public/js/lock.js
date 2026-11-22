@@ -36,7 +36,7 @@ document.addEventListener('input', e => {
   if (e.target.dataset && e.target.dataset.aw !== undefined && $('#aw-sum')) {
     let s = 0;
     document.querySelectorAll('[data-aw]').forEach(i => (s += num(i.value)));
-    $('#aw-sum').textContent = (Math.round(s * 10) / 10).toFixed(1).replace('.', ',');
+    $('#aw-sum').textContent = (Math.round(s * 10) / 10).toFixed(1).replace('.', DEC);
   }
 });
 document.addEventListener('input', e => {

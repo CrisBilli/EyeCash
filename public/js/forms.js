@@ -16,7 +16,7 @@ function openForm(title, fields, onSave, onDel, extra = '') {
       if (f.type === 'seg')
         return `<div class="fld"><div class="seg" data-seg="${f.k}">${f.options.map(o => `<button type="button" data-val="${o[0]}" class="${o[0] === f.v ? 'on' : ''}">${o[1]}</button>`).join('')}</div><input type="hidden" name="${f.k}" value="${f.v}"></div>`;
       if (f.type === 'big')
-        return `<div class="bigamt"><input class="num" name="${f.k}" inputmode="decimal" autocomplete="off" value="${esc(f.v ?? '')}" placeholder="0,00"><span>€</span></div>`;
+        return `<div class="bigamt"><input class="num" name="${f.k}" inputmode="decimal" autocomplete="off" value="${esc(f.v ?? '')}" placeholder="0${DEC}00"><span>€</span></div>`;
       if (f.type === 'catgrid')
         return `<div class="cgrid" data-cg="${f.k}" data-kind="${f.kind || 'out'}">${f.groups.map(([g, cs]) => cs.map(c => `<button type="button" data-k="${g}" data-c="${esc(c)}" class="${c === f.v ? 'on' : ''}">${catAv(c).replace('class="av cico"', 'class="cico"')}<span>${esc(c)}</span></button>`).join('')).join('')}</div><input type="hidden" name="${f.k}" value="${esc(f.v)}">`;
       if (f.type === 'select')
@@ -93,7 +93,7 @@ function txForm(t, pre) {
           ['tr', 'Trasferimento']
         ]
       },
-      { k: 'amount', type: 'big', v: t.amount ? String(Math.abs(t.amount)).replace('.', ',') : '' },
+      { k: 'amount', type: 'big', v: t.amount ? String(Math.abs(t.amount)).replace('.', DEC) : '' },
       {
         k: 'cat',
         type: 'catgrid',
@@ -168,7 +168,7 @@ function holdForm(h, pre) {
   h =
     h ||
     Object.assign({ name: '', ticker: '', type: 'ETF', qty: '', avg: '', price: '', isin: '' }, pre || {});
-  const f = v => (v === '' || v == null ? '' : String(v).replace('.', ','));
+  const f = v => (v === '' || v == null ? '' : String(v).replace('.', DEC));
   const qx = h.qSym
     ? `<div class="bcard" style="margin:0 0 12px"><div class="k"><span>Quotazione automatica</span>${quoteBadge(h)}</div><div style="margin-top:6px;font-size:13px">${esc(h.qSym)}${h.priceExch ? ' · ' + esc(h.priceExch) : ''}${h.priceCur ? ' · ' + esc(h.priceCur) : ''}</div>${!isNew ? `<div style="display:flex;gap:6px;margin-top:8px"><button type="button" class="btn sm" data-act="q-link" data-id="${h.id}">Cambia listino</button><button type="button" class="btn sm ghost" data-act="q-unlink" data-id="${h.id}">Scollega</button></div>` : ''}</div>`
     : !isNew && perm('quotes')
@@ -219,7 +219,7 @@ function holdForm(h, pre) {
           ['', 'Automatico dal tipo'],
           ...Object.entries(EN.TAX).map(([k, t]) => [
             k,
-            t.label + ' · ' + String(t.rate).replace('.', ',') + '%'
+            t.label + ' · ' + String(t.rate).replace('.', DEC) + '%'
           ])
         ]
       },
@@ -227,14 +227,14 @@ function holdForm(h, pre) {
         k: 'ter',
         label: 'Costo annuo TER (%)',
         type: 'number',
-        v: h.ter == null || h.ter === '' ? '' : String(h.ter).replace('.', ','),
+        v: h.ter == null || h.ter === '' ? '' : String(h.ter).replace('.', DEC),
         ph: 'es. 0,20'
       },
       {
         k: 'divYield',
         label: 'Rendimento da dividendi/cedole (% annuo, facoltativo)',
         type: 'number',
-        v: h.divYield == null || h.divYield === '' ? '' : String(h.divYield).replace('.', ','),
+        v: h.divYield == null || h.divYield === '' ? '' : String(h.divYield).replace('.', DEC),
         ph: '0 se ad accumulazione'
       },
       { k: 'qty', label: 'Quantità', type: 'number', v: f(h.qty) },
@@ -338,7 +338,7 @@ function recForm(r, prefill) {
         k: 'amount',
         label: 'Importo (€)',
         type: 'number',
-        v: r.amount === '' ? '' : String(r.amount).replace('.', ',')
+        v: r.amount === '' ? '' : String(r.amount).replace('.', DEC)
       },
       {
         k: 'freq',
@@ -406,8 +406,8 @@ function goalForm(g) {
     isNew ? 'Nuovo obiettivo' : 'Modifica obiettivo',
     [
       { k: 'name', label: 'Nome', v: g.name, ph: 'es. Fondo emergenza' },
-      { k: 'target', label: 'Obiettivo (€)', type: 'number', v: String(g.target).replace('.', ',') },
-      { k: 'saved', label: 'Già messo da parte (€)', type: 'number', v: String(g.saved).replace('.', ',') },
+      { k: 'target', label: 'Obiettivo (€)', type: 'number', v: String(g.target).replace('.', DEC) },
+      { k: 'saved', label: 'Già messo da parte (€)', type: 'number', v: String(g.saved).replace('.', DEC) },
       { k: 'deadline', label: 'Scadenza', type: 'date', v: g.deadline }
     ],
     d => {
@@ -445,7 +445,7 @@ function accForm(a) {
         v: a.type,
         options: ['Conto', 'Carta', 'Risparmio', 'Contanti']
       },
-      { k: 'balance0', label: 'Saldo iniziale (€)', type: 'number', v: String(a.balance0).replace('.', ',') }
+      { k: 'balance0', label: 'Saldo iniziale (€)', type: 'number', v: String(a.balance0).replace('.', DEC) }
     ],
     d => {
       if (!d.name.trim()) return toast('Inserisci un nome');

@@ -414,7 +414,7 @@ function showPortfolioImport(items) {
   const list = items
     .map(
       i =>
-        `<div style="display:flex;gap:8px;font-size:12px;padding:5px 0;border-top:1px solid var(--line)"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(i.name)}</span><span class="num" style="color:var(--mut);flex:none">${String(i.qty).replace('.', ',')} ×</span><span class="num" style="flex:none">${eur(i.qty * i.price)}</span></div>`
+        `<div style="display:flex;gap:8px;font-size:12px;padding:5px 0;border-top:1px solid var(--line)"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(i.name)}</span><span class="num" style="color:var(--mut);flex:none">${String(i.qty).replace('.', DEC)} ×</span><span class="num" style="flex:none">${eur(i.qty * i.price)}</span></div>`
     )
     .join('');
   openForm(

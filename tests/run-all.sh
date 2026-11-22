@@ -27,5 +27,5 @@ run() { out=$(POC_URL=http://localhost:$PORT POC_DB="$DATA/pointofcash.db" timeo
   err=$(grep -m1 'Error' <<<"$out" | cut -c1-140); echo "$1: $p pass, $f fail $err"; [ "$f" = 0 ] && [ -z "$err" ] || FAIL=1; }
 # these three share one data folder, in this order
 start; for t in e2e_browser e2e_quotes e2e_fire; do run $t; done; stop
-for t in e2e_assets e2e_stats e2e_invest_ask e2e_offline e2e_privacy e2e_report; do start; run $t; stop; done
+for t in e2e_assets e2e_stats e2e_invest_ask e2e_offline e2e_privacy e2e_report e2e_i18n; do start; run $t; stop; done
 exit $FAIL

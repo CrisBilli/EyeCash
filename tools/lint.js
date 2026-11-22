@@ -38,7 +38,7 @@ const linter = new Linter({ configType: 'flat' });
 const problems = [];
 
 // client: one combined source, mapped back to the original files
-const files = [...read('public/index.html').matchAll(/<script src="\/(js\/[a-z]+\.js|engine\.js)"/g)].map(
+const files = [...read('public/index.html').matchAll(/<script src="\/(js\/[a-z0-9-]+\.js|engine\.js)"/g)].map(
   m => 'public/' + m[1]
 );
 let src = '';

@@ -167,6 +167,8 @@ Se la data non è indicata usa oggi. Se manca l'importo usa null.`;
       .slice(0, 300)
       .trim();
     if (!q) return json(res, 400, { error: 'Domanda vuota' });
+    // language of the title, answer and clarification shown to the user
+    const lang = b.lang === 'en' ? 'inglese' : 'italiano';
     const accounts = (Array.isArray(b.accounts) ? b.accounts : [])
       .slice(0, 12)
       .map(a => ({
@@ -197,11 +199,11 @@ Rispondi SOLO con JSON:
    "from":"AAAA-MM-GG" o null, "to":"AAAA-MM-GG" o null,
    "group":"nessuno"|"mese"|"anno"|"categoria"|"giorno_settimana"|"esercente"|"conto" (investimenti: "nessuno"|"titolo"|"classe"|"portafoglio"),
    "limit":10, "order":"desc"|"asc"}],
- "answer":"frase in italiano con i segnaposto",
+ "answer":"frase in ${lang} con i segnaposto",
  "chart":{"query":"a","kind":"barre"|"linea"|"torta"} o null,
  "clarify":""}
 Segnaposto: {a} risultato della query a · {a.top} gruppo più alto · {a.top_value} il suo valore · {a.n} numero di movimenti · {diff:a-b} differenza · {pct:a/b} a in % di b · {change:a:b} variazione % di a rispetto a b.
-Regole: nessun numero nella risposta, solo segnaposto. Per confrontare periodi usa più query (massimo 4). "Quest'anno" = dal 1 gennaio di quest'anno a oggi; "l'anno scorso" = anno solare precedente; "in media al mese" = media_mensile. Se la domanda non riguarda i dati finanziari o non si può calcolare, lascia "queries" vuoto e scrivi in "clarify" cosa chiedere.`;
+Scrivi "title", "answer" e "clarify" in ${lang}. Regole: nessun numero nella risposta, solo segnaposto. Per confrontare periodi usa più query (massimo 4). "Quest'anno" = dal 1 gennaio di quest'anno a oggi; "l'anno scorso" = anno solare precedente; "in media al mese" = media_mensile. Se la domanda non riguarda i dati finanziari o non si può calcolare, lascia "queries" vuoto e scrivi in "clarify" cosa chiedere.`;
     try {
       const raw = parseJSONLoose(
         await callAI({

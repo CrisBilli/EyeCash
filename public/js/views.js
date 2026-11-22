@@ -217,14 +217,14 @@ function vInvPos() {
                 const v = h.qty * h.price,
                   c = h.qty * h.avg,
                   pl = c ? (v - c) / c : 0;
-                return `<div class="row" data-act="${h.pending || h.qErr ? 'q-review' : 'edit-hold'}" data-id="${h.id}"><div class="av" style="font-size:10.5px;font-weight:700">${esc(h.ticker.slice(0, 4))}</div><div class="main"><div class="t1">${esc(h.name)} ${quoteBadge(h)}</div><div class="t2 num">${String(h.qty).replace('.', ',')} × ${eur(h.price)}</div><div class="t2">${quoteLine(h)}</div>${invPf == null && pfs().length ? `<div class="t2">📁 ${esc(pfName(h.pf || ''))}</div>` : ''}</div><div style="text-align:right"><div class="amt num">${eur(v)}</div><span class="chip ${pl >= 0 ? 'c-good' : 'c-crit'}" style="margin-top:3px">${pl >= 0 ? '▲' : '▼'} ${pct(pl)}</span></div></div>`;
+                return `<div class="row" data-act="${h.pending || h.qErr ? 'q-review' : 'edit-hold'}" data-id="${h.id}"><div class="av" style="font-size:10.5px;font-weight:700">${esc(h.ticker.slice(0, 4))}</div><div class="main"><div class="t1">${esc(h.name)} ${quoteBadge(h)}</div><div class="t2 num">${String(h.qty).replace('.', DEC)} × ${eur(h.price)}</div><div class="t2">${quoteLine(h)}</div>${invPf == null && pfs().length ? `<div class="t2">📁 ${esc(pfName(h.pf || ''))}</div>` : ''}</div><div style="text-align:right"><div class="amt num">${eur(v)}</div><span class="chip ${pl >= 0 ? 'c-good' : 'c-crit'}" style="margin-top:3px">${pl >= 0 ? '▲' : '▼'} ${pct(pl)}</span></div></div>`;
               })
               .join('')
           : '<div class="empty">Aggiungi la tua prima posizione</div>'
       }</div></div>
     <div class="card"><div class="card-h"><div><h3>Allocazione</h3><div class="hint">Per tipo di strumento</div></div></div>
       ${parts.length ? `<div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">${donut(parts)}<div class="list" style="flex:1;min-width:140px">${parts.map(p => `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px"><i style="width:10px;height:10px;border-radius:3px;background:${p.c};flex:none"></i><span style="flex:1;color:var(--tx2)">${esc(p.n)}</span><span class="num">${((p.v / iv) * 100).toFixed(0)}%</span></div>`).join('')}</div></div>` : '<div class="empty">—</div>'}
-      <div class="hint" style="margin-top:14px;line-height:1.55">${perm('quotes') ? "Prezzi automatici per i titoli collegati: ETF e azioni da Yahoo Finance con controllo su Stooq, crypto da Kraken con controllo su CoinGecko, cambi ufficiali BCE. Si aggiornano all'apertura dell'app (al massimo una volta l'ora) o con ↻ Prezzi." : 'Prezzi inseriti a mano. Le automatic prices si attivano in Impostazioni → Privacy.'}</div></div>
+      <div class="hint" style="margin-top:14px;line-height:1.55">${perm('quotes') ? "Prezzi automatici per i titoli collegati: ETF e azioni da Yahoo Finance con controllo su Stooq, crypto da Kraken con controllo su CoinGecko, cambi ufficiali BCE. Si aggiornano all'apertura dell'app (al massimo una volta l'ora) o con ↻ Prezzi." : 'Prezzi inseriti a mano. Le quotazioni automatiche si attivano in Impostazioni → Privacy.'}</div></div>
   </div>`;
 }
 
@@ -513,7 +513,7 @@ function vStats() {
     ${cats
       .map(([c, v]) => {
         const pv = B ? (B.cat[c] || 0) / bn : 0;
-        return `<tr><td style="white-space:nowrap">${catIc(c)} ${esc(c)}</td><td class="r num"><b>${eur(v / n)}</b></td><td class="r num">${eur0((v / n) * 12)}</td><td class="r num hint">${eur0(v)}</td><td class="r num">${((v / A.out) * 100).toFixed(1).replace('.', ',')}%</td>${B ? `<td class="r">${pctTxt(v / n, pv)}</td>` : ''}<td>${sparkBars(
+        return `<tr><td style="white-space:nowrap">${catIc(c)} ${esc(c)}</td><td class="r num"><b>${eur(v / n)}</b></td><td class="r num">${eur0((v / n) * 12)}</td><td class="r num hint">${eur0(v)}</td><td class="r num">${((v / A.out) * 100).toFixed(1).replace('.', DEC)}%</td>${B ? `<td class="r">${pctTxt(v / n, pv)}</td>` : ''}<td>${sparkBars(
           P.months.map(k => (A.catM[c] || {})[k] || 0),
           'var(--s-orange)',
           24
@@ -532,7 +532,7 @@ function vStats() {
   </div>
   <div class="grid g2" style="margin-top:14px">
     <div class="card"><h3>Spesa per giorno della settimana</h3><div class="hint">Media settimanale</div>${wdChart(A.wd, nWeeks)}</div>
-    <div class="card"><h3>Abitudini</h3><table class="tbl"><thead><tr><th>Più frequenti</th><th class="r">Volte / mese</th><th class="r">Media</th></tr></thead><tbody>${freq.map(m => `<tr><td>${esc(m.n)}</td><td class="r num">${(m.c / n).toFixed(1).replace('.', ',')}</td><td class="r num">${eur(m.v / m.c)}</td></tr>`).join('')}</tbody></table></div>
+    <div class="card"><h3>Abitudini</h3><table class="tbl"><thead><tr><th>Più frequenti</th><th class="r">Volte / mese</th><th class="r">Media</th></tr></thead><tbody>${freq.map(m => `<tr><td>${esc(m.n)}</td><td class="r num">${(m.c / n).toFixed(1).replace('.', DEC)}</td><td class="r num">${eur(m.v / m.c)}</td></tr>`).join('')}</tbody></table></div>
   </div>
   <div class="card" style="margin-top:14px"><h3>Anno per anno</h3><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Anno</th><th class="r">Mesi</th><th class="r">Entrate</th><th class="r">Uscite</th><th class="r">Uscite medie / mese</th><th class="r">Risparmio</th><th class="r">Tasso</th></tr></thead><tbody>${ys
     .map(y => {

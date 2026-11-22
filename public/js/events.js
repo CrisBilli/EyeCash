@@ -84,7 +84,7 @@ const ACTIONS = {
       .map(x => Math.round(x * 10) / 10);
     const k = v.indexOf(Math.max(...v));
     v[k] = Math.round((v[k] + 100 - v.reduce((s, x) => s + x, 0)) * 10) / 10;
-    ins.forEach((i, n) => (i.value = String(v[n]).replace('.', ',')));
+    ins.forEach((i, n) => (i.value = String(v[n]).replace('.', DEC)));
     const s = $('#aw-sum');
     if (s) s.textContent = '100,0';
   },
@@ -101,7 +101,7 @@ const ACTIONS = {
     });
     if (Math.abs(s - 100) > 0.5)
       return toast(
-        'La somma deve essere 100% (ora ' + String(Math.round(s * 10) / 10).replace('.', ',') + '%)'
+        'La somma deve essere 100% (ora ' + String(Math.round(s * 10) / 10).replace('.', DEC) + '%)'
       );
     const T = S.target || {};
     S.target = {
@@ -442,6 +442,7 @@ const ACTIONS = {
     REP.detail = el.dataset.k;
     renderView();
   },
+  lang: ({ el }) => setLang(el.dataset.k),
   autolock: ({ el }) => {
     try {
       localStorage.setItem(AUTOLOCK_KEY, el.dataset.k);

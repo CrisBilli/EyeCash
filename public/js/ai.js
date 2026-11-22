@@ -159,29 +159,36 @@ function localParse(s) {
   const m =
     t.match(/(\d+(?:[.,]\d{1,2})?)\s*(?:€|euro|eur)\b/) || t.match(/(?:^|\s)(\d+(?:[.,]\d{1,2})?)(?=\s)/);
   const amount = m ? num(m[1]) : 0;
-  const inc = /\b(incassat|ricevut|entrat|stipendio|rimborso|guadagnat|accredit)/.test(t);
+  // Italian and English words are both understood, whatever the interface language
+  const inc =
+    /\b(incassat|ricevut|entrat|stipendio|rimborso|guadagnat|accredit|received|salary|refund|earned|income)/.test(
+      t
+    );
   const d = new Date();
-  if (/altro ?ieri/.test(t)) d.setDate(d.getDate() - 2);
-  else if (/\bieri\b/.test(t)) d.setDate(d.getDate() - 1);
+  if (/altro ?ieri|day before yesterday/.test(t)) d.setDate(d.getDate() - 2);
+  else if (/\bieri\b|\byesterday\b/.test(t)) d.setDate(d.getDate() - 1);
   let date = ds(d);
   const dm = t.match(/\b(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\b/);
   if (dm) {
     const y = dm[3] ? (dm[3].length === 2 ? '20' + dm[3] : dm[3]) : String(new Date().getFullYear());
     date = `${y}-${pad(dm[2])}-${pad(dm[1])}`;
   }
-  const hint = /\bcarta\b|bancomat/.test(t) ? 'carta' : /contant|cash/.test(t) ? 'contanti' : null;
+  const hint = /\bcarta\b|bancomat|\bcard\b/.test(t) ? 'carta' : /contant|cash/.test(t) ? 'contanti' : null;
   let desc = t
     .replace(m ? m[0] : '', ' ')
     .replace(/\b\d{1,2}\/\d{1,2}(\/\d{2,4})?\b/, ' ')
     .replace(
-      /\b(ho|abbiamo)\s+(speso|pagato|comprato|preso|incassato|ricevuto)\b|\b(speso|pagato|pagata|comprato|incassato|ricevuto|segna|aggiungi|registra)\b/g,
+      /\b(ho|abbiamo)\s+(speso|pagato|comprato|preso|incassato|ricevuto)\b|\b(speso|pagato|pagata|comprato|incassato|ricevuto|segna|aggiungi|registra|spent|paid|bought|received|log|add)\b/g,
       ' '
     )
     .replace(
-      /\b(oggi|ieri|altro ?ieri|l'altro ieri|euro|eur|€|con la carta|con carta|col bancomat|bancomat|in contanti|contanti|carta)\b/g,
+      /\b(oggi|ieri|altro ?ieri|l'altro ieri|euro|eur|€|con la carta|con carta|col bancomat|bancomat|in contanti|contanti|carta|today|day before yesterday|yesterday|with (the |my )?card|by card|card|in cash|cash)\b/g,
       ' '
     )
-    .replace(/(^|\s)(da|dal|dalla|al|alla|allo|per|di|il|la|lo|un|una|in|con|a|e)(?=\s)/g, ' ')
+    .replace(
+      /(^|\s)(da|dal|dalla|al|alla|allo|per|di|il|la|lo|un|una|in|con|a|e|at|for|on|the|of|with|i|we)(?=\s)/g,
+      ' '
+    )
     .replace(/\s+/g, ' ')
     .trim();
   desc = desc ? desc.charAt(0).toUpperCase() + desc.slice(1) : '';
@@ -252,7 +259,7 @@ function startMic() {
     return;
   }
   rec = new SR();
-  rec.lang = 'it-IT';
+  rec.lang = LANG === 'en' ? 'en-US' : 'it-IT';
   rec.interimResults = true;
   rec.maxAlternatives = 1;
   const b = $('#micbtn');
@@ -310,9 +317,9 @@ function askCtx() {
 const ASK_FMT = {
   eur: v => eur(v),
   signed: v => (v >= 0 ? '+' : '−') + eur(Math.abs(v)),
-  pct: v => v.toFixed(1).replace('.', ',') + '%',
-  signedPct: v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(1).replace('.', ',') + '%',
-  n: v => String(Math.round(v * 10) / 10).replace('.', ',')
+  pct: v => v.toFixed(1).replace('.', DEC) + '%',
+  signedPct: v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(1).replace('.', DEC) + '%',
+  n: v => String(Math.round(v * 10) / 10).replace('.', DEC)
 };
 /** Ready-made questions for "Ask your data", computed without AI. */
 function quickAsks() {
@@ -412,14 +419,41 @@ function quickAsks() {
     ]
   ];
 }
+const Q_MEASURES = {
+  totale: 'Totale',
+  media_mensile: 'Media al mese',
+  conteggio: 'Numero',
+  media: 'Media per movimento',
+  massimo: 'Massimo',
+  minimo: 'Minimo'
+};
+const Q_HOLD_MEASURES = { valore: 'Valore', costo: 'Costo', guadagno: 'Guadagno', conteggio: 'Numero' };
+const Q_TYPES = {
+  entrate: 'entrate',
+  saldo: 'entrate meno uscite',
+  tutti: 'entrate e uscite',
+  uscite: 'uscite'
+};
+/** One-line description of a query, shown under "Come è stato calcolato". */
 function describeQ(q) {
-  if (q.source === 'investimenti')
-    return `${{ valore: 'Valore', costo: 'Costo', guadagno: 'Guadagno', conteggio: 'Numero' }[q.measure]} delle posizioni${q.group !== 'nessuno' ? ' per ' + q.group : ''}`;
-  const per =
+  const by = q.group !== 'nessuno' ? ' · ' + t('per {g}', { g: t(q.group.replace('_', ' ')) }) : '';
+  if (q.source === 'investimenti') return t('{m} delle posizioni', { m: t(Q_HOLD_MEASURES[q.measure]) }) + by;
+  const parts = [
+    t('{m} delle {type}', { m: t(Q_MEASURES[q.measure]), type: t(Q_TYPES[q.type] || 'uscite') })
+  ];
+  if (q.categories.length)
+    parts.push(t('categorie: {list}', { list: q.categories.map(c => t(c)).join(', ') }));
+  if (q.text) parts.push(t('con «{0}» nella descrizione', { 0: q.text }));
+  if (q.accounts.length) parts.push(t('sui conti {list}', { list: q.accounts.join(', ') }));
+  parts.push(
     q.from || q.to
-      ? ` dal ${q.from ? dLabel(q.from) : 'primo movimento'} al ${q.to ? dLabel(q.to) : 'oggi'}`
-      : ' su tutto lo storico';
-  return `${{ totale: 'Totale', media_mensile: 'Media al mese', conteggio: 'Numero', media: 'Media per movimento', massimo: 'Massimo', minimo: 'Minimo' }[q.measure]} delle ${q.type === 'entrate' ? 'entrate' : q.type === 'saldo' ? 'entrate meno uscite' : q.type === 'tutti' ? 'entrate e uscite' : 'uscite'}${q.categories.length ? ' in ' + q.categories.join(', ') : ''}${q.text ? ` con «${q.text}» nella descrizione` : ''}${q.accounts.length ? ' sui conti ' + q.accounts.join(', ') : ''}${per}${q.group !== 'nessuno' ? ' · per ' + q.group.replace('_', ' ') : ''}`;
+      ? t('dal {a} al {b}', {
+          a: q.from ? dLabel(q.from) : t('primo movimento'),
+          b: q.to ? dLabel(q.to) : t('oggi')
+        })
+      : t('su tutto lo storico')
+  );
+  return parts.join(' ') + by;
 }
 function askChart(r, kind) {
   const rows = r.rows.filter(x => x.value > 0 || kind === 'linea');
@@ -477,8 +511,14 @@ function askRender() {
     return `<div class="card" style="margin-top:14px"><b>Mi serve un chiarimento</b><div class="hint" style="margin-top:6px;line-height:1.6">${esc(sp.clarify)}</div></div>`;
   const ctx = askCtx(),
     R = {};
-  for (const q of sp.queries) R[q.id] = EN.runQuery(q, ctx);
-  const ans = EN.renderAnswer(sp.answer || '', R, ASK_FMT),
+  for (const q of sp.queries) {
+    R[q.id] = EN.runQuery(q, ctx);
+    // group labels (categories, weekdays, asset classes) go into the answer sentence: translate them
+    for (const row of R[q.id].rows) row.label = t(row.label);
+    if (R[q.id].top) R[q.id].top.label = t(R[q.id].top.label);
+  }
+  // built-in answers are written in Italian: translate the template before filling it in
+  const ans = EN.renderAnswer(askCur.ai ? sp.answer || '' : t(sp.answer || ''), R, ASK_FMT),
     ch = sp.chart && R[sp.chart.query];
   const tables = sp.queries.filter(
     q => R[q.id].rows.length && (!sp.chart || sp.chart.query !== q.id || sp.chart.kind === 'linea')
@@ -487,7 +527,7 @@ function askRender() {
     <p style="font-size:17px;line-height:1.55">${esc(ans) || '—'}</p>
     ${ch ? `<div style="margin-top:14px">${askChart(ch, sp.chart.kind)}</div>` : ''}
     ${tables.map(q => `<table class="tbl" style="margin-top:14px"><tbody>${R[q.id].rows.map(x => `<tr><td>${esc(x.label)}</td><td class="r num">${R[q.id].isCount ? ASK_FMT.n(x.value) : eur(x.value)}</td></tr>`).join('')}</tbody></table>`).join('')}
-    <details style="margin-top:14px"><summary class="hint" style="cursor:pointer">Come è stato calcolato</summary><ul class="hint" style="margin:8px 0 0 18px;line-height:1.6">${sp.queries.map(q => `<li><b>${q.id}</b>: ${esc(describeQ(q))} — ${R[q.id].n} ${q.source === 'investimenti' ? 'posizioni' : 'movimenti'}</li>`).join('')}</ul>
+    <details style="margin-top:14px"><summary class="hint" style="cursor:pointer">Come è stato calcolato</summary><ul class="hint" style="margin:8px 0 0 18px;line-height:1.6">${sp.queries.map(q => `<li><b>${q.id}</b>: ${esc(describeQ(q))} — ${t(q.source === 'investimenti' ? '{n} posizioni' : '{n} movimenti', { n: R[q.id].n })}</li>`).join('')}</ul>
      <p class="hint" style="margin-top:8px">${askCur.ai ? "All'AI è arrivata solo la domanda, con l'elenco delle categorie e il tipo dei conti. I numeri sono stati calcolati su questo dispositivo e non sono stati inviati." : 'Domanda rapida: calcolata interamente su questo dispositivo, senza AI.'}</p></details></div>`;
 }
 function vAsk() {
@@ -513,7 +553,7 @@ async function askAI(q) {
       'ask',
       `Domanda: «${q.slice(0, 200)}» · più l'elenco delle categorie e i tipi dei conti (${accounts.map(a => a.alias + ' ' + a.type).join(', ')}). Nessun importo o movimento.`
     );
-    const spec = await api('POST', '/api/ai/ask', { question: q, accounts });
+    const spec = await api('POST', '/api/ai/ask', { question: q, accounts, lang: LANG });
     askCur = { q, spec, ai: true };
     if (spec.queries && spec.queries.length) {
       S.askHist = [{ id: uid(), q, d: today(), spec }, ...(S.askHist || []).filter(h => h.q !== q)].slice(

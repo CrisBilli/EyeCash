@@ -268,8 +268,12 @@ function vFire() {
    ${EN.CLASSES.map(c => `<tr><td>${c.label}</td><td class="r num">${wsum ? Math.round(((p.weights[c.k] || 0) / wsum) * 100) : 0}%</td><td class="r"><input class="inp num" name="mu_${c.k}" value="${ret[c.k].mu}" style="width:80px;text-align:right"></td><td class="r"><input class="inp num" name="sd_${c.k}" value="${ret[c.k].sd}" style="width:80px;text-align:right"></td></tr>`).join('')}
    </tbody></table><p class="hint" style="margin-top:6px;line-height:1.5">Valori prudenziali di partenza. I rendimenti reali derivano sottraendo l'inflazione simulata. Il modello usa code grasse (t di Student) e correlazioni tra classi.</p></details>
   <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap"><button class="btn pri" type="submit">${fireBusy ? 'Calcolo…' : '▶ Salva e simula'}</button><button class="btn ghost" type="button" data-act="fire-reset">Ripristina valori dai miei dati</button></div></form>`;
+  // starting capital: investments, plus cash and other capital if included
+  const startParts = [t('investimenti {v}', { v: eur0(iv) })];
+  if (cashIn) startParts.push(t('liquidità {v}', { v: eur0(cashIn) }));
+  if (+F.extraStart) startParts.push(eur0(+F.extraStart));
   const head = `<div class="card"><div class="card-h"><div><h3>🔥 Simulazione FIRE</h3><div class="hint">Monte Carlo · 2.000 scenari · calcolato sul tuo dispositivo, nessun dato inviato</div></div></div>
-    <div class="hint" style="margin-bottom:12px;line-height:1.55">Capitale di partenza: investimenti ${eur0(iv)}${cashIn ? ` + liquidità ${eur0(cashIn)}` : ''}${+F.extraStart ? ` + ${eur0(+F.extraStart)}` : ''} = <b style="color:var(--tx)">${eur0(p.start)}</b> · costi medi ${String(ter.toFixed(2)).replace('.', ',')}%/anno · aliquota media sui guadagni ${Math.round(taxRate)}% · bollo 0,2%</div>${form}</div>`;
+    <div class="hint" style="margin-bottom:12px;line-height:1.55">${t('Capitale di partenza')}: ${startParts.join(' + ')} = <b style="color:var(--tx)">${eur0(p.start)}</b> · ${t('costi medi {p}%/anno', { p: String(ter.toFixed(2)).replace('.', DEC) })} · ${t('aliquota media sui guadagni {p}%', { p: Math.round(taxRate) })} · ${t('bollo 0,2%')}</div>${form}</div>`;
   if (!r)
     return (
       head +
@@ -288,7 +292,7 @@ function vFire() {
     `
   <div class="grid g4" style="margin-top:14px">
     <div class="card kpi"><div class="lbl">Probabilità di successo</div><div class="val num">${pctI(m.success)} ${probChip(m.success)}</div><div class="foot">non finire i soldi prima dei ${p.endAge} anni</div></div>
-    <div class="card kpi"><div class="lbl">Numero FIRE</div><div class="val num">${eur0(m.fireNumber)}</div><div class="foot">${eur0(p.spending)}/anno al ${String(p.swr).replace('.', ',')}%</div></div>
+    <div class="card kpi"><div class="lbl">Numero FIRE</div><div class="val num">${eur0(m.fireNumber)}</div><div class="foot">${eur0(p.spending)}/anno al ${String(p.swr).replace('.', DEC)}%</div></div>
     <div class="card kpi"><div class="lbl">${p.mode === 'age' ? 'Età di ritiro' : 'Età FIRE stimata'}</div><div class="val num">${ageTxt}</div><div class="foot">${p.mode === 'age' ? 'scelta da te' : m.reached >= 0.5 ? `ottimista ${Math.round(m.fireAge.p10)} · prudente ${Math.round(m.fireAge.p90)} · numero raggiunto nel ${pctI(m.reached)} dei casi` : `numero FIRE raggiunto solo nel ${pctI(m.reached)} dei casi entro i ${p.maxWorkAge} anni: negli altri smetti a ${p.maxWorkAge}`}</div></div>
     <div class="card kpi"><div class="lbl">Spesa sostenibile al 90%</div><div class="val num">${eur0(R.safe)}</div><div class="foot">all'anno (euro di oggi) se smetti a ${R.safeAge} anni</div></div>
   </div>
@@ -308,7 +312,7 @@ function vFire() {
         )
         .join('')}</tbody></table>
       <div class="bcard" style="margin-top:12px"><div class="k"><span>Coast FIRE a ${p.retireAge} anni</span>${p.start >= R.coast ? '<span class="chip c-good">✓ raggiunto</span>' : ''}</div><div class="v num">${eur0(R.coast)} <small>oggi</small></div>
-      <div class="f"><span>Con questo capitale potresti smettere di risparmiare e arrivare comunque al numero FIRE a ${p.retireAge} anni (rendimento reale atteso ${String(R.realRet.toFixed(1)).replace('.', ',')}%).</span></div><div class="bar"><i style="width:${Math.min(100, (p.start / R.coast) * 100)}%;background:var(--good)"></i></div></div></div>
+      <div class="f"><span>Con questo capitale potresti smettere di risparmiare e arrivare comunque al numero FIRE a ${p.retireAge} anni (rendimento reale atteso ${String(R.realRet.toFixed(1)).replace('.', DEC)}%).</span></div><div class="bar"><i style="width:${Math.min(100, (p.start / R.coast) * 100)}%;background:var(--good)"></i></div></div></div>
     <div class="card"><h3>Prove di stress</h3><p class="hint" style="margin:4px 0 8px">Cosa succede se le cose vanno male proprio all'inizio della pensione.</p>
       <table class="tbl"><thead><tr><th>Scenario</th><th class="r">Successo</th><th class="r">Differenza</th></tr></thead><tbody>
       <tr><td>Normale</td><td class="r num">${pctI(m.success)}</td><td class="r">—</td></tr>
