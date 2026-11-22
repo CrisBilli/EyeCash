@@ -413,7 +413,7 @@ function donut(parts, size = 150) {
       parts.length === 1
         ? `M${R},0A${R},${R} 0 1 1 ${R - 0.01},0ZM${R},${R - rr}A${rr},${rr} 0 1 0 ${R + 0.01},${R - rr}Z`
         : `M${x1},${y1}A${R},${R} 0 ${large} 1 ${x2},${y2}L${x3},${y3}A${rr},${rr} 0 ${large} 0 ${x4},${y4}Z`;
-    g += `<path d="${d}" fill="${p.c}" stroke="var(--card)" stroke-width="2" data-tip="${esc(p.n)}\n${eur(p.v)} · ${((p.v / tot) * 100).toFixed(1).replace('.', ',')}%"/>`;
+    g += `<path d="${d}" fill="${p.c}" stroke="var(--card)" stroke-width="2" data-tip="${esc(p.n)}\n${eur(p.v)} · ${((p.v / tot) * 100).toFixed(1).replace('.', DEC)}%"/>`;
     a = a2;
   }
   return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="flex:none">${g}</svg>`;
@@ -469,7 +469,7 @@ function axisY(top, pl, pt, ih, W, pr, fmt) {
 }
 const kfmt = v =>
   Math.abs(v) >= 1000
-    ? (v / 1000).toFixed(Math.abs(v) % 1000 ? 1 : 0).replace('.', ',') + 'k'
+    ? (v / 1000).toFixed(Math.abs(v) % 1000 ? 1 : 0).replace('.', DEC) + 'k'
     : String(Math.round(v));
 const niceTop = m => {
   const st = Math.pow(10, Math.floor(Math.log10(Math.max(m, 1))));

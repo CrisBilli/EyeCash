@@ -7,11 +7,11 @@
  */
 /* ---------- utils ---------- */
 const $ = s => document.querySelector(s);
-const F2 = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' });
-const F0 = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+const F2 = new Intl.NumberFormat(LOCALE, { style: 'currency', currency: 'EUR' });
+const F0 = new Intl.NumberFormat(LOCALE, { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
 const eur = v => F2.format(v || 0),
   eur0 = v => F0.format(v || 0);
-const pct = v => (v >= 0 ? '+' : '') + (v * 100).toFixed(1).replace('.', ',') + '%';
+const pct = v => (v >= 0 ? '+' : '') + (v * 100).toFixed(1).replace('.', DEC) + '%';
 /** Escapes text for safe use inside HTML strings. Use it for every user-provided value. */
 const esc = s =>
   String(s ?? '').replace(
@@ -29,21 +29,35 @@ const pd = s => {
 };
 const today = () => ds(new Date());
 const ym = s => s.slice(0, 7);
-const MESI = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
-const MESIL = [
-  'Gennaio',
-  'Febbraio',
-  'Marzo',
-  'Aprile',
-  'Maggio',
-  'Giugno',
-  'Luglio',
-  'Agosto',
-  'Settembre',
-  'Ottobre',
-  'Novembre',
-  'Dicembre'
-];
+// month names: Italian as before, other languages from the browser (Intl)
+const monthNames = style =>
+  [...Array(12)].map((_, i) => {
+    const m = new Intl.DateTimeFormat(LOCALE, { month: style }).format(new Date(2026, i, 1)).replace('.', '');
+    return m.charAt(0).toUpperCase() + m.slice(1);
+  });
+const MESI =
+  LANG === 'it'
+    ? ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic']
+    : monthNames('short');
+const MESIL =
+  LANG === 'it'
+    ? [
+        'Gennaio',
+        'Febbraio',
+        'Marzo',
+        'Aprile',
+        'Maggio',
+        'Giugno',
+        'Luglio',
+        'Agosto',
+        'Settembre',
+        'Ottobre',
+        'Novembre',
+        'Dicembre'
+      ]
+    : monthNames('long');
+/** Month name as used inside a sentence: lowercase in Italian, capitalised in English. */
+const monthInText = name => (LANG === 'it' ? name.toLowerCase() : name);
 const ymLabel = k => {
   const [y, m] = k.split('-');
   return MESIL[+m - 1] + ' ' + y;

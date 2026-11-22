@@ -39,7 +39,7 @@ EyeCash fa il contrario:
 
 ## Funzioni
 
-<p align="center"><img src="docs/media/screens.png" alt="Schermate Home, nuova spesa, Chiedi ai tuoi dati e storico investimenti"></p>
+<p align="center"><img src="docs/media/screens-it.png" alt="Schermate Home, nuova spesa, Chiedi ai tuoi dati e report di salute finanziaria"></p>
 
 **Ogni giorno**
 - Conti (corrente, carte di credito, risparmio, contanti) con i saldi aggiornati.
@@ -81,7 +81,7 @@ EyeCash fa il contrario:
 - Cifratura end-to-end, password mai inviata al server, backup giornalieri cifrati, e backup cifrati che puoi scaricare dall'app.
 - Sblocco con Face ID, Touch ID o Windows Hello, blocco automatico dopo il tempo che scegli, saldi oscurati e contenuto nascosto nel multitasking del telefono.
 - Funziona **offline**: sul dispositivo resta una copia cifrata, e le modifiche si sincronizzano al ritorno della rete.
-- Si installa come app su **iPhone, Android e computer** (PWA). Tema chiaro e scuro.
+- Si installa come app su **iPhone, Android e computer** (PWA). Tema chiaro e scuro, interfaccia in **italiano e inglese**.
 - Spese aggiunte da **Claude Desktop** o da qualsiasi client MCP. L'accesso MCP è *solo in scrittura*: può aggiungere, mai leggere.
 - **Zero dipendenze:** solo i moduli integrati di Node.js e il browser.
 
@@ -145,7 +145,8 @@ Le altre banche funzionano con l'importazione generica, che riconosce i nomi di 
 - [x] Report di salute finanziaria con la rata aggiuntiva sostenibile
 - [ ] **"Posso permettermelo?"**: mutuo, auto, grandi acquisti, simulati sulle tue entrate, spese e risparmi reali
 - [ ] Modalità famiglia: account cifrati separati sullo stesso server, con spazi condivisi facoltativi
-- [ ] Interfaccia in inglese e cambio lingua nell'app (prossimo passo)
+- [x] Interfaccia in italiano e in inglese, con cambio lingua nell'app
+- [ ] Altre lingue
 - [ ] Formati pronti per altre banche
 - [ ] Versione nativa facoltativa (widget, notifiche)
 

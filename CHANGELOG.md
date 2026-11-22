@@ -1,5 +1,14 @@
 # EyeCash · Novità
 
+## 1.1.0 · Interfaccia in inglese
+- **Cambio lingua:** l'app parte nella lingua del telefono (italiano o inglese) e si cambia in *Impostazioni → Dati e sicurezza → 🌐 Lingua*.
+- In inglese importi, numeri e mesi seguono il formato inglese (€1,234.56, "January 2026").
+- "Chiedi ai tuoi dati" risponde nella lingua scelta, anche quando la risposta la scrive l'AI.
+- L'inserimento rapido capisce anche l'inglese ("12.50 pizza yesterday card").
+- Cambiando lingua i dati non cambiano: le categorie restano salvate allo stesso modo.
+- Nuove schermate e nuovi video di presentazione, in inglese e in italiano, con l'app nella lingua giusta.
+- Correzioni: due testi sulle quotazioni automatiche erano stati modificati per errore; i mesi dentro le frasi hanno ora le maiuscole corrette.
+
 ## 1.0.0 · Prima versione pubblica
 EyeCash è un'app di finanza personale che gira sul tuo server di casa, con i dati cifrati sul dispositivo dalla tua password.
 

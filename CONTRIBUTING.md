@@ -34,6 +34,15 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full map. In short:
 - The user interface is in Italian for now. Code, comments and documentation are in English; some older inline comments are still in Italian, and translating them is a welcome contribution.
 - Escape every user-provided value with `esc()` when building HTML.
 
+## Translations
+
+Italian is the source language of the code. Translations are dictionaries: `public/js/i18n-en.js` maps each Italian text to English, with placeholders such as `{0}` for numbers and names. One translator applies them to everything shown on screen, so most new code needs nothing special.
+
+- **Fix or add an English text:** add the Italian text exactly as it appears in the code, with its English value, then run `node tools/i18n-sort.js en`.
+- **Add a language:** copy `i18n-en.js` to `i18n-xx.js`, translate the values, and add the language to `LANGS` in `public/js/i18n.js`, to `public/index.html` and to `SHELL` in `public/sw.js`.
+- In code that builds a sentence from pieces, prefer `t('… {name} …', { name })` over concatenation, so the sentence can be translated as a whole.
+- `tests/e2e_i18n.py` checks that the main screens show no Italian when English is on.
+
 ## Tests
 
 ```bash

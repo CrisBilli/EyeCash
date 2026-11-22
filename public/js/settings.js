@@ -119,6 +119,11 @@ function budgetsCard() {
 
 /** Data, security and privacy of this device. */
 function securityCard() {
+  const language = settingRow(
+    '🌐 Lingua',
+    "Lingua dell'interfaccia su questo dispositivo. Di partenza è quella del telefono.",
+    segmented('lang', LANGS, LANG, 220)
+  );
   const theme = settingRow(
     '🎨 Aspetto',
     'Chiaro, scuro o come il telefono. Vale per questo dispositivo.',
@@ -157,7 +162,7 @@ function securityCard() {
   const backup = `<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="export-enc">⬇️ Scarica backup cifrato</button><button class="btn" data-act="export">Esporta copia leggibile (JSON)</button><button class="btn" data-act="import">Ripristina da JSON</button>${S.demo ? '<button class="btn pri" data-act="fresh">Inizia con i miei dati</button>' : '<button class="btn" data-act="demo">Carica dati di esempio</button>'}</div>`;
   const session = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn" data-act="lock">🔒 Blocca ora</button><button class="btn" data-act="logout">Esci da questo dispositivo</button><button class="btn danger" data-act="reset">Cancella tutti i dati</button></div>`;
   return `<div class="card"><h3>Dati e sicurezza</h3><div class="hint" style="margin:4px 0 12px;line-height:1.55">🔒 I dati sono cifrati sul dispositivo con la tua password prima di arrivare al server. Il server tiene la cronologia delle ultime 200 versioni e un backup cifrato al giorno.</div>
-    ${theme}${autoLock}${offline}${bio}${masked}${backup}${session}</div>`;
+    ${language}${theme}${autoLock}${offline}${bio}${masked}${backup}${session}</div>`;
 }
 
 function templatesCard() {

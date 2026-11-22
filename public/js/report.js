@@ -131,8 +131,8 @@ const HEALTH_CHIP = {
 
 /** Formats an indicator value by its unit. */
 function healthValue(x) {
-  if (x.unit === 'pct') return (Math.round(x.value * 1000) / 10).toLocaleString('it-IT') + '%';
-  if (x.unit === 'months') return (Math.round(x.value * 10) / 10).toLocaleString('it-IT') + ' mesi';
+  if (x.unit === 'pct') return (Math.round(x.value * 1000) / 10).toLocaleString(LOCALE) + '%';
+  if (x.unit === 'months') return (Math.round(x.value * 10) / 10).toLocaleString(LOCALE) + ' mesi';
   if (x.unit === 'eurm') return eur0(x.value) + ' / mese';
   return (x.value > 0 ? '+' : '') + eur0(x.value);
 }
@@ -225,7 +225,7 @@ function repWealth(D) {
 function repMonths(P, D) {
   if (P.mode === 'month') {
     const sav = savingsBars(12, P.key);
-    return `<div class="card rep-sec"><div class="card-h"><div><h3>Risparmio mensile</h3><div class="hint">Ultimi 12 mesi fino a ${ymLabel(P.key).toLowerCase()}</div></div><div class="legend"><span><i style="background:var(--tx)"></i>Migliore</span><span><i style="background:var(--crit)"></i>Peggiore</span></div></div>${sav.svg}</div>`;
+    return `<div class="card rep-sec"><div class="card-h"><div><h3>Risparmio mensile</h3><div class="hint">Ultimi 12 mesi fino a ${monthInText(ymLabel(P.key))}</div></div><div class="legend"><span><i style="background:var(--tx)"></i>Migliore</span><span><i style="background:var(--crit)"></i>Peggiore</span></div></div>${sav.svg}</div>`;
   }
   const rows = D.tot
     .filter(x => x.inc > 0 || x.out > 0)

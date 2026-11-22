@@ -220,7 +220,7 @@ function insights() {
     const rate = (p.inc - p.out) / p.inc;
     out.push({
       ic: rate >= 0.2 ? '💪' : '🎯',
-      t: `Tasso di risparmio di ${MESIL[+lastMonths(2)[0].slice(5) - 1].toLowerCase()}: ${Math.round(rate * 100)}%`,
+      t: `Tasso di risparmio di ${monthInText(MESIL[+lastMonths(2)[0].slice(5) - 1])}: ${Math.round(rate * 100)}%`,
       d: rate >= 0.2 ? 'Ottimo: sopra il 20%' : 'Obiettivo consigliato: almeno il 20% delle entrate',
       w: 10
     });
@@ -274,7 +274,7 @@ function vPat() {
                   .sort((x, y) => (x.d < y.d ? -1 : 1))[0];
               const loan = D.find(d => d.assetId === a.id);
               return `<div class="row" data-act="asset-edit" data-id="${a.id}"><div class="av">${AKIND[a.kind][0]}</div><div class="main"><div class="t1">${esc(a.name)} ${a.est ? `<span class="chip ${a.est.confidence === 'alta' ? 'c-good' : a.est.confidence === 'media' ? 'c-info' : 'c-warn'}">stima ${esc(a.est.confidence)}</span>` : '<span class="chip c-mut">manuale</span>'}</div>
-        <div class="t2">${a.est ? `forchetta ${eur0(a.est.low)}–${eur0(a.est.high)} · ${fmtTime(a.valueAt)}` : 'valore inserito a mano'}${a.kind === 'auto' && a.deprec ? ` · −${String(a.deprec).replace('.', ',')}%/anno` : ''}</div>
+        <div class="t2">${a.est ? `forchetta ${eur0(a.est.low)}–${eur0(a.est.high)} · ${fmtTime(a.valueAt)}` : 'valore inserito a mano'}${a.kind === 'auto' && a.deprec ? ` · −${String(a.deprec).replace('.', DEC)}%/anno` : ''}</div>
         ${dl ? `<div class="t2">${daysTo(dl.d) <= 30 ? '⏰ ' : ''}${esc(dl.l)}: ${dLabel(dl.d)}</div>` : ''}${loan ? `<div class="t2">Netto del debito: ${eur0(v - loanResidual(loan))}</div>` : ''}</div><div class="amt num">${eur0(v)}</div></div>`;
             }).join('')
           : '<div class="empty">Aggiungi la tua auto o la casa per avere il patrimonio completo</div>'
@@ -286,7 +286,7 @@ function vPat() {
               const res = loanResidual(d),
                 paid = d.principal ? 1 - res / d.principal : 0,
                 P = +d.payment || loanPayment(+d.principal, +d.rate, +d.months);
-              return `<div class="row" data-act="debt-edit" data-id="${d.id}"><div class="av">${DKIND[d.kind][0]}</div><div class="main"><div class="t1">${esc(d.name)}</div><div class="t2">Rata ${eur(P)} · ${String(d.rate).replace('.', ',')}% · fine ${dLabel(loanEnd(d))}</div><div class="bar" style="margin-top:6px"><i style="width:${Math.min(100, paid * 100)}%;background:var(--good)"></i></div><div class="t2">${Math.round(paid * 100)}% rimborsato · ${monthsPaid(d.start)}/${d.months} rate</div></div><div class="amt num down">${eur0(res)}</div></div>`;
+              return `<div class="row" data-act="debt-edit" data-id="${d.id}"><div class="av">${DKIND[d.kind][0]}</div><div class="main"><div class="t1">${esc(d.name)}</div><div class="t2">Rata ${eur(P)} · ${String(d.rate).replace('.', DEC)}% · fine ${dLabel(loanEnd(d))}</div><div class="bar" style="margin-top:6px"><i style="width:${Math.min(100, paid * 100)}%;background:var(--good)"></i></div><div class="t2">${Math.round(paid * 100)}% rimborsato · ${monthsPaid(d.start)}/${d.months} rate</div></div><div class="amt num down">${eur0(res)}</div></div>`;
             }).join('')
           : '<div class="empty">Nessun debito</div>'
       }</div></div>
@@ -330,7 +330,7 @@ function assetForm(a, kind) {
   kind = a ? a.kind : kind;
   a = a || { kind, name: '', value: '', details: {}, deadlines: {}, purchasePrice: '', purchaseDate: '' };
   lastEst = null;
-  const f = v => (v === '' || v == null ? '' : String(v).replace('.', ','));
+  const f = v => (v === '' || v == null ? '' : String(v).replace('.', DEC));
   const d = a.details || {},
     dl = a.deadlines || {};
   const fields = [
@@ -429,7 +429,7 @@ function assetForm(a, kind) {
 function estHTML(e, fresh) {
   return `<div class="bcard"><div class="k"><span>${fresh ? 'Nuova stima' : 'Ultima stima'} · ${fmtTime(e.at)}</span><span class="chip ${e.confidence === 'alta' ? 'c-good' : e.confidence === 'media' ? 'c-info' : 'c-warn'}">affidabilità ${esc(e.confidence)}</span></div>
    <div class="v num">${eur0(e.mid)} <small>forchetta ${eur0(e.low)} – ${eur0(e.high)}</small></div>
-   ${e.perMq ? `<div class="t2 hint">${eur0(e.perMq.low)} – ${eur0(e.perMq.high)} al m²</div>` : ''}${e.deprec ? `<div class="hint">Deprezzamento stimato: ${String(e.deprec).replace('.', ',')}% all'anno (applicato in automatico)</div>` : ''}
+   ${e.perMq ? `<div class="t2 hint">${eur0(e.perMq.low)} – ${eur0(e.perMq.high)} al m²</div>` : ''}${e.deprec ? `<div class="hint">Deprezzamento stimato: ${String(e.deprec).replace('.', DEC)}% all'anno (applicato in automatico)</div>` : ''}
    <p class="hint" style="line-height:1.5;margin-top:6px">${esc(e.basis)}</p>
    ${e.comparables && e.comparables.length ? `<div class="hint" style="margin-top:6px"><b style="color:var(--tx2)">Confronti</b>${e.comparables.map(c => `<div>· ${esc(c.desc)} — ${eur0(c.price)}</div>`).join('')}</div>` : ''}
    ${e.sources && e.sources.length ? `<div class="hint" style="margin-top:6px"><b style="color:var(--tx2)">Fonti consultate</b>${e.sources.map(s => `<div>· <a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer" style="color:#8fb0ff">${esc(s.title)}</a></div>`).join('')}</div>` : e.web === false ? '<div class="hint" style="margin-top:6px">Stima senza ricerca web: indicativa.</div>' : ''}
@@ -471,7 +471,7 @@ function debtForm(dbt) {
     payment: '',
     assetId: ''
   };
-  const f = v => (v === '' || v == null ? '' : String(v).replace('.', ','));
+  const f = v => (v === '' || v == null ? '' : String(v).replace('.', DEC));
   openForm(
     isNew ? 'Nuovo debito' : esc(dbt.name),
     [

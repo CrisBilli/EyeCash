@@ -3,6 +3,8 @@
 const CACHE = 'eyecash-shell-v4';
 const SHELL = [
   '/',
+  '/js/i18n.js',
+  '/js/i18n-en.js',
   '/js/core.js',
   '/js/ui.js',
   '/js/state.js',
