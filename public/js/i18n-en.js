@@ -21,6 +21,7 @@ I18N.en = {
   ': il server non la conosce.': ': the server does not know it.',
   ': le righe di compravendita diventano operazioni da sole.':
     ': buy and sell rows become trades on their own.',
+  '! Attenzione': '! Warning',
   '! Da migliorare': '! Needs work',
   '! Da verificare': '! To check',
   '! scade nel {0}': '! due on {0}',
@@ -118,10 +119,12 @@ I18N.en = {
   '% di quanto speso a': '% of what you spent',
   '↻ Prezzi storici': '↻ Price history',
   '↻ Ricategorizza i movimenti in “Altro”': '↻ Recategorise transactions in “Other”',
+  '⇪ Importa': '⇪ Import',
   '⇪ Importa estratto conto': '⇪ Import bank statement',
   '⇪ Importa operazioni': '⇪ Import trades',
   '＋ Aggiungi un altro portafoglio (altra banca o broker)':
     '＋ Add another portfolio (another bank or broker)',
+  '+ Bene': '+ Asset',
   '+ carta {0}': '+ card {0}',
   '+ Conto': '+ Account',
   '+ Entrate ricorrenti': '+ Recurring income',
@@ -138,10 +141,12 @@ I18N.en = {
   '⚠️ {0} prima di essere applicato. Tocca la posizione per controllarlo.':
     '⚠️ {0} before being applied. Tap the holding to check it.',
   '⚠️ Se perdi la password, i dati': '⚠️ If you lose the password, the data',
+  '✓ Bene': '✓ Good',
   '✓ Corrisponde, usa questo prezzo': '✓ It matches, use this price',
   '✓ In equilibrio': '✓ Balanced',
   '✓ In linea': '✓ On track',
   '✓ Sì, collega questo': '✓ Yes, link this one',
+  '✕ Attenzione': '✕ Warning',
   '✕ Prezzo non trovato': '✕ Price not found',
   '✕ scade il 31/12/{0}': '✕ expires on 31/12/{0}',
   '✦ Categorizza “Altro” con AI': '✦ Categorise “Other” with AI',
@@ -214,6 +219,7 @@ I18N.en = {
   'Allocazione obiettivo': 'Target allocation',
   'Allocazione obiettivo · {0}': 'Target allocation · {0}',
   'Allocazione vuota': 'Empty allocation',
+  alta: 'high',
   'Altre categorie': 'Other categories',
   'Altre entrate': 'Other income',
   Altro: 'Other',
@@ -247,6 +253,7 @@ I18N.en = {
   'Assicurazione auto': 'Car insurance',
   'assicurazione casa': 'home insurance',
   'Assicurazione casa': 'Home insurance',
+  Attenzione: 'Warning',
   'Attenzione: questa copia NON è cifrata. Conservala in un posto sicuro.':
     'Warning: this copy is NOT encrypted. Keep it somewhere safe.',
   Attiva: 'Enable',
@@ -276,6 +283,8 @@ I18N.en = {
   'Backup ripristinato': 'Backup restored',
   'Banda chiara: 80% degli scenari · banda scura: 50% · linea: scenario mediano':
     'Light band: 80% of scenarios · dark band: 50% · line: median scenario',
+  bassa: 'low',
+  Bene: 'Good',
   Beni: 'Assets',
   'Beni (casa, auto…)': 'Assets (home, car…)',
   'biglietti del cinema': 'cinema tickets',
@@ -379,6 +388,7 @@ I18N.en = {
   'Connessione tornata: inserisci la password per sincronizzare le modifiche fatte offline.':
     'Connection is back: enter the password to sync the changes made offline.',
   'consigliati 3–6 mesi di spese': '3–6 months of spending recommended',
+  'consigliato almeno 20%': 'at least 20% recommended',
   'consigliato sotto il 40%': 'recommended under 40%',
   'consigliato sotto il 50%': 'recommended under 50%',
   'Contando i pagamenti con "bar" o "caffè" nella descrizione.':
@@ -733,6 +743,7 @@ I18N.en = {
   Marzo: 'March',
   Massimo: 'Maximum',
   'matrice di correlazione non valida': 'invalid correlation matrix',
+  media: 'medium',
   Media: 'Average',
   'media {0}': 'average {0}',
   'Media / mese': 'Average / month',
@@ -858,6 +869,7 @@ I18N.en = {
   'Nuova operazione': 'New trade',
   'Nuova posizione': 'New holding',
   'Nuova stima': 'New estimate',
+  'Nuovo bene': 'New asset',
   'Nuovo bene ·': 'New asset ·',
   'Nuovo conto': 'New account',
   'Nuovo costo ricorrente': 'New recurring cost',
@@ -886,7 +898,9 @@ I18N.en = {
   'Ogni portafoglio ha le sue posizioni e la sua allocazione obiettivo. Quando importi il file di un broker scegli in quale portafoglio metterlo.':
     'Each portfolio has its own holdings and target allocation. When you import a broker file you choose which portfolio to put it in.',
   'Ogni quadratino è un giorno · più scuro = più speso': 'Each square is a day · darker = more spent',
+  'oltre {0}': 'over {0}',
   'Oltre di': 'Over by',
+  'Oltre di {0}': 'Over by {0}',
   Operazione: 'Trade',
   'Operazione eliminata': 'Trade deleted',
   'Operazione salvata': 'Trade saved',
@@ -1159,6 +1173,7 @@ I18N.en = {
   'stessa borsa e valuta': 'same exchange and currency',
   'Stile di vita': 'Lifestyle',
   Stima: 'Estimate',
+  'stima {0}': '{0} estimate',
   'Stima AI spenta in Impostazioni → Privacy.': 'AI estimate turned off in Settings → Privacy.',
   'stima dal modello, deprezzamento, bollo e revisione':
     'estimate from the model, depreciation, car tax and inspection',
@@ -1238,6 +1253,7 @@ I18N.en = {
   'Ultimi movimenti': 'Latest transactions',
   'Ultimo prezzo {0}': 'Last price {0}',
   'Ultimo salvataggio': 'Last saved',
+  'Ultimo salvataggio {0}': 'Last saved {0}',
   'un ETF globale è già diversificato; un’azione singola no':
     'a global ETF is already diversified; a single stock is not',
   'Usa {0} come valore': 'Use {0} as the value',
@@ -1290,6 +1306,7 @@ I18N.en = {
   'Volatilità inflazione (%)': 'Inflation volatility (%)',
   Volte: 'Times',
   'Volte / mese': 'Times / month',
+  'vs media': 'vs average',
   'Zainetto fiscale': 'Loss carry-forward',
   'zainetto non utilizzabile': 'carry-forward not usable',
   'Zona o quartiere (no indirizzo)': 'Area or neighbourhood (no address)'

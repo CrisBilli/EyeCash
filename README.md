@@ -47,7 +47,7 @@ EyeCash turns that around:
 
 ## Features
 
-<p align="center"><img src="docs/media/screens.png" alt="Home, new expense, Ask your data and investment history screens"></p>
+<p align="center"><img src="docs/media/screens-en.png" alt="Home, new expense, Ask your data and financial-health report screens"></p>
 
 **Everyday money**
 - Accounts (current, credit cards, savings, cash) with live balances.
@@ -72,7 +72,7 @@ EyeCash turns that around:
 - Add expenses from **Claude Desktop** or any MCP client. The MCP endpoint is *write-only*: it can add, never read.
 - **Zero runtime dependencies:** only Node.js built-ins and the browser.
 
-> The interface is in Italian for now. Translations are very welcome, see [CONTRIBUTING](CONTRIBUTING.md).
+> The interface is available in **English and Italian** (it follows the phone's language, and can be changed in Settings). More languages are welcome: see [CONTRIBUTING](CONTRIBUTING.md#translations).
 
 ## How your data is protected
 
@@ -178,7 +178,8 @@ There are about 95 server and engine tests (no dependencies), about 230 end-to-e
 - [x] Financial-health report with the sustainable extra monthly payment
 - [ ] **"Can I afford it?" planner**: mortgage, car, big purchases, simulated against your real income, spending and savings
 - [ ] Family mode: separate encrypted accounts on the same server, with optional shared spaces
-- [ ] English interface and in-app language switch (next)
+- [x] English and Italian interface with an in-app language switch
+- [ ] More languages
 - [ ] Import presets for more banks
 - [ ] Optional native wrapper (widgets, notifications)
 

@@ -139,6 +139,9 @@ docker compose exec eyecash node server.js quote BTC Crypto
 Nell'app: **Investimenti → 🔎 Cerca titolo** (meglio con l'ISIN). Scegli il listino con la stessa borsa e valuta del tuo broker e conferma il prezzo.
 Obbligazioni e BTP spesso non hanno una quotazione pubblica affidabile: lasciali con il prezzo inserito a mano.
 
+## 9a. Lingua
+L'app si apre nella lingua del telefono: italiano o inglese. Per cambiarla vai in *Impostazioni → Dati e sicurezza → 🌐 Lingua*. Vale per quel dispositivo e i dati non cambiano: per esempio una spesa in "Ristoranti" appare come "Restaurants" in inglese.
+
 ## 9b. Privacy sul telefono
 In *Impostazioni → Dati e sicurezza*:
 - **Blocco automatico:** dopo quanto tempo fuori dall'app serve di nuovo la password (o Face ID). Si sceglie per ogni dispositivo.

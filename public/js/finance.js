@@ -220,7 +220,7 @@ function insights() {
     const rate = (p.inc - p.out) / p.inc;
     out.push({
       ic: rate >= 0.2 ? '💪' : '🎯',
-      t: `Tasso di risparmio di ${MESIL[+lastMonths(2)[0].slice(5) - 1].toLowerCase()}: ${Math.round(rate * 100)}%`,
+      t: `Tasso di risparmio di ${monthInText(MESIL[+lastMonths(2)[0].slice(5) - 1])}: ${Math.round(rate * 100)}%`,
       d: rate >= 0.2 ? 'Ottimo: sopra il 20%' : 'Obiettivo consigliato: almeno il 20% delle entrate',
       w: 10
     });

@@ -41,7 +41,7 @@ function vHome() {
   const dOut = daily(k, -1),
     dT = +today().slice(8) - 1;
   const sav = savingsBars(12);
-  const pm = MESIL[+prev.slice(5) - 1].toLowerCase();
+  const pm = monthInText(MESIL[+prev.slice(5) - 1]);
   const cnt = {};
   for (const t of S.tx)
     if (ym(t.date) === k && t.amount < 0 && !isNeutral(t.cat)) cnt[t.cat] = (cnt[t.cat] || 0) + 1;

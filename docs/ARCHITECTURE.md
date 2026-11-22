@@ -99,6 +99,8 @@ Plain scripts loaded in this order by `index.html`. They share the global scope,
 | File | Responsibility |
 |---|---|
 | `engine.js` | Pure calculations shared with the server and unit-tested: trade book (weighted average cost), XIRR, history series, trade matching, the "Ask your data" query language, financial-health indicators |
+| `js/i18n.js` | Language, locale-aware formats, translator (`t()` and the page observer) |
+| `js/i18n-en.js` | English dictionary |
 | `js/core.js` | Formatting, dates, ids, category lists |
 | `js/ui.js` | Theme, icons, navigation, SVG chart helpers |
 | `js/state.js` | The state `S`, empty and demo states, recurring items |
@@ -142,6 +144,10 @@ Plain scripts loaded in this order by `index.html`. They share the global scope,
 | `api.js` | REST API routes |
 
 The database file is still called `pointofcash.db`, and the CSRF header `X-PointofCash`, after the project's original name. They are internal and kept for compatibility with existing installations.
+
+## Languages
+
+The interface is written in Italian and translated at display time. `public/js/i18n.js` picks the language (saved preference, else the phone's language) and sets the locale for currency, numbers and month names. When English is active, a `MutationObserver` translates every text node and user-facing attribute added to the page using `public/js/i18n-en.js` (Italian → English, with `{placeholders}` for dynamic texts and generic separators such as `{0} · {1}`). Stored values, for example category names, never change, so data is the same in both languages and switching is instant and safe. Code that composes sentences uses `t()` with named placeholders. Answers of "Ask your data" are written by the AI directly in the chosen language.
 
 ## Tests
 

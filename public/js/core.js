@@ -56,6 +56,8 @@ const MESIL =
         'Dicembre'
       ]
     : monthNames('long');
+/** Month name as used inside a sentence: lowercase in Italian, capitalised in English. */
+const monthInText = name => (LANG === 'it' ? name.toLowerCase() : name);
 const ymLabel = k => {
   const [y, m] = k.split('-');
   return MESIL[+m - 1] + ' ' + y;
