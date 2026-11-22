@@ -235,6 +235,10 @@ function startMockAI() {
           else if (/parametri di un acquisto/.test(u))
             out =
               'Ecco: {"kind":"mortgage","label":"Casa <b>a Torino","price":"260000","downPayment":40000,"extraCosts":null,"ratePct":95,"years":25,"payCash":null,"income":3000}';
+          else if (/RICETTA/.test(u))
+            out = /«[^»]*meteo[^»]*»/.test(u)
+              ? '{"events":[],"checks":[],"clarify":"Posso aiutarti solo con domande sui tuoi soldi."}'
+              : 'Ecco: {"title":"PC","events":[{"label":"Spesa","amount":15000,"month":1},{"label":"PC <b>","amount":3000,"month":12}],"target":1,"checks":[{"expr":"cash_after_target >= emergency_target","soft":true,"ok":"Ok","ko":"Sotto il fondo"},{"expr":"process.exit()","ok":"x","ko":"y"}],"answer":{"yes":"Sì","careful":"Sì, ma","no":"No"},"show":["best_month","saldo_segreto"],"income":2600}';
           else if (/Categorizza/.test(u))
             out = '[{"i":0,"cat":"Shopping"},{"i":1,"cat":"NonEsiste"},{"i":"x","cat":"Spesa"}]';
           else if (/Stima il valore|Stima /.test(u) && /valore_min/.test(u))
@@ -850,6 +854,37 @@ test('AI "posso permettermelo?": solo la frase esce, parametri ripuliti', async 
     400
   );
   assert.equal((await req('POST', '/api/ai/afford', { body: { question: 'x' } })).status, 401);
+});
+test('AI consulente: esce solo la domanda, la ricetta torna ripulita', async () => {
+  aiLog = [];
+  const r = await req('POST', '/api/ai/advise', {
+    cookie: COOKIE,
+    body: {
+      question:
+        'tra un mese spendo 15000, il prossimo anno PC da 3000: conviene? IBAN IT60X0542811101000000123456',
+      lang: 'it',
+      previous: {
+        question: 'come sto messo?',
+        recipe: { events: [{ amount: 100, month: 2 }], checks: [{ expr: 'cash > 0' }], saldo: 99999 }
+      },
+      cash: 12345
+    }
+  });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  const sent = aiLog.join('\n');
+  assert.ok(sent.includes('il prossimo anno PC da 3000'));
+  assert.ok(sent.includes('Domanda precedente: «come sto messo?»'));
+  assert.ok(!sent.includes('IT60X0542811101000000123456'));
+  assert.ok(!sent.includes('12345') && !sent.includes('99999'), "nessun numero dell'utente");
+  assert.equal(r.json.events.length, 2);
+  assert.equal(r.json.events[1].label, 'PC b');
+  assert.equal(r.json.checks.length, 1, 'regola non valida scartata');
+  assert.deepEqual(r.json.show, ['best_month']);
+  assert.ok(!('income' in r.json));
+  const c = await req('POST', '/api/ai/advise', { cookie: COOKIE, body: { question: 'che meteo fa?' } });
+  assert.equal(c.status, 200);
+  assert.match(c.json.clarify, /soldi/);
+  assert.equal((await req('POST', '/api/ai/advise', { body: { question: 'x' } })).status, 401);
 });
 test('service worker servito come script, senza cache', async () => {
   const r = await req('GET', '/sw.js');

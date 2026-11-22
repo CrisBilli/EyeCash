@@ -60,6 +60,7 @@ Cosa fa l'AI (ogni voce si accende o spegne in *Impostazioni → Privacy*):
 |---|---|
 | Inserimento rapido | solo la frase che scrivi o detti |
 | Chiedi ai tuoi dati | la domanda, i nomi delle categorie e il tipo dei conti: i numeri li calcola il telefono |
+| Consulente: "conviene…?", "posso…?" (stesso interruttore) | la domanda, e per le domande di seguito quella precedente con la sua ricetta: l'AI restituisce eventi e regole, i numeri li calcola il telefono |
 | Posso permettermelo? (stesso interruttore) | solo la frase: l'AI ne ricava prezzo, anticipo, tasso e durata; entrate, spese e saldi restano sul telefono |
 | Categorizzazione | descrizione e importo dei soli movimenti nuovi senza categoria |
 | Formato banca nuovo | intestazioni e al massimo 12 righe, con le cifre degli importi mascherate; una volta per banca, poi il formato viene memorizzato |
@@ -85,6 +86,14 @@ Tutti i dettagli sono in [IMPORT.md](IMPORT.md) (in inglese).
 - la composizione del patrimonio, le spese per categoria confrontate con la media e, nella versione completa, tutti i movimenti.
 
 Con **Solo sintesi** esercenti e singoli movimenti spariscono: è la versione da mandare a un consulente. Gli indicatori sono riferimenti orientativi, non una consulenza.
+
+## 5b-bis. Chiedere un parere
+In *Chiedi ai tuoi dati* puoi fare domande come *"tra un mese spendo 15.000 €, il prossimo anno vorrei un PC da 3.000: conviene?"*. Ottieni:
+- un verdetto (sì / sì, ma / no) con i motivi;
+- i numeri principali e il grafico della liquidità mese per mese;
+- in *Come è stato calcolato*, gli eventi e le regole usati.
+
+Puoi continuare con *"e se lo prendo a rate?"*. Con un modello locale servono modelli da 7–8B per risposte affidabili.
 
 ## 5c. Posso permettermelo?
 *Menu → Posso permettermelo?* (su iPhone in *Altro*), oppure il pulsante *Simula un acquisto* nel report. Puoi anche scrivere la domanda in *Chiedi ai tuoi dati*.

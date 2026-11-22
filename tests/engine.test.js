@@ -800,3 +800,84 @@ test('posso permettermelo: importo del mutuo e durata senza "anni"', () => {
   assert.equal(E.parseAffordText('auto a 20.000 euro').price, 20000);
   assert.deepEqual(E.parseAffordText('che mutuo posso permettermi?'), { kind: 'mortgage' });
 });
+/* ---------- consulente ---------- */
+const PC = {
+  title: 'PC',
+  events: [
+    { label: 'Spesa', amount: 15000, month: 1 },
+    { label: 'PC', amount: 3000, month: 1 }
+  ],
+  target: 1,
+  checks: [
+    {
+      expr: 'cash_after_target >= emergency_target',
+      soft: true,
+      ok: 'ok',
+      ko: 'scendi a {cash_after_target}'
+    },
+    { expr: 'cash_min >= 0', ok: 'mai in rosso', ko: 'in rosso a {first_negative_month}' }
+  ],
+  answer: { yes: 'Sì', careful: 'Sì, da {best_month}', no: 'No' },
+  show: ['best_month', 'cash_min', 'constructor']
+};
+const BASE = { income: 2600, spending: 1700, cash: 18000, investments: 30000, emergencyMonths: 6 };
+test('consulente: simulazione mese per mese, regole e mese migliore', () => {
+  const r = E.sanitizeAdvice(PC);
+  assert.deepEqual(r.show, ['best_month', 'cash_min']);
+  const x = E.runAdvice(r, BASE);
+  assert.equal(x.vars.cash_after_target, 18000 + 900 - 18000);
+  assert.equal(x.vars.emergency_target, 10200);
+  assert.equal(x.verdict, 'careful');
+  // month 12: 18000 + 12·900 − 18000 = 10800 ≥ 10200, month 11: 9900 < 10200
+  assert.equal(x.vars.best_month, 12);
+  const fmt = (t, v) => (v === null ? '—' : t + ':' + Math.round(v));
+  assert.equal(E.renderAdvice(r.answer.careful, x.vars, fmt), 'Sì, da month:12');
+  assert.equal(
+    E.renderAdvice('{cat:Ristoranti} {nonesiste}', x.vars, fmt, { Ristoranti: 210 }),
+    'eur:210 {nonesiste}'
+  );
+  const poor = E.runAdvice(r, { ...BASE, cash: 5000 });
+  assert.equal(poor.verdict, 'no');
+  assert.equal(poor.vars.first_negative_month, 1);
+});
+test('consulente: rate, spese mensili ed entrate future', () => {
+  const r = E.sanitizeAdvice({
+    events: [
+      { label: 'Auto', amount: 20000, month: 2, financed: { months: 48, ratePct: 6, down: 4000 } },
+      { label: 'Palestra', amount: 50, month: 0, type: 'monthly', months: 12 },
+      { label: 'Bonus', amount: -2000, month: 3 }
+    ],
+    target: 0,
+    checks: [{ expr: 'dti_after <= 0.33', ok: 'ok', ko: 'troppe rate' }]
+  });
+  const x = E.runAdvice(r, BASE);
+  near(x.vars.target_payment, E.loanPayment(16000, 6, 48), 0.01);
+  near(x.vars.cash_after_target, 18000 + 2 * 900 - 4000 - 3 * 50, 0.01);
+  near(x.path[3], 18000 + 3 * 900 - 4000 - E.loanPayment(16000, 6, 48) - 4 * 50 + 2000, 0.01);
+  assert.equal(x.verdict, 'yes');
+});
+test('consulente: espressioni sicure', () => {
+  for (const bad of [
+    'constructor',
+    '__proto__ > 1',
+    'toString()',
+    'process.exit()',
+    'cash >= 1 or',
+    'cash; 1'
+  ])
+    assert.throws(() => E.parseExpr(bad), bad);
+  const V = { cash: 100, dti: null };
+  assert.equal(E.evalExpr(E.parseExpr('cash >= 50 and not (cash > 200)'), V), true);
+  assert.equal(E.evalExpr(E.parseExpr('dti < 0.3'), V), false, 'confronto con null è falso');
+  assert.equal(E.evalExpr(E.parseExpr('known(dti)'), V), false);
+  assert.equal(E.evalExpr(E.parseExpr('max(cash, 2) * 2 - -1'), V), 201);
+  assert.equal(E.evalExpr(E.parseExpr('cat("Spesa") > 300'), V, { Spesa: 400 }), true);
+  const s = E.sanitizeAdvice({
+    events: [{ amount: 1e12, month: 99 }],
+    checks: [{ expr: 'hack()', ok: 'x' }]
+  });
+  assert.equal(s.events[0].amount, 1e8);
+  assert.equal(s.events[0].month, 60);
+  assert.equal(s.checks.length, 0, 'regola non valida scartata');
+  assert.equal(E.sanitizeAdvice({ events: [], checks: [] }), null);
+});

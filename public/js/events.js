@@ -58,10 +58,11 @@ const ACTIONS = {
     askCur = { q: x[0], spec: x[1], ai: false };
     renderView();
   },
+  'adv-planner': () => askCur && affordAsk(askCur.q),
   'ask-hist': ({ el }) => {
     const h = (S.askHist || []).find(x => x.id === el.dataset.id);
     if (h) {
-      askCur = { q: h.q, spec: h.spec, ai: true };
+      askCur = h.advice ? { q: h.q, advice: h.advice, ai: true } : { q: h.q, spec: h.spec, ai: true };
       renderView();
     }
   },

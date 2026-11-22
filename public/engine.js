@@ -1479,6 +1479,373 @@
     return sanitizeAfford(out);
   }
 
+  /* ---------- the advisor: any question, without sending a single number ----------
+     The AI turns a question into an "advice recipe": the future events to simulate
+     (amounts and dates taken from the sentence) and the rules to check, written with
+     the variables below. The device computes the variables on the real data, runs a
+     month-by-month cash simulation, checks the rules and fills in the answer. */
+
+  /** Variables the recipe can use: name → [type, meaning]. Types: eur, pct, months, month, num. */
+  const ADV_VARS = {
+    income: ['eur', 'entrate medie al mese (ultimi 12 mesi)'],
+    spending: ['eur', 'spese medie al mese (ultimi 12 mesi)'],
+    saving: ['eur', 'risparmio medio al mese (entrate − spese)'],
+    saving_rate: ['pct', 'tasso di risparmio'],
+    cash: ['eur', 'liquidità oggi sui conti'],
+    investments: ['eur', 'valore degli investimenti oggi'],
+    invested_gain: ['eur', 'guadagno latente sugli investimenti'],
+    liquid: ['eur', 'liquidità + investimenti'],
+    net_worth: ['eur', 'patrimonio netto (liquidità + investimenti + beni − debiti)'],
+    assets: ['eur', 'valore dei beni (casa, auto…)'],
+    debt_residual: ['eur', 'debiti residui (mutui, prestiti)'],
+    debt_payments: ['eur', 'rate mensili in corso'],
+    card_debt: ['eur', 'carte di credito ancora da addebitare'],
+    fixed_costs: ['eur', 'costi fissi ricorrenti al mese'],
+    dti: ['pct', 'rate in corso sul reddito'],
+    emergency_months_setting: ['months', 'mesi di fondo emergenza consigliati'],
+    emergency_target: ['eur', 'fondo emergenza consigliato (mesi × spese)'],
+    emergency_months: ['months', 'mesi di spese coperti dalla liquidità di oggi'],
+    goals_missing: ['eur', 'quanto manca agli obiettivi di risparmio'],
+    events_total: ['eur', 'totale delle spese future della domanda'],
+    horizon: ['months', 'mesi simulati'],
+    cash_min: ['eur', 'liquidità minima nel periodo, con gli eventi'],
+    cash_min_month: ['month', 'mese della liquidità minima'],
+    cash_end: ['eur', 'liquidità alla fine del periodo, con gli eventi'],
+    first_negative_month: ['month', 'primo mese in rosso (null se mai)'],
+    below_emergency_months: ['months', 'mesi con liquidità sotto il fondo emergenza'],
+    target_amount: ['eur', 'importo della spesa su cui si chiede il parere'],
+    target_month: ['month', 'mese previsto per quella spesa'],
+    target_payment: ['eur', 'rata o costo mensile di quella spesa (0 se pagata subito)'],
+    cash_before_target: ['eur', 'liquidità nel mese della spesa, senza farla'],
+    cash_after_target: ['eur', 'liquidità nel mese della spesa, dopo averla fatta'],
+    dti_after: ['pct', 'rate sul reddito dopo la spesa'],
+    saving_after: ['eur', 'risparmio mensile dopo la spesa'],
+    best_month: ['month', 'primo mese in cui la spesa non porta mai sotto il fondo emergenza (null se mai)'],
+    months_to_afford: ['months', 'mesi da oggi a best_month (null se mai)']
+  };
+  const ADV_FUNCS = { min: Math.min, max: Math.max, abs: Math.abs, round: Math.round };
+  const hasOwn = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+
+  /** Tokenises and parses a small expression language: numbers, variables, + − × ÷, comparisons, and/or/not, min/max/abs/round, cat("Categoria"). */
+  function parseExpr(src) {
+    const s = String(src || '');
+    if (s.length > 240) throw new Error('espressione troppo lunga');
+    const toks = [];
+    const re = /\s*(\d+(?:\.\d+)?|[a-z_][a-z0-9_]*|"[^"]{0,40}"|<=|>=|==|!=|&&|\|\||[-+*/()<>,!])/giy;
+    let m,
+      at = 0;
+    while (at < s.length) {
+      re.lastIndex = at;
+      if (!(m = re.exec(s))) {
+        if (/^\s*$/.test(s.slice(at))) break;
+        throw new Error('simbolo non valido');
+      }
+      toks.push(m[1]);
+      at = re.lastIndex;
+    }
+    let i = 0;
+    const peek = () => toks[i],
+      eat = t => {
+        if (toks[i] !== t) throw new Error('atteso ' + t);
+        i++;
+      };
+    const WORD = { and: '&&', or: '||', not: '!' };
+    const norm = t => (t && WORD[t.toLowerCase()]) || t;
+    function primary() {
+      const t = toks[i++];
+      if (t === undefined) throw new Error('espressione incompleta');
+      if (/^\d/.test(t)) return { n: +t };
+      if (t === '(') {
+        const e = or();
+        eat(')');
+        return e;
+      }
+      if (t === '-') return { op: 'neg', a: primary() };
+      if (norm(t) === '!') return { op: '!', a: unary() };
+      if (/^"/.test(t)) return { s: t.slice(1, -1) };
+      const id = t.toLowerCase();
+      if (id === 'null') return { n: null };
+      if (peek() === '(') {
+        i++;
+        const args = [];
+        if (peek() !== ')')
+          do args.push(or());
+          while (peek() === ',' && ++i);
+        eat(')');
+        if (!hasOwn(ADV_FUNCS, id) && id !== 'cat' && id !== 'known')
+          throw new Error('funzione sconosciuta: ' + id);
+        return { f: id, args };
+      }
+      if (!hasOwn(ADV_VARS, id)) throw new Error('variabile sconosciuta: ' + id);
+      return { v: id };
+    }
+    function unary() {
+      return primary();
+    }
+    const bin = (next, ops) =>
+      function () {
+        let a = next();
+        while (ops.includes(norm(peek()))) {
+          const op = norm(toks[i++]);
+          a = { op, a, b: next() };
+        }
+        return a;
+      };
+    const mul = bin(unary, ['*', '/']);
+    const add = bin(mul, ['+', '-']);
+    const cmp = bin(add, ['<', '<=', '>', '>=', '==', '!=']);
+    const and = bin(cmp, ['&&']);
+    const or = bin(and, ['||']);
+    const tree = or();
+    if (i < toks.length) throw new Error('testo in più: ' + toks[i]);
+    return tree;
+  }
+  /** Evaluates a parsed expression; null (unknown) propagates through arithmetic, and comparisons with null are false. */
+  function evalExpr(e, V, cats) {
+    if ('n' in e) return e.n;
+    if ('s' in e) return e.s;
+    if (e.v) return hasOwn(V, e.v) && V[e.v] !== undefined ? V[e.v] : null;
+    if (e.f) {
+      const a = e.args.map(x => evalExpr(x, V, cats));
+      if (e.f === 'cat') return (cats && hasOwn(cats, String(a[0])) && +cats[String(a[0])]) || 0;
+      if (e.f === 'known') return a[0] !== null && a[0] !== undefined && isFinite(a[0]);
+      if (a.some(x => x === null || typeof x !== 'number')) return null;
+      return ADV_FUNCS[e.f](...a);
+    }
+    const a = evalExpr(e.a, V, cats);
+    if (e.op === 'neg') return a === null ? null : -a;
+    if (e.op === '!') return !a;
+    if (e.op === '&&') return !!a && !!evalExpr(e.b, V, cats);
+    if (e.op === '||') return !!a || !!evalExpr(e.b, V, cats);
+    const b = evalExpr(e.b, V, cats);
+    if (a === null || b === null)
+      return ['+', '-', '*', '/'].includes(e.op) ? null : e.op === '!=' ? a !== b : false;
+    switch (e.op) {
+      case '+':
+        return a + b;
+      case '-':
+        return a - b;
+      case '*':
+        return a * b;
+      case '/':
+        return b ? a / b : null;
+      case '<':
+        return a < b;
+      case '<=':
+        return a <= b;
+      case '>':
+        return a > b;
+      case '>=':
+        return a >= b;
+      case '==':
+        return a === b;
+      case '!=':
+        return a !== b;
+    }
+    return null;
+  }
+  const advText = (x, max) =>
+    String(x || '')
+      .replace(/[<>]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, max);
+  const advNum = (x, min, max, def) => {
+    const n = +x;
+    return x === null || x === undefined || x === '' || !isFinite(n) ? def : Math.min(max, Math.max(min, n));
+  };
+  /** Keeps only a valid recipe: known variables, parseable rules, events within sensible ranges. */
+  function sanitizeAdvice(o) {
+    if (!o || typeof o !== 'object') return null;
+    const out = { title: advText(o.title, 80), clarify: advText(o.clarify, 300) };
+    out.events = (Array.isArray(o.events) ? o.events : []).slice(0, 8).map(e => {
+      const ev = {
+        label: advText(e && e.label, 40) || 'Spesa',
+        amount: Math.round(advNum(e && e.amount, -1e7, 1e8, 0)),
+        month: Math.round(advNum(e && e.month, 0, 60, 0)),
+        type: e && e.type === 'monthly' ? 'monthly' : 'once'
+      };
+      if (ev.type === 'monthly') ev.months = Math.round(advNum(e.months, 1, 360, 12));
+      const f = e && e.financed;
+      if (f && typeof f === 'object' && ev.type === 'once' && ev.amount > 0)
+        ev.financed = {
+          months: Math.round(advNum(f.months, 1, 360, 12)),
+          ratePct: advNum(f.ratePct, 0, 30, 0),
+          down: Math.round(advNum(f.down, 0, ev.amount, 0))
+        };
+      return ev;
+    });
+    const t = Math.round(advNum(o.target, -1, out.events.length - 1, -1));
+    out.target = out.events.length ? (t >= 0 ? t : out.events.length - 1) : -1;
+    if (o.target === null || o.target === -1) out.target = out.events.length ? out.target : -1;
+    out.checks = [];
+    for (const c of (Array.isArray(o.checks) ? o.checks : []).slice(0, 8)) {
+      if (!c || typeof c !== 'object') continue;
+      try {
+        parseExpr(c.expr);
+      } catch (e) {
+        continue;
+      }
+      out.checks.push({
+        expr: String(c.expr).replace(/\s+/g, ' ').trim().slice(0, 240),
+        ok: advText(c.ok, 220),
+        ko: advText(c.ko, 220),
+        soft: !!c.soft
+      });
+    }
+    const A = o.answer && typeof o.answer === 'object' ? o.answer : {};
+    out.answer = { yes: advText(A.yes, 200), careful: advText(A.careful, 200), no: advText(A.no, 200) };
+    out.show = (Array.isArray(o.show) ? o.show : [])
+      .map(v => String(v || '').toLowerCase())
+      .filter(v => hasOwn(ADV_VARS, v))
+      .slice(0, 6);
+    out.emergencyMonths = Math.round(advNum(o.emergencyMonths, 0, 24, 0)) || null;
+    if (!out.events.length && !out.checks.length && !out.clarify) return null;
+    return out;
+  }
+
+  /** Cash month by month (m = 0 is this month) with the given events applied. */
+  function advPath(base, events, H) {
+    const path = [];
+    for (let m = 0; m <= H; m++) {
+      let out = 0;
+      for (const e of events) {
+        if (e.type === 'monthly') {
+          if (m >= e.month) out += e.amount * Math.min(m - e.month + 1, e.months);
+        } else if (e.financed) {
+          const f = e.financed,
+            pay = loanPayment(e.amount - f.down, f.ratePct, f.months);
+          if (m >= e.month) out += f.down + pay * Math.min(m - e.month, f.months);
+        } else if (m >= e.month) out += e.amount;
+      }
+      path.push(base.cash + base.saving * m - out);
+    }
+    return path;
+  }
+  const evMonthly = e =>
+    e.type === 'monthly'
+      ? e.amount
+      : e.financed
+        ? loanPayment(e.amount - e.financed.down, e.financed.ratePct, e.financed.months)
+        : 0;
+
+  /** Computes every variable, the cash path and the rules of a recipe on the real numbers. */
+  function runAdvice(recipe, base) {
+    const R = recipe;
+    const income = Math.max(0, +base.income || 0),
+      spending = Math.max(0, +base.spending || 0);
+    const emMonths = R.emergencyMonths || base.emergencyMonths || 6;
+    const b = { cash: +base.cash || 0, saving: income - spending };
+    const ev = R.events || [];
+    const lastEv = ev.reduce(
+      (m, e) => Math.max(m, e.month + (e.type === 'monthly' ? Math.min(e.months, 24) : 0)),
+      0
+    );
+    const H = Math.min(60, Math.max(12, lastEv + 12));
+    const path = advPath(b, ev, H);
+    const em = emMonths * spending;
+    const V = {
+      income,
+      spending,
+      saving: b.saving,
+      saving_rate: income ? b.saving / income : 0,
+      cash: b.cash,
+      investments: +base.investments || 0,
+      invested_gain: (+base.investments || 0) - (+base.invCost || 0),
+      liquid: b.cash + (+base.investments || 0),
+      net_worth:
+        b.cash +
+        (+base.investments || 0) +
+        (+base.assets || 0) -
+        (+base.debtResidual || 0) -
+        (+base.cardDebt || 0),
+      assets: +base.assets || 0,
+      debt_residual: +base.debtResidual || 0,
+      debt_payments: +base.debtPayments || 0,
+      card_debt: +base.cardDebt || 0,
+      fixed_costs: +base.fixedCosts || 0,
+      dti: income ? (+base.debtPayments || 0) / income : 0,
+      emergency_months_setting: emMonths,
+      emergency_target: em,
+      emergency_months: spending ? b.cash / spending : null,
+      goals_missing: +base.goalsMissing || 0,
+      events_total: ev.reduce((s, e) => s + (e.type === 'monthly' ? e.amount * e.months : e.amount), 0),
+      horizon: H
+    };
+    let mn = 0;
+    path.forEach((v, m) => (v < path[mn] ? (mn = m) : 0));
+    V.cash_min = path[mn];
+    V.cash_min_month = mn;
+    V.cash_end = path[H];
+    const neg = path.findIndex(v => v < 0);
+    V.first_negative_month = neg < 0 ? null : neg;
+    V.below_emergency_months = path.filter(v => v < em).length;
+    const T = R.target >= 0 ? ev[R.target] : null;
+    if (T) {
+      const others = ev.filter(e => e !== T);
+      const without = advPath(b, others, H);
+      V.target_amount = T.amount;
+      V.target_month = T.month;
+      V.target_payment = evMonthly(T);
+      V.cash_before_target = without[T.month];
+      V.cash_after_target = path[T.month];
+      V.dti_after = income ? (V.debt_payments + V.target_payment) / income : null;
+      V.saving_after = b.saving - V.target_payment;
+      V.best_month = null;
+      for (let s = T.month; s <= H; s++) {
+        const p = advPath(b, [...others, { ...T, month: s }], H);
+        if (p.slice(s).every(v => v >= em)) {
+          V.best_month = s;
+          break;
+        }
+      }
+      V.months_to_afford = V.best_month;
+    }
+    const cats = base.cats || {};
+    let checks = R.checks || [];
+    if (!checks.length && ev.length)
+      checks = [
+        {
+          expr: 'cash_min >= 0',
+          ko: 'La liquidità andrebbe in rosso a {first_negative_month}.',
+          ok: 'La liquidità non va mai in rosso.'
+        },
+        {
+          expr: 'cash_min >= emergency_target',
+          soft: true,
+          ko: 'A {cash_min_month} scenderesti a {cash_min}, sotto il fondo emergenza di {emergency_target}.',
+          ok: 'Resti sempre sopra il fondo emergenza di {emergency_target}.'
+        }
+      ];
+    const res = checks.map(c => {
+      let ok = null;
+      try {
+        ok = !!evalExpr(parseExpr(c.expr), V, cats);
+      } catch (e) {
+        ok = null;
+      }
+      return { ...c, ok, text: ok === null ? '' : ok ? c.ok : c.ko };
+    });
+    const valid = res.filter(c => c.ok !== null);
+    const verdict = !valid.length
+      ? null
+      : valid.some(c => !c.ok && !c.soft)
+        ? 'no'
+        : valid.some(c => !c.ok)
+          ? 'careful'
+          : 'yes';
+    return { vars: V, path, checks: res, verdict, cats };
+  }
+  /** Fills {variable} and {cat:Name} placeholders with formatted values. */
+  function renderAdvice(text, V, fmt, cats) {
+    return String(text || '').replace(/\{(cat:)?([^{}]{1,40})\}/g, (all, c, k) => {
+      if (c) return fmt('eur', (cats && hasOwn(cats, k) && +cats[k]) || 0);
+      const key = k.toLowerCase().trim();
+      if (!hasOwn(ADV_VARS, key)) return all;
+      return fmt(ADV_VARS[key][0], V[key]);
+    });
+  }
+
   const API = {
     CLASSES,
     CK,
@@ -1517,6 +1884,12 @@
     affordability,
     sanitizeAfford,
     parseAffordText,
+    ADV_VARS,
+    parseExpr,
+    evalExpr,
+    sanitizeAdvice,
+    runAdvice,
+    renderAdvice,
     loanPayment,
     loanPrincipal,
     MEASURES,

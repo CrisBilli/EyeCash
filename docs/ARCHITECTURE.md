@@ -80,6 +80,13 @@ Every AI call goes through `server/ai.js`. Before anything is sent, `server/text
 
 The AI never sees a single number, so even a cloud model learns only that you asked "how much did I spend on restaurants this year?".
 
+**The advisor** extends this to opinions ("is it a good idea to buy…?"):
+1. The AI returns a recipe: future events taken from the sentence (amount, month, one-off, monthly or financed) and rules written in a tiny expression language over named variables (`cash_min >= emergency_target`, `dti_after <= 0.33`), with answer templates that use placeholders.
+2. `EN.sanitizeAdvice` keeps only known variables and parseable rules. `EN.parseExpr` is a small parser with no `eval`, and prototype names are rejected.
+3. On the device, `EN.runAdvice` computes the variables from the real data. It simulates cash month by month, finds the earliest safe month and checks the rules. `EN.renderAdvice` then fills in the answer.
+
+For a follow-up, the previous question and its recipe (no numbers) are sent along.
+
 **"Can I afford it?"** works the same way. The sentence goes to `/api/ai/afford`, which returns only the purchase parameters, checked by `EN.sanitizeAfford`. Without AI, `EN.parseAffordText` understands the common phrasings on the device. `EN.affordability` then runs the checks on the real numbers locally.
 
 **Local models** (Ollama, LM Studio, llama.cpp, vLLM) use the same OpenAI-compatible path; with `AI_PROVIDER=ollama|local` nothing leaves your network at all. See [AI.md](AI.md).
@@ -100,7 +107,7 @@ Plain scripts loaded in this order by `index.html`. They share the global scope,
 
 | File | Responsibility |
 |---|---|
-| `engine.js` | Pure calculations shared with the server and unit-tested: trade book (weighted average cost), XIRR, history series, trade matching, the "Ask your data" query language, financial-health indicators, the "Can I afford it?" calculation and question parser |
+| `engine.js` | Pure calculations shared with the server and unit-tested: trade book (weighted average cost), XIRR, history series, trade matching, the "Ask your data" query language, financial-health indicators, the "Can I afford it?" calculation and question parser, the advisor (expression language, month-by-month simulation) |
 | `js/i18n.js` | Language, locale-aware formats, translator (`t()` and the page observer) |
 | `js/i18n-en.js` | English dictionary |
 | `js/core.js` | Formatting, dates, ids, category lists |
@@ -118,6 +125,7 @@ Plain scripts loaded in this order by `index.html`. They share the global scope,
 | `js/settings.js` | Settings (built from small card functions), privacy switches, MCP setup |
 | `js/report.js` | Printable report: periods, financial-health indicators, net worth, categories, investments |
 | `js/ai.js` | Quick entry, MCP inbox, "Ask your data" |
+| `js/advisor.js` | The advisor: routing of opinion questions, the user's numbers for the recipe, verdict, reasons, cash chart |
 | `js/forms.js` | Bottom-sheet form engine and entity forms |
 | `js/import.js` | Bank statement and portfolio import, categorisation, dedupe |
 | `js/offline.js` | Offline copy and reconnection |

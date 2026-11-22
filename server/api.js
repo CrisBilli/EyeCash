@@ -211,13 +211,90 @@ Scrivi "title", "answer" e "clarify" in ${lang}. Regole: nessun numero nella ris
             "Traduci domande in interrogazioni strutturate. Rispondi solo con JSON valido. Non conosci i dati dell'utente.",
           messages: [{ role: 'user', content: prompt }],
           fast: false,
-          max_tokens: 1200
+          max_tokens: 1200,
+          json: true
         }),
         '{'
       );
       const spec = EN.sanitizeSpec(raw, { categories: CATS, accounts: accounts.map(a => a.alias) });
       if (!spec) throw new Error('Non ho capito la domanda: prova a riformularla');
       return json(res, 200, spec);
+    } catch (e) {
+      return json(res, 502, { error: e.message });
+    }
+  }
+  // The advisor: any question about one's money. The AI receives the question (and the
+  // previous question with its recipe, for follow-ups) and returns a recipe: future events
+  // taken from the sentence and rules written with named variables. No user number is sent.
+  if (p === '/api/ai/advise' && m === 'POST') {
+    const b = await readJSON(req, 12000);
+    const clean = x =>
+      anon(String(x || ''))
+        .replace(/[<>]/g, '')
+        .slice(0, 300)
+        .trim();
+    const q = clean(b.question);
+    if (!q) return json(res, 400, { error: 'Domanda vuota' });
+    const lang = b.lang === 'en' ? 'inglese' : 'italiano';
+    // a follow-up: the previous question and its recipe, re-checked so only known fields go out
+    const prevQ = b.previous ? clean(b.previous.question) : '';
+    const prevR = b.previous ? EN.sanitizeAdvice(b.previous.recipe) : null;
+    const prev =
+      prevQ && prevR
+        ? `\nDomanda precedente: «${prevQ}»\nRicetta precedente: ${JSON.stringify({ events: prevR.events, target: prevR.target, checks: prevR.checks.map(c => c.expr) })}\n`
+        : '';
+    const today = localDate();
+    const vars = Object.entries(EN.ADV_VARS)
+      .map(([k, [type, desc]]) => `- ${k} (${type}): ${desc}`)
+      .join('\n');
+    const prompt = `Sei un consulente finanziario prudente. Oggi è ${today}.
+NON conosci nessun numero dell'utente e non devi inventarli: i calcoli li fa il suo dispositivo sui dati reali.
+Il tuo compito è trasformare la domanda in una RICETTA: gli eventi futuri da simulare e le regole da verificare.
+
+Variabili calcolate dal dispositivo (tipo: eur, pct = frazione 0-1, months = numero di mesi, month = mese come numero di mesi da oggi):
+${vars}
+Funzione cat("Categoria") = spesa media mensile in quella categoria. Categorie: ${CATS.join(', ')}.
+Espressioni: numeri, variabili, + - * /, < <= > >= == !=, and, or, not, min(), max(), abs(), round(), known(x).
+
+Eventi: importi e date SOLO dalla domanda. "month" = mesi da oggi (0 = questo mese; "tra un mese" = 1; "il prossimo anno" = gennaio prossimo; "a marzo" = il prossimo marzo).
+amount positivo = spesa, negativo = entrata (es. bonus). type "monthly" = ogni mese per "months" mesi.
+"financed": {"months":n,"ratePct":tasso o 6 se non detto,"down":anticipo} se la spesa è a rate.
+target = indice dell'evento su cui si chiede il parere (null se nessuno).
+${prev}
+Domanda: «${q}»
+
+Rispondi SOLO con JSON:
+{"title":"titolo breve",
+ "events":[{"label":"…","amount":numero,"month":numero,"type":"once"|"monthly","months":numero o null,"financed":{…} o null}],
+ "target":indice o null,
+ "checks":[{"expr":"espressione vera se va bene","soft":true se è solo prudenza,"ok":"frase se vera","ko":"frase se falsa"}],
+ "answer":{"yes":"risposta breve se tutto ok","careful":"risposta se solo regole soft falliscono","no":"risposta se una regola non soft fallisce"},
+ "show":["variabili da mostrare", "max 6"],
+ "clarify":"domanda all'utente se manca qualcosa di essenziale, altrimenti \\"\\""}
+Regole: 2-5 checks pertinenti alla domanda; nelle frasi usa SOLO segnaposto come {cash_min} o {best_month} o {cat:Spesa} per i numeri dell'utente, mai cifre inventate (le cifre della domanda vanno bene).
+Le risposte iniziano con un verdetto chiaro (Sì / No / Sì, ma…). Scrivi tutto in ${lang}.
+Se la domanda non riguarda soldi, patrimonio o spese, lascia events e checks vuoti e spiega in clarify cosa puoi fare.
+
+Esempio (oggi novembre). «Tra un mese spendo 15000 €, il prossimo anno vorrei un PC da 3000: conviene?» →
+{"title":"PC dopo una spesa grande","events":[{"label":"Spesa","amount":15000,"month":1,"type":"once"},{"label":"PC","amount":3000,"month":2,"type":"once"}],"target":1,
+ "checks":[{"expr":"cash_min >= 0","soft":false,"ok":"Non vai mai in rosso.","ko":"Andresti in rosso a {first_negative_month}."},
+  {"expr":"cash_after_target >= emergency_target","soft":true,"ok":"Dopo il PC resti sopra il fondo emergenza di {emergency_target}.","ko":"Dopo il PC scenderesti a {cash_after_target}, sotto il fondo emergenza di {emergency_target}."}],
+ "answer":{"yes":"Sì, puoi prenderlo.","careful":"Sì, ma meglio da {best_month}.","no":"No, non adesso."},
+ "show":["cash_after_target","emergency_target","best_month","saving"],"clarify":""}`;
+    try {
+      const raw = parseJSONLoose(
+        await callAI({
+          system:
+            "Trasformi domande di finanza personale in ricette di calcolo. Rispondi solo con JSON valido. Non conosci i dati dell'utente.",
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 1400,
+          json: true
+        }),
+        '{'
+      );
+      const recipe = EN.sanitizeAdvice(raw);
+      if (!recipe) throw new Error('Non ho capito la domanda: prova a riformularla');
+      return json(res, 200, recipe);
     } catch (e) {
       return json(res, 502, { error: e.message });
     }
@@ -249,7 +326,8 @@ Se la frase chiede quanto ci si può permettere senza dare cifre, lascia price e
           system: 'Rispondi solo con JSON valido.',
           messages: [{ role: 'user', content: prompt }],
           fast: true,
-          max_tokens: 300
+          max_tokens: 300,
+          json: true
         }),
         '{'
       );

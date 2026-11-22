@@ -49,8 +49,21 @@ test.before(async () => {
       let b = '';
       q.on('data', d => (b += d));
       q.on('end', () => {
-        seen.push({ path: q.url, auth: q.headers.authorization, body: JSON.parse(b || '{}') });
+        const body = JSON.parse(b || '{}');
+        seen.push({ path: q.url, auth: q.headers.authorization, body });
         r.writeHead(200, { 'content-type': 'application/json' });
+        if (/RICETTA/.test(JSON.stringify(body.messages)))
+          return r.end(
+            JSON.stringify({
+              choices: [
+                {
+                  message: {
+                    content: '{"events":[{"label":"PC","amount":3000,"month":2}],"target":0,"checks":[]}'
+                  }
+                }
+              ]
+            })
+          );
         const out =
           '{"type":"uscita","amount":9.5,"description":"Bar Centrale","date":"2026-01-10","category":"Ristoranti"}';
         r.end(JSON.stringify({ choices: [{ message: { content: out } }] }));
@@ -102,4 +115,16 @@ test('requests go to Ollama with the default model and no API key', async () => 
   assert.equal(seen[0].body.model, 'qwen2.5:7b');
   assert.equal(seen[0].body.temperature, 0.2);
   assert.match(JSON.stringify(p.json), /Bar Centrale/);
+});
+test('consulente con Ollama: JSON imposto dal server del modello', async () => {
+  seen.length = 0;
+  const r = await call(
+    'POST',
+    '/api/ai/advise',
+    { question: 'posso comprare un PC da 3000 a gennaio?' },
+    COOKIE
+  );
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual(seen[0].body.response_format, { type: 'json_object' });
+  assert.equal(r.json.events[0].amount, 3000);
 });
