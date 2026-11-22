@@ -1,5 +1,13 @@
 # EyeCash · Novità
 
+## 1.2.1 · Domande più libere
+- **"Posso permettermelo?" capisce più domande:**
+  - *"Posso fare un mutuo da 200k in 20 anni?"*: 200.000 € è l'importo del mutuo, non il prezzo della casa; anche "in 20" senza "anni" vale come durata;
+  - domande generali come *"che mutuo posso permettermi?"* o *"quanto posso spendere per un'auto?"*: trova il prezzo più alto che supera i controlli con i tuoi numeri, usando come anticipo la liquidità oltre il fondo emergenza.
+- Da "Chiedi ai tuoi dati" anche "posso fare un mutuo…", "un finanziamento da…" e simili portano al simulatore. Le domande sulle spese ("quanto pago di rata del mutuo?") restano in "Chiedi".
+- **Tema chiaro:** gli interruttori accesi tornano verdi (prima sembravano tutti spenti).
+- Un IBAN scritto nella domanda non viene più scambiato per un prezzo.
+
 ## 1.2.0 · Posso permettermelo?
 - **Nuova schermata "Posso permettermelo?"** per mutuo, auto o qualsiasi grande acquisto, simulati sulle tue entrate, spese, risparmi e rate reali. Mostra:
   - un verdetto chiaro: sì, con attenzione, non ancora;

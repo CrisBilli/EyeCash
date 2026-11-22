@@ -237,10 +237,12 @@ NON hai accesso a entrate, spese o saldi dell'utente: non stimarli e non dare gi
 Frase: «${q}»
 Rispondi SOLO con JSON:
 {"kind":"mortgage"|"car"|"purchase", "label":"cosa vuole comprare, max 4 parole in ${lang}",
- "price":numero o null, "downPayment":numero o null, "extraCosts":numero o null,
+ "price":prezzo del bene o null, "loanAmount":importo del mutuo o finanziamento richiesto o null,
+ "downPayment":numero o null, "extraCosts":numero o null,
  "ratePct":numero o null, "years":numero o null, "payCash":true|false|null,
  "runningCosts":numero mensile o null, "useInvestments":true|false|null}
-Usa null per ciò che la frase non dice. "mortgage" = casa con mutuo.`;
+Usa null per ciò che la frase non dice. "mortgage" = casa con mutuo. "mutuo da 200k" è loanAmount, non price.
+Se la frase chiede quanto ci si può permettere senza dare cifre, lascia price e loanAmount a null.`;
     try {
       const raw = parseJSONLoose(
         await callAI({

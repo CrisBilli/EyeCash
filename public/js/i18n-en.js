@@ -394,7 +394,11 @@ I18N.en = {
   'Con acquisto': 'With the purchase',
   'Con i numeri di oggi almeno un controllo non è superato.':
     "With today's numbers at least one check fails.",
+  'Con i numeri di oggi non resta margine per questo acquisto: guarda i controlli sotto.':
+    "With today's numbers there is no room for this purchase: see the checks below.",
   'Con i nuovi versamenti': 'With new contributions',
+  'Con i tuoi numeri puoi puntare a {0} fino a circa {1}, usando come anticipo la liquidità oltre il fondo emergenza. Correggi i campi se serve.':
+    'With your numbers you can aim for {0} up to about {1}, using the cash above your emergency fund as down payment. Adjust the fields if needed.',
   'con il 33% del reddito netto in rate': 'with 33% of net income on loan payments',
   'Con l’acquisto': 'With the purchase',
   'Con la stessa cifra potevi comprare circa {0} {1}.':
@@ -854,6 +858,7 @@ I18N.en = {
   'Mutui e prestiti: il residuo si aggiorna da solo ogni mese':
     'Mortgages and loans: the remaining debt updates itself every month',
   Mutuo: 'Mortgage',
+  'mutuo {0}': 'loan {0}',
   'Mutuo casa': 'Home mortgage',
   'Mutuo sul prezzo': 'Loan to price',
   'Nascondi saldi': 'Hide balances',
@@ -1352,8 +1357,11 @@ I18N.en = {
   'Ultimo prezzo {0}': 'Last price {0}',
   'Ultimo salvataggio': 'Last saved',
   'Ultimo salvataggio {0}': 'Last saved {0}',
+  'un acquisto': 'a purchase',
   'un ETF globale è già diversificato; un’azione singola no':
     'a global ETF is already diversified; a single stock is not',
+  "un'auto": 'a car',
+  'una casa': 'a home',
   'Usa {0} come valore': 'Use {0} as the value',
   'Usa almeno 10 caratteri.': 'Use at least 10 characters.',
   'Usa anche gli investimenti': 'Use investments too',

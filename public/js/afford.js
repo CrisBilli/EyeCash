@@ -341,11 +341,21 @@ function affApply(p, viaAI) {
     if (p[k] != null) A[k] = p[k];
   if (p.payCash != null) A.payCash = p.payCash;
   if (p.useInvestments != null) A.useInvestments = p.useInvestments;
+  // "a €200,000 mortgage" is the amount borrowed: the price is that plus the down payment
+  if (p.loanAmount) {
+    if (p.price) A.downPayment = Math.max(0, p.price - p.loanAmount);
+    else {
+      if (p.downPayment == null)
+        A.downPayment = p.kind === 'mortgage' ? Math.round((p.loanAmount * 0.25) / 100) * 100 : 0;
+      A.price = p.loanAmount + A.downPayment;
+    }
+    A.payCash = false;
+  }
   // a price without a down payment: keep the typical share of the price
-  if (p.price && p.downPayment == null)
+  if (p.price && !p.loanAmount && p.downPayment == null)
     A.downPayment = p.kind === 'purchase' ? 0 : Math.round((p.price * 0.2) / 100) * 100;
-  if (p.price && p.extraCosts == null)
-    A.extraCosts = p.kind === 'mortgage' ? Math.round((p.price * 0.06) / 100) * 100 : base.extraCosts;
+  if (A.price && p.extraCosts == null)
+    A.extraCosts = p.kind === 'mortgage' ? Math.round((A.price * 0.06) / 100) * 100 : base.extraCosts;
   if (p.kind === 'mortgage') A.payCash = false;
   S.afford = A;
   const parts = [t(AFF_KINDS[p.kind].label) + (p.label ? ' · ' + p.label : '')];
@@ -353,6 +363,7 @@ function affApply(p, viaAI) {
   if (A.kind === 'mortgage' || !A.payCash)
     parts.push(
       t('anticipo {0}', [eur0(A.downPayment)]),
+      t('mutuo {0}', [eur0(Math.max(0, A.price - A.downPayment))]),
       t('{0}% in {1} anni', [String(A.ratePct).replace('.', DEC), String(A.years).replace('.', DEC)])
     );
   else parts.push(t('in contanti'));
@@ -360,6 +371,52 @@ function affApply(p, viaAI) {
     viaAI ? 'AI' : t('sul dispositivo'),
     parts.join(', ')
   ]);
+  save();
+}
+
+/**
+ * A general question without a price ("che mutuo posso permettermi?"): finds the highest
+ * price that passes every check with the user's numbers, using the cash left after the
+ * emergency fund as down payment (at most the typical share for a car).
+ */
+function affGeneral(p, viaAI) {
+  const M = affMine();
+  const A = { ...affInputs(), ...affDef(p.kind), kind: p.kind };
+  for (const k of ['ratePct', 'years', 'runningCosts']) if (p[k] != null) A[k] = p[k];
+  if (p.payCash != null && p.kind !== 'mortgage') A.payCash = p.payCash;
+  if (p.useInvestments != null) A.useInvestments = p.useInvestments;
+  const avail = Math.max(
+    0,
+    M.cash + (A.useInvestments ? M.investments : 0) - (+A.emergencyMonths || 6) * M.spending
+  );
+  // inputs for a given price: typical extra costs, down payment from the cash that is free
+  const at = price => {
+    const B = { ...A, price };
+    if (B.kind === 'mortgage') B.extraCosts = Math.round((price * 0.06) / 100) * 100;
+    if (B.kind === 'mortgage' || !B.payCash) {
+      const room = Math.max(0, avail - (+B.extraCosts || 0));
+      B.downPayment = Math.floor((B.kind === 'car' ? Math.min(room, price * 0.3) : room) / 100) * 100;
+    }
+    return B;
+  };
+  // the highest price whose verdict is not "no", by bisection
+  let lo = 0,
+    hi = 5e6;
+  for (let i = 0; i < 40 && hi - lo > 100; i++) {
+    const mid = (lo + hi) / 2;
+    if (affCompute(at(mid), M).verdict !== 'no') lo = mid;
+    else hi = mid;
+  }
+  Object.assign(A, at(Math.floor(lo / 1000) * 1000));
+  S.afford = A;
+  const what = { mortgage: 'una casa', car: "un'auto", purchase: 'un acquisto' }[A.kind];
+  affNote = A.price
+    ? t(
+        'Con i tuoi numeri puoi puntare a {0} fino a circa {1}, usando come anticipo la liquidità oltre il fondo emergenza. Correggi i campi se serve.',
+        [t(what), eur0(A.price)]
+      )
+    : t('Con i numeri di oggi non resta margine per questo acquisto: guarda i controlli sotto.');
+  if (viaAI) affNote = 'AI · ' + affNote;
   save();
 }
 
@@ -381,23 +438,26 @@ async function affordAsk(q) {
     }
     affBusy = false;
   }
-  if (!p || !p.price) {
-    const loc = EN.parseAffordText(q);
-    if (loc && (loc.price || !p)) {
-      p = { ...(p || {}), ...loc };
-      viaAI = false;
-    }
+  const loc = EN.parseAffordText(anon(q)); // an IBAN or a card number is never a price
+  // the local parser wins when the AI found no amount but the sentence has one
+  if (!p || (!p.price && !p.loanAmount && (loc.price || loc.loanAmount))) {
+    p = { ...(p || {}), ...loc };
+    viaAI = false;
   }
-  if (!p || !p.price) {
-    affNote = t('Non ho trovato un prezzo nella domanda: scrivilo, ad esempio «auto da 20.000 €».');
-    return renderView();
-  }
-  affApply(p, viaAI);
+  if (p.price || p.loanAmount) affApply(p, viaAI);
+  else if (!affMine().months)
+    affNote = t(
+      'Serve almeno un mese di movimenti per conoscere entrate e spese: importa un estratto conto o aggiungi i movimenti.'
+    );
+  else if (p.kind !== 'purchase' || /quant|qual|che |massim|how much|what|max/i.test(q)) affGeneral(p, viaAI);
+  else affNote = t('Non ho trovato un prezzo nella domanda: scrivilo, ad esempio «auto da 20.000 €».');
   renderView();
 }
 
-/** True for questions like "posso permettermi…", "can I afford…". */
+/** True for questions about buying something or taking a loan, which the planner answers. */
 const isAffordQ = q =>
-  /posso permettermi|mi posso permettere|me lo posso permettere|posso comprare|posso prendere|permettermelo|can i afford|could i afford|can i buy|afford a|afford an/i.test(
+  /permetter|can i afford|could i afford|can i buy|afford a|afford an|posso (comprare|prendere|fare|chiedere|accendere|sostenere|ottenere)/i.test(
     q
-  );
+  ) ||
+  (/mutuo|finanziament|prestito|leasing|mortgage|\bloan\b/i.test(q) &&
+    !/\b(ho speso|speso|spese|pagato|pago|rata|interessi|spent|paid|pay|payment)\b/i.test(q));

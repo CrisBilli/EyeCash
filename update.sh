@@ -3,7 +3,6 @@
 # Usage:  bash update.sh   (from the EyeCash folder)
 set -euo pipefail
 cd "$(dirname "$0")"
-echo "== EyeCash: aggiornamento alla versione $(cat VERSION 2>/dev/null || echo '?') =="
 
 # 1. cartella dati con i permessi giusti (l'app gira come utente 1000)
 mkdir -p data
@@ -12,6 +11,7 @@ if [ "$(stat -c %u data)" != "1000" ]; then sudo chown -R 1000:1000 data; fi
 
 # 1b. with a git checkout, get the latest version first
 if [ -d .git ]; then git pull --ff-only; fi
+echo "== EyeCash: aggiornamento alla versione $(cat VERSION 2>/dev/null || echo '?') =="
 
 # 2. copia di sicurezza del database prima di aggiornare (a container fermo = copia coerente)
 SNAP="$PWD-snapshot-$(date +%Y%m%d-%H%M%S)"
