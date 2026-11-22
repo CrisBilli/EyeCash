@@ -555,6 +555,7 @@ const TITLES = {
   report: 'Report',
   statistiche: 'Statistiche',
   chiedi: 'Chiedi ai tuoi dati',
+  permettermelo: 'Posso permettermelo?',
   patrimonio: 'Patrimonio',
   fire: 'Simulazione FIRE',
   impostazioni: 'Impostazioni'
@@ -572,6 +573,7 @@ function renderView() {
       report: vReport,
       statistiche: vStats,
       chiedi: vAsk,
+      permettermelo: vAfford,
       patrimonio: vPat,
       fire: vFire,
       impostazioni: vSettings
@@ -585,7 +587,10 @@ function renderView() {
     lastView = view;
     countUp(V.querySelector('[data-to]'));
   } else V.classList.remove('vin');
-  $('#view').classList.toggle('sensview', ['patrimonio', 'investimenti', 'fire'].includes(view));
+  $('#view').classList.toggle(
+    'sensview',
+    ['patrimonio', 'investimenti', 'fire', 'permettermelo'].includes(view)
+  );
   applyBalMask();
 }
 /** Re-renders navigation, sync status and the current view. */
@@ -625,6 +630,7 @@ function moreSheet() {
       ['obiettivi', 'goal', 'Obiettivi'],
       ['statistiche', 'stats', 'Statistiche'],
       ['chiedi', 'ask', 'Chiedi'],
+      ['permettermelo', 'afford', 'Posso permettermelo?'],
       ['report', 'print', 'Report'],
       ['impostazioni', 'set', 'Impostazioni']
     ]

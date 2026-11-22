@@ -189,7 +189,7 @@ function repHealth(D) {
     .map(
       x => `<div class="hcell"><div class="hhead"><span>${x.label}</span>${HEALTH_CHIP[x.status]}</div>
         <div class="hval num">${healthValue(x)}</div>
-        <div class="hint">${x.note}${x.target ? ' · <i>' + x.target + '</i>' : ''}</div></div>`
+        <div class="hint">${x.note}${x.target ? ' · <i>' + x.target + '</i>' : ''}</div>${x.k === 'afford' ? '<button class="btn sm noprint" style="margin-top:8px" data-act="go" data-v="permettermelo">Simula un acquisto</button>' : ''}</div>`
     )
     .join('');
   return `<div class="card rep-sec"><div class="card-h"><div><h3>Indicatori di salute finanziaria</h3><div class="hint">Calcolati sugli ultimi 12 mesi completi · riferimenti usati dai consulenti, solo orientativi</div></div></div>

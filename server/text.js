@@ -31,7 +31,10 @@ const CATS = [...OUT_CATS, ...IN_CATS, ...NEUTRAL_CATS];
 const EN = require('../public/engine.js'); // the same calculation engine the browser uses
 const anon = s =>
   String(s || '')
-    .replace(/\b[A-Z]{2}\s?\d{2}(?:\s?[A-Z0-9]){11,30}\b/gi, '[IBAN]')
+    .replace(/\b[A-Z]{2}\s?\d{2}(?:\s?[A-Z0-9]){11,30}\b/gi, m =>
+      // a real IBAN has at least 10 digits: "da 30000 a rate in 4 anni" is not one
+      m.replace(/\D/g, '').length >= 10 ? '[IBAN]' : m
+    )
     .replace(/\d[\d ]{11,}\d/g, '[NUM]')
     .replace(/\*{2,}\d{2,4}/g, '[CARTA]')
     .replace(/\b[\w.+-]+@[\w-]+\.[\w.]+\b/g, '[EMAIL]');

@@ -80,6 +80,8 @@ Every AI call goes through `server/ai.js`. Before anything is sent, `server/text
 
 The AI never sees a single number, so even a cloud model learns only that you asked "how much did I spend on restaurants this year?".
 
+**"Can I afford it?"** works the same way. The sentence goes to `/api/ai/afford`, which returns only the purchase parameters, checked by `EN.sanitizeAfford`. Without AI, `EN.parseAffordText` understands the common phrasings on the device. `EN.affordability` then runs the checks on the real numbers locally.
+
 **Local models** (Ollama, LM Studio, llama.cpp, vLLM) use the same OpenAI-compatible path; with `AI_PROVIDER=ollama|local` nothing leaves your network at all. See [AI.md](AI.md).
 
 ## Prices without exposing your portfolio
@@ -98,7 +100,7 @@ Plain scripts loaded in this order by `index.html`. They share the global scope,
 
 | File | Responsibility |
 |---|---|
-| `engine.js` | Pure calculations shared with the server and unit-tested: trade book (weighted average cost), XIRR, history series, trade matching, the "Ask your data" query language, financial-health indicators |
+| `engine.js` | Pure calculations shared with the server and unit-tested: trade book (weighted average cost), XIRR, history series, trade matching, the "Ask your data" query language, financial-health indicators, the "Can I afford it?" calculation and question parser |
 | `js/i18n.js` | Language, locale-aware formats, translator (`t()` and the page observer) |
 | `js/i18n-en.js` | English dictionary |
 | `js/core.js` | Formatting, dates, ids, category lists |
@@ -108,6 +110,7 @@ Plain scripts loaded in this order by `index.html`. They share the global scope,
 | `js/lock.js` | Lock screen, biometric unlock, masked balances |
 | `js/finance.js` | Balances, monthly totals, assets, debts, forecast, insights |
 | `js/fire.js` | Monte Carlo FIRE simulator |
+| `js/afford.js` | "Can I afford it?" planner: inputs, verdict, checks, cash projection, questions in plain words |
 | `js/quotes.js` | Price refresh and listing search |
 | `js/invest.js` | Portfolios, target allocation, rebalancing, taxes |
 | `js/history.js` | Trades, matching, price history, investment history view |

@@ -222,6 +222,42 @@ Scrivi "title", "answer" e "clarify" in ${lang}. Regole: nessun numero nella ris
       return json(res, 502, { error: e.message });
     }
   }
+  // "Can I afford it?" in plain words: the AI receives only the sentence and returns
+  // the purchase parameters; income, spending and balances stay on the device.
+  if (p === '/api/ai/afford' && m === 'POST') {
+    const b = await readJSON(req, 4000);
+    const q = anon(String(b.question || ''))
+      .replace(/[<>]/g, '')
+      .slice(0, 300)
+      .trim();
+    if (!q) return json(res, 400, { error: 'Domanda vuota' });
+    const lang = b.lang === 'en' ? 'inglese' : 'italiano';
+    const prompt = `Estrai dalla frase i parametri di un acquisto da simulare.
+NON hai accesso a entrate, spese o saldi dell'utente: non stimarli e non dare giudizi.
+Frase: «${q}»
+Rispondi SOLO con JSON:
+{"kind":"mortgage"|"car"|"purchase", "label":"cosa vuole comprare, max 4 parole in ${lang}",
+ "price":numero o null, "downPayment":numero o null, "extraCosts":numero o null,
+ "ratePct":numero o null, "years":numero o null, "payCash":true|false|null,
+ "runningCosts":numero mensile o null, "useInvestments":true|false|null}
+Usa null per ciò che la frase non dice. "mortgage" = casa con mutuo.`;
+    try {
+      const raw = parseJSONLoose(
+        await callAI({
+          system: 'Rispondi solo con JSON valido.',
+          messages: [{ role: 'user', content: prompt }],
+          fast: true,
+          max_tokens: 300
+        }),
+        '{'
+      );
+      const params = EN.sanitizeAfford(raw);
+      if (!params) throw new Error('Non ho capito la domanda: prova a riformularla');
+      return json(res, 200, params);
+    } catch (e) {
+      return json(res, 502, { error: e.message });
+    }
+  }
   if (p === '/api/ai/categorize' && m === 'POST') {
     const b = await readJSON(req, 60000);
     const items = (Array.isArray(b.items) ? b.items : [])

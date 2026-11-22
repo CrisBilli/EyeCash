@@ -171,7 +171,8 @@ function mergeStates(B, R, L) {
       }
     }
   }
-  for (const k of ['target', 'fire']) if (JSON.stringify(L[k]) !== JSON.stringify(B[k])) out[k] = L[k];
+  for (const k of ['target', 'fire', 'afford'])
+    if (JSON.stringify(L[k]) !== JSON.stringify(B[k])) out[k] = L[k];
   out.aiLog = [...(L.aiLog || []), ...(out.aiLog || [])]
     .filter((x, i, a) => a.findIndex(y => y.t === x.t && y.k === x.k) === i)
     .sort((a, b) => b.t - a.t)

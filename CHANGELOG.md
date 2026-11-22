@@ -1,5 +1,18 @@
 # EyeCash · Novità
 
+## 1.2.0 · Posso permettermelo?
+- **Nuova schermata "Posso permettermelo?"** per mutuo, auto o qualsiasi grande acquisto, simulati sulle tue entrate, spese, risparmi e rate reali. Mostra:
+  - un verdetto chiaro: sì, con attenzione, non ancora;
+  - la rata mensile e gli interessi totali;
+  - i controlli che farebbe una banca: rate sul reddito, mutuo sul prezzo, fondo di emergenza che resta, risparmio dopo l'acquisto;
+  - il prezzo massimo consigliato e tra quanti mesi avresti anticipo e fondo pronti;
+  - la liquidità dei prossimi 3 anni, con e senza l'acquisto.
+- Il calcolo si aggiorna mentre scrivi. L'affitto viene preso dai costi ricorrenti: con il mutuo smetteresti di pagarlo.
+- **Domande a parole**, anche senza AI: *"posso permettermi un'auto da 25.000 € a rate in 5 anni?"*. Con l'AI attiva esce solo la frase; entrate, spese e saldi restano sul dispositivo.
+- Ci arrivi dal menu, dal report (*Simula un acquisto*, accanto alla rata sostenibile) e da "Chiedi ai tuoi dati".
+- In italiano e in inglese.
+- Correzione privacy: il filtro che maschera gli IBAN prima di chiamare l'AI scambiava per IBAN alcune frasi normali con numeri (es. "da 30000 a rate in 4 anni") e le cancellava. Ora riconosce gli IBAN anche scritti in minuscolo e con gli spazi.
+
 ## 1.1.0 · Interfaccia in inglese
 - **Cambio lingua:** l'app parte nella lingua del telefono (italiano o inglese) e si cambia in *Impostazioni → Dati e sicurezza → 🌐 Lingua*.
 - In inglese importi, numeri e mesi seguono il formato inglese (€1,234.56, "January 2026").

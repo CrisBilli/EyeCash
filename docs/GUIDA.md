@@ -60,6 +60,7 @@ Cosa fa l'AI (ogni voce si accende o spegne in *Impostazioni → Privacy*):
 |---|---|
 | Inserimento rapido | solo la frase che scrivi o detti |
 | Chiedi ai tuoi dati | la domanda, i nomi delle categorie e il tipo dei conti: i numeri li calcola il telefono |
+| Posso permettermelo? (stesso interruttore) | solo la frase: l'AI ne ricava prezzo, anticipo, tasso e durata; entrate, spese e saldi restano sul telefono |
 | Categorizzazione | descrizione e importo dei soli movimenti nuovi senza categoria |
 | Formato banca nuovo | intestazioni e al massimo 12 righe, con le cifre degli importi mascherate; una volta per banca, poi il formato viene memorizzato |
 | Stima di auto e casa | solo le caratteristiche del bene (mai l'indirizzo) |
@@ -84,6 +85,14 @@ Tutti i dettagli sono in [IMPORT.md](IMPORT.md) (in inglese).
 - la composizione del patrimonio, le spese per categoria confrontate con la media e, nella versione completa, tutti i movimenti.
 
 Con **Solo sintesi** esercenti e singoli movimenti spariscono: è la versione da mandare a un consulente. Gli indicatori sono riferimenti orientativi, non una consulenza.
+
+## 5c. Posso permettermelo?
+*Menu → Posso permettermelo?* (su iPhone in *Altro*), oppure il pulsante *Simula un acquisto* nel report. Puoi anche scrivere la domanda in *Chiedi ai tuoi dati*.
+1. Scegli **Casa (mutuo)**, **Auto** o **Altro acquisto**, oppure scrivi la domanda a parole, ad esempio *"posso permettermi una casa da 250.000 € con 50.000 di anticipo in 25 anni?"*.
+2. Controlla i campi. L'affitto viene preso dai costi ricorrenti, entrate e spese dalla media degli ultimi 12 mesi completi.
+3. Leggi il verdetto e i controlli. Il risultato si aggiorna mentre scrivi.
+
+È una simulazione orientativa, non una consulenza né un'offerta di finanziamento.
 
 ## 6. Claude Desktop via MCP (aggiungere spese a voce o per testo)
 1. Nell'app: **Impostazioni → Claude via MCP → Attiva e genera token**. Copia la configurazione mostrata.

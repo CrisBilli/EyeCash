@@ -16,7 +16,11 @@ http
         else
           out =
             '{"queries":[],"clarify":"Posso rispondere solo a domande sui tuoi movimenti o investimenti."}';
-      } else if (/Trasforma questa frase/.test(u))
+      } else if (/parametri di un acquisto/.test(u))
+        out = !/«[^»]*casa[^»]*»/.test(u)
+          ? '{"kind":"car","label":"auto","price":30000,"years":4,"payCash":false}'
+          : 'Ecco: {"kind":"mortgage","label":"Casa <b>a Torino","price":"260000","downPayment":40000,"extraCosts":null,"ratePct":95,"years":25,"payCash":null,"income":3000}';
+      else if (/Trasforma questa frase/.test(u))
         out =
           '{"type":"uscita","amount":23.5,"description":"Pizzeria Da Mario","date":"2026-11-09","category":"Ristoranti","account_hint":"carta"}';
       else if (/valore_min/.test(u))
