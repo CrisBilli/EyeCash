@@ -1,0 +1,33 @@
+const http = require('http');
+const fs = require('fs');
+http
+  .createServer((q, r) => {
+    let b = '';
+    q.on('data', d => (b += d));
+    q.on('end', () => {
+      const j = JSON.parse(b);
+      const u = j.messages[j.messages.length - 1].content;
+      fs.appendFileSync('/tmp/mockai.log', JSON.stringify(j.messages) + '\n');
+      let out = '{}';
+      if (/Traduci la domanda/.test(u)) {
+        if (/«[^»]*ristoranti[^»]*»/i.test(u))
+          out =
+            'Ecco la ricetta: {"title":"Ristoranti: quest\'anno e l\'anno scorso","queries":[{"id":"a","source":"movimenti","measure":"totale","type":"uscite","categories":["Ristoranti","INVENTATA"],"text":"<script>x","from":"2026-01-01","to":"2026-12-31","group":"nessuno"},{"id":"b","source":"movimenti","measure":"totale","type":"uscite","categories":["Ristoranti"],"from":"2025-01-01","to":"2025-12-31","group":"nessuno"},{"id":"c","source":"movimenti","measure":"totale","type":"uscite","categories":["Ristoranti"],"group":"mese","from":"2025-01-01","to":"2026-12-31"}],"answer":"Quest\'anno {a}, l\'anno scorso {b} ({change:a:b}). Il mese più caro: {c.top}. <b>","chart":{"query":"c","kind":"linea"}}';
+        else
+          out =
+            '{"queries":[],"clarify":"Posso rispondere solo a domande sui tuoi movimenti o investimenti."}';
+      } else if (/Trasforma questa frase/.test(u))
+        out =
+          '{"type":"uscita","amount":23.5,"description":"Pizzeria Da Mario","date":"2026-11-09","category":"Ristoranti","account_hint":"carta"}';
+      else if (/valore_min/.test(u))
+        out =
+          '{"valore_min":15000,"valore_centrale":16500,"valore_max":18000,"affidabilita":"media","deprezzamento_annuo_pct":11,"motivazione":"Basata su annunci simili.","confronti":[{"descrizione":"Golf 2020 60.000 km","prezzo":16900}]}';
+      else if (/Categorizza/.test(u)) out = '[{"i":0,"cat":"Shopping"}]';
+      else if (/prime righe di un estratto/.test(u))
+        out =
+          '{"bank_name":"Banca Strana","header_row":0,"date_col":0,"date_format":"DMY","desc_cols":[2],"amount_col":3,"debit_col":null,"credit_col":null,"decimal":",","expenses_positive":false}';
+      r.writeHead(200, { 'content-type': 'application/json' });
+      r.end(JSON.stringify({ choices: [{ message: { content: out } }] }));
+    });
+  })
+  .listen(8099);

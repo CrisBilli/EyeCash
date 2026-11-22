@@ -1,0 +1,42 @@
+# EyeCash – docker compose
+#   bash install.sh                          first install (recommended)
+#   docker compose up -d                     start / restart
+#   docker compose --profile ollama up -d    also start a local AI model server (Ollama)
+services:
+  eyecash:
+    build: .
+    container_name: eyecash
+    restart: unless-stopped
+    # Reachable ONLY from the server itself (127.0.0.1). Use Tailscale (or another
+    # private network / reverse proxy with HTTPS) to reach it from your phone.
+    ports:
+      - "127.0.0.1:8080:8080"
+    env_file:
+      - .env # created by install.sh / update.sh from .env.example
+    environment:
+      - APP_TZ=${APP_TZ:-Europe/Rome}
+      - TZ=${APP_TZ:-Europe/Rome}
+    volumes:
+      - ./data:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # for an AI server running on the host (Ollama, LM Studio…)
+    mem_limit: 512m
+    pids_limit: 200
+
+  # Optional: local AI model server. Started only with `--profile ollama`.
+  # Then set AI_PROVIDER=ollama and OLLAMA_URL=http://ollama:11434 in .env
+  # (or simply run `bash setup-ai.sh`).
+  ollama:
+    image: ollama/ollama
+    container_name: eyecash-ollama
+    profiles: ["ollama"]
+    restart: unless-stopped
+    volumes:
+      - ./ollama:/root/.ollama

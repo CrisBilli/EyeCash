@@ -1,0 +1,43 @@
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! **Never paste real financial data** (statements, IBANs, amounts, names). Invented data is enough.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected and what you saw instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: "1. Go to …  2. Tap …  3. See …"
+  - type: input
+    id: version
+    attributes:
+      label: EyeCash version
+      description: Shown in Impostazioni → Informazioni, or `cat VERSION` on the server.
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and browser
+      placeholder: "iPhone 15, iOS 19, installed app · or · Windows 11, Chrome 140"
+  - type: dropdown
+    id: ai
+    attributes:
+      label: AI provider
+      options: [None, Ollama / local, Anthropic, OpenAI-compatible API]
+  - type: textarea
+    id: logs
+    attributes:
+      label: Server logs (optional)
+      description: "`docker compose logs --tail 50 eyecash`. Check them for personal data before pasting."
+      render: text

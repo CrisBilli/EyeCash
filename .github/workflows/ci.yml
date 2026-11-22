@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  node:
+    name: Server & engine tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Check formatting
+        run: npx --yes prettier@3.8.1 --check "public/**/*.js" "server/**/*.js" server.js "tests/**/*.js" "tools/**/*.js"
+      - name: Lint (undefined names, unused code, unreachable code…)
+        run: npm i --no-save --no-package-lock eslint@10.1.0 && node tools/lint.js
+      - name: Tests
+        run: node --test tests/engine.test.js tests/api.test.js tests/local-ai.test.js
+        env:
+          NODE_NO_WARNINGS: 1
+
+  browser:
+    name: Browser end-to-end tests
+    runs-on: ubuntu-latest
+    needs: node
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install Playwright
+        run: |
+          pip install playwright openpyxl
+          python -m playwright install --with-deps chromium
+      - name: Run end-to-end suites
+        run: bash tests/run-all.sh
+
+  docker:
+    name: Docker image builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build
+        run: docker build -t eyecash:ci . && cp .env.example .env && docker compose config -q
+      - name: Smoke test
+        run: |
+          docker run -d --name eyecash -p 8080:8080 eyecash:ci
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:8080/api/status && exit 0; sleep 1; done
+          docker logs eyecash; exit 1

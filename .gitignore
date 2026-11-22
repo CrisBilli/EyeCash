@@ -1,0 +1,21 @@
+# dati personali e segreti: non vanno MAI su GitHub
+data/
+backups/
+.env
+*.db
+*.db-shm
+*.db-wal
+# estratti conto e file della banca (tranne i file di test sintetici)
+*.xlsx
+*.xls
+*.csv
+*.pdf
+!tests/fixtures/*
+# varie
+node_modules/
+__pycache__/
+*.tmp.mp4
+.DS_Store
+
+# local AI models downloaded by the optional Ollama container
+ollama/
