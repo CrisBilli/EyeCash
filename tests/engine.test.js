@@ -786,3 +786,17 @@ test("posso permettermelo: parametri dall'AI ripuliti", () => {
   assert.equal(s.income, undefined);
   assert.equal(E.sanitizeAfford(null), null);
 });
+test('posso permettermelo: importo del mutuo e durata senza "anni"', () => {
+  assert.deepEqual(E.parseAffordText('Posso fare un mutuo da 200k in 20 anni?'), {
+    kind: 'mortgage',
+    loanAmount: 200000,
+    years: 20,
+    payCash: false
+  });
+  assert.equal(E.parseAffordText('Mi posso permettere un mutuo da 200k in 20').years, 20);
+  const both = E.parseAffordText('casa da 300.000 con mutuo da 240.000 in 25 anni');
+  assert.equal(both.price, 300000);
+  assert.equal(both.loanAmount, 240000);
+  assert.equal(E.parseAffordText('auto a 20.000 euro').price, 20000);
+  assert.deepEqual(E.parseAffordText('che mutuo posso permettermi?'), { kind: 'mortgage' });
+});

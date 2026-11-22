@@ -1379,6 +1379,7 @@
      it never sees income, spending or balances, which the device adds afterwards. */
   const AFFORD_LIMITS = [
     ['price', 0, 1e8],
+    ['loanAmount', 0, 1e8],
     ['downPayment', 0, 1e8],
     ['extraCosts', 0, 1e7],
     ['ratePct', 0, 30],
@@ -1449,6 +1450,20 @@
         kind === 'car'
       )
         out.runningCosts = n;
+      // "in 20", "a 25": a bare small number after these words is the length in years
+      else if (
+        !unit &&
+        n > 0 &&
+        n <= 40 &&
+        /\b(in|per|a|over|for)\s*$/.test(before) &&
+        !/^\s*(€|euro|eur)/.test(after)
+      )
+        out.years = n;
+      // "mutuo da 200k", "loan of 20000": the amount borrowed, not the price
+      else if (
+        /(mutuo|finanziamento|prestito|leasing|mortgage|loan)\s*(da|di|of|for)?\s*(€|euro)?\s*$/.test(before)
+      )
+        out.loanAmount = n;
       else money.push(n);
     }
     if (money.length) out.price = Math.max(...money);
