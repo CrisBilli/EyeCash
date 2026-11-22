@@ -12,6 +12,7 @@
  */
 const ACTIONS = {
   go: ({ el }) => go(el.dataset.v),
+  'aff-kind': ({ el }) => affSetKind(el.dataset.k),
   'add-tx': () => txForm(),
   'edit-tx': ({ id }) => txForm(S.tx.find(t => t.id === id)),
   'add-hold': () => holdForm(),
@@ -585,6 +586,11 @@ document.addEventListener('submit', e => {
     if (q) askAI(q);
     return;
   }
+  if (e.target.id === 'affask') {
+    const q = ($('#affq').value || '').trim();
+    if (q) affordAsk(q);
+    return;
+  }
   if (e.target.id === 'fireform') {
     const d = Object.fromEntries(new FormData(e.target).entries());
     const n = k => num(d[k]);
@@ -634,12 +640,14 @@ document.addEventListener('submit', e => {
   }
 });
 document.addEventListener('input', e => {
+  if (e.target.form && e.target.form.id === 'affform' && e.target.tagName === 'INPUT') affFromForm(false);
   if (e.target.id === 'q') {
     fQ = e.target.value;
     $('#txlist').innerHTML = txListHTML();
   }
 });
 document.addEventListener('change', e => {
+  if (e.target.form && e.target.form.id === 'affform' && e.target.tagName === 'SELECT') affFromForm(true);
   if (e.target.id === 'fm') {
     fM = e.target.value;
     $('#txlist').innerHTML = txListHTML();

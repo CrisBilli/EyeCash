@@ -1223,6 +1223,247 @@
     return out;
   }
 
+  /* ================= CAN I AFFORD IT? =================
+     Simulates a purchase against the user's real numbers. Pure calculation: the view
+     writes the sentences. Thresholds are the usual rules of thumb of banks and advisors.
+     in: {
+       kind: 'mortgage' | 'car' | 'purchase'
+       price                  price of the house, car or purchase (€)
+       downPayment            own money put in now (€); with payCash the whole price
+       extraCosts             one-off costs on top of the price (€): notary, taxes, registration…
+       ratePct, months        loan rate (yearly %) and length; ignored when paying cash
+       payCash                car / purchase paid entirely now, no loan
+       runningCosts           new monthly costs (car: insurance, fuel, maintenance) (€)
+       rentNow                current monthly rent that the purchase replaces (mortgage) (€)
+       monthlyIncome, monthlySpending   averages of the last complete months
+       cash                   money available on accounts
+       investments            investments that could be sold (used only if useInvestments)
+       useInvestments         allow selling investments for the down payment
+       existingPayments       monthly payments of loans already running (€)
+       emergencyMonths        months of spending to keep aside (default 6)
+       dtiLimit               maximum loan payments / income (default 0.33)
+       maxLtv                 maximum loan / price for a mortgage (default 0.8)
+     }
+     out: numbers, checks [{ k, status: 'good'|'warn'|'crit', value }], verdict, maxPrice,
+          monthsToAfford (0 = now, Infinity = not with the current savings), projection. */
+  function loanPayment(principal, ratePct, months) {
+    if (!(principal > 0) || !(months > 0)) return 0;
+    const r = (ratePct || 0) / 1200;
+    return r ? (principal * r) / (1 - Math.pow(1 + r, -months)) : principal / months;
+  }
+  function loanPrincipal(payment, ratePct, months) {
+    if (!(payment > 0) || !(months > 0)) return 0;
+    const r = (ratePct || 0) / 1200;
+    return r ? (payment * (1 - Math.pow(1 + r, -months))) / r : payment * months;
+  }
+  function affordability(inp) {
+    const income = Math.max(0, +inp.monthlyIncome || 0);
+    const spending = Math.max(0, +inp.monthlySpending || 0);
+    const price = Math.max(0, +inp.price || 0);
+    const extra = Math.max(0, +inp.extraCosts || 0);
+    const months = Math.max(0, Math.round(+inp.months || 0));
+    const dtiLimit = inp.dtiLimit > 0 ? inp.dtiLimit : AFFORD_DTI;
+    const maxLtv = inp.maxLtv > 0 ? inp.maxLtv : 0.8;
+    const emergencyMonths = inp.emergencyMonths > 0 ? inp.emergencyMonths : 6;
+    const cashNow = Math.max(0, +inp.cash || 0);
+    const available = cashNow + (inp.useInvestments ? Math.max(0, +inp.investments || 0) : 0);
+    const existing = Math.max(0, +inp.existingPayments || 0);
+    const loanKind = inp.kind === 'mortgage' || !inp.payCash;
+    const down = loanKind ? Math.min(price, Math.max(0, +inp.downPayment || 0)) : price;
+    const loan = loanKind ? price - down : 0;
+    const payment = loanKind ? loanPayment(loan, inp.ratePct, months) : 0;
+    const totalInterest = loanKind ? Math.max(0, payment * months - loan) : 0;
+    const upfront = down + extra;
+    const rentSaved = inp.kind === 'mortgage' ? Math.max(0, +inp.rentNow || 0) : 0;
+    const running = Math.max(0, +inp.runningCosts || 0);
+    // monthly spending after the purchase: + new payment + running costs − rent no longer paid
+    const spendingAfter = Math.max(0, spending + payment + running - rentSaved);
+    const savingBefore = income - spending;
+    const savingAfter = income - spendingAfter;
+    const reserveAfter = emergencyMonths * spendingAfter;
+    const cashAfter = available - upfront;
+    const emergencyAfter = spendingAfter ? Math.max(0, cashAfter) / spendingAfter : Infinity;
+    const dtiBefore = income ? existing / income : 0;
+    const dtiAfter = income ? (existing + payment) / income : payment ? Infinity : 0;
+    const ltv = price ? loan / price : 0;
+    const level = (v, good, warn, higherIsBetter) =>
+      higherIsBetter
+        ? v >= good
+          ? 'good'
+          : v >= warn
+            ? 'warn'
+            : 'crit'
+        : v <= good
+          ? 'good'
+          : v <= warn
+            ? 'warn'
+            : 'crit';
+
+    const checks = [];
+    checks.push({ k: 'upfront', status: cashAfter >= 0 ? 'good' : 'crit', value: upfront });
+    checks.push({
+      k: 'emergency',
+      status: level(emergencyAfter, emergencyMonths, 3, true),
+      value: emergencyAfter
+    });
+    if (payment) checks.push({ k: 'dti', status: level(dtiAfter, dtiLimit, 0.4, false), value: dtiAfter });
+    checks.push({
+      k: 'saving',
+      status: savingAfter >= 0.1 * income && savingAfter > 0 ? 'good' : savingAfter >= 0 ? 'warn' : 'crit',
+      value: savingAfter
+    });
+    if (inp.kind === 'mortgage')
+      checks.push({ k: 'ltv', status: ltv <= maxLtv ? 'good' : ltv <= 0.95 ? 'warn' : 'crit', value: ltv });
+    const verdict = checks.some(c => c.status === 'crit')
+      ? 'no'
+      : checks.some(c => c.status === 'warn')
+        ? 'careful'
+        : 'yes';
+
+    // the highest price that passes the rules, with the same down payment, rate and length
+    const reserveFor = p => {
+      const pay = loanKind ? loanPayment(Math.max(0, p - down), inp.ratePct, months) : 0;
+      return emergencyMonths * Math.max(0, spending + pay + running - rentSaved);
+    };
+    let maxPrice;
+    if (loanKind) {
+      const maxPayment = Math.max(0, dtiLimit * income - existing);
+      const byIncome = down + loanPrincipal(maxPayment, inp.ratePct, months);
+      const byLtv = inp.kind === 'mortgage' ? down / (1 - maxLtv) : Infinity;
+      maxPrice = Math.min(byIncome, byLtv);
+    } else {
+      // paying cash: what is left after keeping the emergency fund and the extra costs
+      maxPrice = Math.max(0, available - extra - reserveFor(0));
+    }
+    maxPrice = Math.max(0, Math.floor(maxPrice / 100) * 100);
+
+    // months of saving (at today's pace) to have the money needed now and keep the emergency fund
+    const need = upfront + reserveFor(price) - available;
+    const monthsToAfford = need <= 0 ? 0 : savingBefore > 0 ? Math.ceil(need / savingBefore) : Infinity;
+
+    // cash on the accounts over the next 36 months, without and with the purchase
+    // (if investments may be sold, they cover the part of the upfront money that cash does not)
+    const fromInvestments = inp.useInvestments
+      ? Math.min(Math.max(0, +inp.investments || 0), Math.max(0, upfront - cashNow))
+      : 0;
+    const cashStart = cashNow - (upfront - fromInvestments);
+    const projection = [];
+    for (let m = 0; m <= 36; m++)
+      projection.push({ m, before: cashNow + savingBefore * m, after: cashStart + savingAfter * m });
+
+    return {
+      loan,
+      payment,
+      months: loanKind ? months : 0,
+      totalInterest,
+      upfront,
+      cashAfter,
+      emergencyAfter,
+      reserveAfter,
+      savingBefore,
+      savingAfter,
+      spendingAfter,
+      dtiBefore,
+      dtiAfter,
+      ltv,
+      checks,
+      verdict,
+      maxPrice,
+      monthsToAfford,
+      projection
+    };
+  }
+
+  /* ---------- "can I afford it?" questions in plain words ----------
+     The AI (or the local parser below) turns a sentence into these parameters only:
+     it never sees income, spending or balances, which the device adds afterwards. */
+  const AFFORD_LIMITS = [
+    ['price', 0, 1e8],
+    ['downPayment', 0, 1e8],
+    ['extraCosts', 0, 1e7],
+    ['ratePct', 0, 30],
+    ['years', 0, 40],
+    ['runningCosts', 0, 1e5]
+  ];
+  /** Keeps only known parameters, within sensible ranges. */
+  function sanitizeAfford(o) {
+    if (!o || typeof o !== 'object') return null;
+    const out = { kind: ['mortgage', 'car', 'purchase'].includes(o.kind) ? o.kind : 'purchase' };
+    for (const [k, min, max] of AFFORD_LIMITS) {
+      if (o[k] === null || o[k] === undefined || o[k] === '') continue;
+      const n = +o[k];
+      if (isFinite(n)) out[k] = Math.min(max, Math.max(min, n));
+    }
+    if (typeof o.payCash === 'boolean') out.payCash = o.payCash;
+    if (typeof o.useInvestments === 'boolean') out.useInvestments = o.useInvestments;
+    if (o.label) out.label = String(o.label).replace(/[<>]/g, '').slice(0, 60);
+    return out;
+  }
+  /** Reads a number written the Italian or the English way: 250.000 · 250,000 · 3,5 · 3.5 · 25k · 200 mila. */
+  function parseAmount(raw, unit) {
+    let s = String(raw).replace(/\s/g, '');
+    const dot = s.lastIndexOf('.'),
+      comma = s.lastIndexOf(',');
+    if (dot >= 0 && comma >= 0)
+      s = dot > comma ? s.replace(/,/g, '') : s.replace(/\./g, '').replace(',', '.');
+    else if (/^\d{1,3}([.,]\d{3})+$/.test(s) && unit !== '%') s = s.replace(/[.,]/g, '');
+    else s = s.replace(',', '.');
+    let n = parseFloat(s);
+    if (!isFinite(n)) return null;
+    if (/^(k|mila|thousand)$/.test(unit || '')) n *= 1000;
+    if (/^(mln|milioni|million)$/.test(unit || '')) n *= 1e6;
+    return n;
+  }
+  /** Understands the common ways of asking, in Italian and English, without any AI. */
+  function parseAffordText(text) {
+    const t = ' ' + String(text || '').toLowerCase() + ' ';
+    const kind =
+      /mutuo|casa|appartamento|immobile|bilocale|trilocale|mortgage|house|home|flat|apartment/.test(t)
+        ? 'mortgage'
+        : /\bauto\b|macchina|\bmoto\b|\bcar\b|motorbike|vehicle|scooter/.test(t)
+          ? 'car'
+          : 'purchase';
+    const out = { kind };
+    const money = [];
+    const re =
+      /(\d[\d.,]*)\s*(k\b|mila\b|mln\b|milioni\b|million\b|thousand\b|%|anni\b|anno\b|years?\b|mesi\b|months?\b)?/g;
+    let m;
+    while ((m = re.exec(t))) {
+      const unit = m[2] || '';
+      const n = parseAmount(m[1], unit);
+      if (n == null) continue;
+      const before = t.slice(Math.max(0, m.index - 28), m.index);
+      const after = t.slice(m.index + m[0].length, m.index + m[0].length + 22);
+      if (unit === '%') out.ratePct = n;
+      else if (/^(anni|anno|years?)$/.test(unit)) out.years = n;
+      else if (/^(mesi|months?)$/.test(unit)) out.years = n / 12;
+      else if (
+        /anticipo|down ?payment|deposit|acconto/.test(before) ||
+        /^\s*(€|euro|eur)?\s*(di |as |of )?(anticipo|down ?payment|deposit|acconto)/.test(after)
+      )
+        out.downPayment = n;
+      else if (
+        /(costi|spese|costs|running).{0,15}(mese|month)|al mese|a month|per month|\/mese|\/month/.test(
+          before + ' ' + after
+        ) &&
+        kind === 'car'
+      )
+        out.runningCosts = n;
+      else money.push(n);
+    }
+    if (money.length) out.price = Math.max(...money);
+    if (/contanti|in un'unica soluzione|tutto subito|cash|outright|in full/.test(t)) out.payCash = true;
+    if (
+      /\ba rate\b|rateizz|finanzia|prestito|\bloan\b|financ|installment|leasing/.test(t) ||
+      out.ratePct != null ||
+      out.years != null
+    )
+      out.payCash = false;
+    if (/vend\w* (gli |i miei )?investimenti|sell\w* (my )?investments|using (my )?investments/.test(t))
+      out.useInvestments = true;
+    return sanitizeAfford(out);
+  }
+
   const API = {
     CLASSES,
     CK,
@@ -1258,6 +1499,11 @@
     runQuery,
     renderAnswer,
     healthIndicators,
+    affordability,
+    sanitizeAfford,
+    parseAffordText,
+    loanPayment,
+    loanPrincipal,
     MEASURES,
     GROUPS
   };

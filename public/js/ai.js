@@ -21,7 +21,7 @@ const PRIV_INFO = {
   quick: ['Inserimento rapido', 'Invia solo la frase che scrivi o detti (es. “23 € pizzeria ieri”).'],
   ask: [
     'Chiedi ai tuoi dati',
-    "Invia solo la domanda che scrivi, i nomi delle categorie e il tipo dei conti (non i nomi). L'AI restituisce un calcolo che il dispositivo esegue: importi e risultati non escono mai."
+    "Invia solo la domanda che scrivi, i nomi delle categorie e il tipo dei conti (non i nomi). L'AI restituisce un calcolo che il dispositivo esegue: importi e risultati non escono mai. Vale anche per «Posso permettermelo?», dove esce solo la frase."
   ],
   categorize: [
     'Categorizzazione spese',
@@ -537,13 +537,17 @@ function vAsk() {
     ${canAI ? `<form id="askform" style="display:flex;gap:8px"><input class="inp" id="askq" maxlength="300" placeholder="es. quanto ho speso al supermercato quest'anno rispetto all'anno scorso?" style="flex:1" autocomplete="off"><button class="btn pri" type="submit" ${askBusy ? 'disabled' : ''}>${askBusy ? '…' : 'Chiedi'}</button></form>` : ''}
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px">${quickAsks()
       .map(([l], i) => `<button class="btn sm" data-act="ask-quick" data-i="${i}">${esc(l)}</button>`)
-      .join('')}</div></div>
+      .join(
+        ''
+      )}<button class="btn sm" data-act="go" data-v="permettermelo">🏠 Posso permettermelo?</button></div></div>
   ${askRender()}
   ${hist.length ? `<div class="card" style="margin-top:14px"><h3>Domande recenti</h3><div class="list">${hist.map(h => `<div class="row" data-act="ask-hist" data-id="${h.id}"><div class="av">?</div><div class="main"><div class="t1">${esc(h.q)}</div><div class="t2">${dLabel(h.d)} · ricalcolata sui dati di oggi</div></div></div>`).join('')}</div></div>` : ''}`;
 }
 /** Sends only the question, category names and account aliases; runs the returned recipe locally. */
 async function askAI(q) {
   if (askBusy) return;
+  // "posso permettermi…?" is answered by the planner, which sends even less
+  if (isAffordQ(q)) return affordAsk(q);
   askBusy = true;
   askCur = null;
   renderView();

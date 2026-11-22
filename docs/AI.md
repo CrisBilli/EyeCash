@@ -74,6 +74,7 @@ Every feature has its own switch in **Settings → Privacy**, and every request 
 |---|---|---|
 | Quick entry ("23 € pizzeria ieri") | the sentence you type or dictate | anything else |
 | Ask your data | the question, category names, account *types* (`conto_1 (Conto)`) | amounts, merchants, account names, results: the device computes them |
+| Can I afford it? (same switch as Ask your data) | only the sentence, e.g. *"a €250,000 house with €50,000 down over 25 years"*; the AI returns price, down payment, rate and term | income, spending, balances, loans, the verdict: the device computes them |
 | Categorisation | description and amount of newly imported rows without a category | balances, other transactions |
 | New bank format | column headers and up to 12 rows, **digits of amounts masked**; once per bank, then the format is remembered | the rest of the file |
 | Asset value estimate | car model/year/km, or town/area/m² of a home (never the address) | anything financial |

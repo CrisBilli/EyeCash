@@ -232,6 +232,9 @@ function startMockAI() {
             out = /«[^»]*meteo[^»]*»/.test(u)
               ? '{"queries":[],"clarify":"Rispondo solo su movimenti e investimenti."}'
               : 'Certo: {"title":"Ristoranti","queries":[{"id":"a","source":"movimenti","measure":"totale","type":"uscite","categories":["Ristoranti","Hack"],"accounts":["conto_1","conto_99"],"text":"<x>pizza","from":"2026-01-01","to":"bad","group":"esercente","limit":500},{"id":"b","measure":"media_mensile","group":"titolo"}],"answer":"Hai speso {a} <script>","chart":{"query":"b","kind":"3d"},"importi":[1,2,3]}';
+          else if (/parametri di un acquisto/.test(u))
+            out =
+              'Ecco: {"kind":"mortgage","label":"Casa <b>a Torino","price":"260000","downPayment":40000,"extraCosts":null,"ratePct":95,"years":25,"payCash":null,"income":3000}';
           else if (/Categorizza/.test(u))
             out = '[{"i":0,"cat":"Shopping"},{"i":1,"cat":"NonEsiste"},{"i":"x","cat":"Spesa"}]';
           else if (/Stima il valore|Stima /.test(u) && /valore_min/.test(u))
@@ -826,6 +829,27 @@ test("chiedi ai tuoi dati: all'AI va solo la domanda, la ricetta torna ripulita"
   assert.match(c.json.clarify, /movimenti/);
   assert.equal((await req('POST', '/api/ai/ask', { cookie: COOKIE, body: { question: '  ' } })).status, 400);
   assert.equal((await req('POST', '/api/ai/ask', { body: { question: 'x' } })).status, 401);
+});
+test('AI "posso permettermelo?": solo la frase esce, parametri ripuliti', async () => {
+  aiLog = [];
+  const r = await req('POST', '/api/ai/afford', {
+    cookie: COOKIE,
+    body: { question: 'posso comprare casa da 260 mila? IBAN IT60X0542811101000000123456', lang: 'it' }
+  });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  const sent = aiLog.join('\n');
+  assert.ok(sent.includes('posso comprare casa da 260 mila'));
+  assert.ok(!sent.includes('IT60X0542811101000000123456'));
+  assert.equal(r.json.kind, 'mortgage');
+  assert.equal(r.json.price, 260000);
+  assert.equal(r.json.ratePct, 30, 'tasso fuori scala riportato nei limiti');
+  assert.equal(r.json.label, 'Casa ba Torino');
+  assert.ok(!('income' in r.json) && !('extraCosts' in r.json) && !('payCash' in r.json));
+  assert.equal(
+    (await req('POST', '/api/ai/afford', { cookie: COOKIE, body: { question: ' ' } })).status,
+    400
+  );
+  assert.equal((await req('POST', '/api/ai/afford', { body: { question: 'x' } })).status, 401);
 });
 test('service worker servito come script, senza cache', async () => {
   const r = await req('GET', '/sw.js');

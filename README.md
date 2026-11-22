@@ -43,7 +43,7 @@ EyeCash turns that around:
 - **The AI helps without seeing your finances.** It can turn "12 euro pizza" into an expense or write the *recipe* for answering "how much did I spend on restaurants this year?". The numbers are computed on your phone, so balances, accounts and amounts never reach the AI.
 - **AI is optional, and can be fully local.** Use Claude or any OpenAI-compatible API, or run an open model with [Ollama](https://ollama.com) on your own server. Or use no AI at all: everything else works the same.
 
-**Where it is going:** you should be able to ask *"Can I afford a €200,000 mortgage?"* or *"Can I buy a new car next year?"* and get an answer from your real numbers: income, spending habits, savings rate, investments and debts. Today EyeCash already collects and computes all of this. The planner that puts it together is next on the [roadmap](#roadmap).
+**Ask it what you are about to decide:** *"Can I afford a €200,000 mortgage?"*, *"Can I buy a €25,000 car in instalments?"*. The answer comes from your real numbers (income, spending habits, savings, investments and loans) and is computed on your device. The AI, if you use it, only reads the sentence.
 
 ## Features
 
@@ -62,6 +62,7 @@ EyeCash turns that around:
 - **Investment history:** trades rebuilt from your statements, value vs money invested over time, annual return (XIRR), realised gains per year.
 - **FIRE simulator:** a Monte Carlo simulation of financial independence with stress scenarios. It runs entirely on your device.
 - **Ask your data:** questions in plain language, answered with a sentence, a chart and a table.
+- **"Can I afford it?"** A mortgage, a car or any big purchase simulated on your real income, spending, savings and current loans. You get a clear verdict, the monthly payment, the checks a bank would make (payments on income, loan to price, emergency fund left, saving afterwards), the highest price that passes, how long until you would have the money, and your cash over the next 3 years. Ask in plain words, with or without AI.
 - **Reports for you or your advisor** (month, year or last 12 months, print or PDF), with the indicators a financial planner looks at: saving rate, emergency fund in months, fixed costs and loan payments on income, the **extra monthly payment you can sustain** (a first answer to *"can I afford this mortgage?"*), debts on assets, investment return and costs. A *summary only* mode leaves out merchants and single transactions, for sharing.
 
 **Privacy & comfort**
@@ -176,7 +177,7 @@ There are about 95 server and engine tests (no dependencies), about 230 end-to-e
 ## Roadmap
 
 - [x] Financial-health report with the sustainable extra monthly payment
-- [ ] **"Can I afford it?" planner**: mortgage, car, big purchases, simulated against your real income, spending and savings
+- [x] **"Can I afford it?" planner**: mortgage, car, big purchases, simulated against your real income, spending and savings
 - [ ] Family mode: separate encrypted accounts on the same server, with optional shared spaces
 - [x] English and Italian interface with an in-app language switch
 - [ ] More languages

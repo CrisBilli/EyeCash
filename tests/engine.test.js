@@ -649,3 +649,140 @@ test('health: segnali di attenzione e casi limite', () => {
   assert.equal(get('ter'), undefined); // no investments, no fund costs
   assert.deepEqual(E.healthIndicators({ months: [], cash: 0 }), []);
 });
+
+/* ---------- can I afford it? ---------- */
+const AFF = {
+  kind: 'mortgage',
+  price: 250000,
+  downPayment: 50000,
+  extraCosts: 10000,
+  ratePct: 3,
+  months: 300,
+  rentNow: 750,
+  monthlyIncome: 3000,
+  monthlySpending: 2000,
+  cash: 70000,
+  existingPayments: 0
+};
+test('afford: rata del mutuo con ammortamento alla francese', () => {
+  near(E.loanPayment(200000, 3, 300), 948.42, 0.01);
+  near(E.loanPrincipal(E.loanPayment(150000, 4, 240), 4, 240), 150000, 0.01);
+  near(E.loanPayment(12000, 0, 48), 250, 1e-9); // tasso zero
+});
+test('afford: mutuo sostenibile ma con fondo di emergenza sotto i 6 mesi → con attenzione', () => {
+  const r = E.affordability(AFF);
+  near(r.loan, 200000, 1e-9);
+  near(r.upfront, 60000, 1e-9);
+  near(r.cashAfter, 10000, 1e-9);
+  near(r.spendingAfter, 2000 + r.payment - 750, 1e-6); // la rata sostituisce l'affitto
+  near(r.dtiAfter, r.payment / 3000, 1e-9);
+  near(r.ltv, 0.8, 1e-9);
+  const st = Object.fromEntries(r.checks.map(c => [c.k, c.status]));
+  assert.deepEqual(st, { upfront: 'good', emergency: 'warn', dti: 'good', saving: 'good', ltv: 'good' });
+  assert.equal(r.verdict, 'careful');
+  assert.equal(r.maxPrice, 250000); // limitato dall'anticipo al 20%
+  assert.ok(r.monthsToAfford > 0 && r.monthsToAfford < 20);
+  assert.equal(r.projection.length, 37);
+  near(r.projection[0].after, 10000, 1e-9);
+});
+test('afford: senza abbastanza liquidità → non ancora, e quando', () => {
+  const r = E.affordability({ ...AFF, cash: 30000 });
+  assert.equal(r.checks.find(c => c.k === 'upfront').status, 'crit');
+  assert.equal(r.verdict, 'no');
+  const need = r.upfront + 6 * r.spendingAfter - 30000;
+  assert.equal(r.monthsToAfford, Math.ceil(need / 1000));
+  // vendendo gli investimenti l'anticipo si copre
+  const r2 = E.affordability({ ...AFF, cash: 30000, investments: 60000, useInvestments: true });
+  assert.equal(r2.checks.find(c => c.k === 'upfront').status, 'good');
+  near(r2.projection[0].after, 0, 1e-9); // la liquidità usata tutta, il resto dagli investimenti
+});
+test('afford: rata troppo alta rispetto al reddito → non ancora', () => {
+  const r = E.affordability({ ...AFF, monthlyIncome: 2200, monthlySpending: 1600, cash: 200000 });
+  assert.equal(r.checks.find(c => c.k === 'dti').status, 'crit');
+  assert.equal(r.verdict, 'no');
+  assert.ok(r.maxPrice < 250000);
+});
+test('afford: auto pagata in contanti, con costi di gestione', () => {
+  const r = E.affordability({
+    kind: 'car',
+    payCash: true,
+    price: 20000,
+    runningCosts: 200,
+    monthlyIncome: 2500,
+    monthlySpending: 1800,
+    cash: 40000
+  });
+  assert.equal(r.payment, 0);
+  near(r.cashAfter, 20000, 1e-9);
+  near(r.savingAfter, 500, 1e-9);
+  assert.equal(
+    r.checks.find(c => c.k === 'dti'),
+    undefined
+  );
+  assert.equal(r.verdict, 'yes');
+  near(r.maxPrice, Math.floor((40000 - 6 * 2000) / 100) * 100, 1e-9);
+});
+test("afford: risparmio negativo dopo l'acquisto → non ancora, mai raggiungibile se non risparmi", () => {
+  const r = E.affordability({
+    kind: 'car',
+    payCash: false,
+    price: 30000,
+    downPayment: 0,
+    ratePct: 7,
+    months: 60,
+    monthlyIncome: 1800,
+    monthlySpending: 1700,
+    cash: 2000
+  });
+  assert.equal(r.checks.find(c => c.k === 'saving').status, 'crit');
+  assert.equal(r.verdict, 'no');
+  const r2 = E.affordability({ ...AFF, monthlyIncome: 2000, monthlySpending: 2100, cash: 1000 });
+  assert.equal(r2.monthsToAfford, Infinity);
+});
+test('posso permettermelo: frasi capite senza AI (italiano e inglese)', () => {
+  assert.deepEqual(
+    E.parseAffordText('Posso permettermi una casa da 250.000 € con 50.000 di anticipo al 3,2% in 25 anni?'),
+    {
+      kind: 'mortgage',
+      price: 250000,
+      downPayment: 50000,
+      ratePct: 3.2,
+      years: 25,
+      payCash: false
+    }
+  );
+  assert.deepEqual(E.parseAffordText('posso comprare un auto da 25k a rate in 5 anni?'), {
+    kind: 'car',
+    price: 25000,
+    years: 5,
+    payCash: false
+  });
+  const en = E.parseAffordText('Can I afford a €200,000 mortgage over 30 years at 3.5%?');
+  assert.equal(en.kind, 'mortgage');
+  assert.equal(en.price, 200000);
+  assert.equal(en.ratePct, 3.5);
+  const cash = E.parseAffordText('car for 18000 cash, running costs 150 a month');
+  assert.equal(cash.payCash, true);
+  assert.equal(cash.runningCosts, 150);
+  assert.equal(cash.price, 18000);
+  assert.equal(E.parseAffordText('viaggio in Giappone da 5000 euro').kind, 'purchase');
+  assert.equal(E.parseAffordText('casa 300 mila vendendo gli investimenti').useInvestments, true);
+  assert.equal(E.parseAffordText('cosa mi conviene fare?').price, undefined);
+});
+test("posso permettermelo: parametri dall'AI ripuliti", () => {
+  const s = E.sanitizeAfford({
+    kind: 'yacht',
+    price: '1e12',
+    ratePct: -4,
+    years: 'x',
+    label: '<img>casa',
+    income: 5000
+  });
+  assert.equal(s.kind, 'purchase');
+  assert.equal(s.price, 1e8);
+  assert.equal(s.ratePct, 0);
+  assert.equal(s.years, undefined);
+  assert.equal(s.label, 'imgcasa');
+  assert.equal(s.income, undefined);
+  assert.equal(E.sanitizeAfford(null), null);
+});
