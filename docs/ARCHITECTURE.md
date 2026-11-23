@@ -80,6 +80,14 @@ Every AI call goes through `server/ai.js`. Before anything is sent, `server/text
 
 The AI never sees a single number, so even a cloud model learns only that you asked "how much did I spend on restaurants this year?".
 
+**The advisor chat** is the one feature where the model sees results computed on the user's data, so `/api/ai/chat` refuses it unless the provider is local (`AI_LOCAL`). The flow:
+1. `public/js/chat.js` sends the conversation.
+2. The server adds its own system prompt and the tool schema (`EN.CHAT_TOOLS`) and forwards them to the local model.
+3. The model answers or asks for a tool. The device runs the tool on the decrypted data (`CHAT_RUN`) and sends back only that result.
+4. The loop runs up to 6 rounds per question.
+
+The conversation is stored in the encrypted state (`S.chat`).
+
 **The advisor** extends this to opinions ("is it a good idea to buy…?"):
 1. The AI returns a recipe: future events taken from the sentence (amount, month, one-off, monthly or financed) and rules written in a tiny expression language over named variables (`cash_min >= emergency_target`, `dti_after <= 0.33`), with answer templates that use placeholders.
 2. `EN.sanitizeAdvice` keeps only known variables and parseable rules. `EN.parseExpr` is a small parser with no `eval`, and prototype names are rejected.
@@ -125,6 +133,7 @@ Plain scripts loaded in this order by `index.html`. They share the global scope,
 | `js/settings.js` | Settings (built from small card functions), privacy switches, MCP setup |
 | `js/report.js` | Printable report: periods, financial-health indicators, net worth, categories, investments |
 | `js/ai.js` | Quick entry, MCP inbox, "Ask your data" |
+| `js/chat.js` | Advisor chat (local AI only): tools run on the device, tool loop, conversation, safe markdown |
 | `js/advisor.js` | The advisor: routing of opinion questions, the user's numbers for the recipe, verdict, reasons, cash chart |
 | `js/forms.js` | Bottom-sheet form engine and entity forms |
 | `js/import.js` | Bank statement and portfolio import, categorisation, dedupe |

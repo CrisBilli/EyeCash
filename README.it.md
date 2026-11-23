@@ -69,6 +69,10 @@ EyeCash fa il contrario:
   - plusvalenze realizzate anno per anno.
 - **Simulatore FIRE:** simulazione Monte Carlo dell'indipendenza finanziaria, con scenari di stress. Gira tutta sul dispositivo.
 - **Chiedi ai tuoi dati:** domande in italiano, con risposta in una frase, un grafico e una tabella.
+- **Chat del consulente (solo AI locale):** una conversazione con il tuo consulente finanziario. Puoi chiedere qualsiasi cosa: *"dove posso risparmiare?"*, *"riesco a raggiungere i miei obiettivi?"*, *"il mio portafoglio è troppo rischioso?"*.
+  - Cerca nei movimenti, fa i conti e simula le scelte con strumenti che girano sul tuo dispositivo, poi risponde a parole.
+  - Siccome legge i tuoi dati, funziona solo con un modello che gira in casa (Ollama sul server o su un PC con scheda video).
+  - Il server rifiuta la chat con un'AI esterna: nulla esce dalla tua rete.
 - **Consulente:** puoi chiedere un parere, non solo una cifra. Per esempio: *"Tra un mese spendo 15.000 €, il prossimo anno vorrei un PC da 3.000: conviene?"*.
   - L'AI trasforma la domanda in una ricetta: gli eventi futuri e le regole da verificare (non andare in rosso, tenere il fondo emergenza, rate sotto un terzo del reddito…).
   - Il telefono simula la liquidità mese per mese sui numeri reali e risponde *Sì / Sì, ma da marzo / No*, con i motivi e un grafico.

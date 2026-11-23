@@ -1,5 +1,17 @@
 # EyeCash · Novità
 
+## 1.4.0 · La chat del consulente
+- **Nuova schermata Consulente:** una chat con il tuo consulente finanziario. Gli chiedi qualsiasi cosa e lui cerca nei tuoi dati con degli strumenti che girano sul dispositivo:
+  - quadro generale e spese per categoria;
+  - andamento mese per mese e ricerca nei movimenti;
+  - ricorrenti, obiettivi, portafoglio, beni e debiti;
+  - simulazione della liquidità e calcolo delle rate.
+
+  Poi risponde a parole, con i numeri veri. Sotto ogni risposta vedi quali dati ha consultato.
+- **Solo con AI locale.** Qui il modello vede i risultati dei calcoli, quindi il server accetta la chat solo se il modello gira in casa (Ollama). Con un'AI esterna la rifiuta.
+- La conversazione è salvata cifrata con il resto dei dati; *Nuova chat* la cancella. C'è un interruttore apposito nella privacy.
+- **Modello predefinito per Ollama: `qwen3:8b`**, che sa usare gli strumenti. Il ragionamento interno dei modelli (`<think>`) non viene mostrato.
+
 ## 1.3.0 · Il consulente
 - **Chiedi un parere, non solo una cifra.** In "Chiedi ai tuoi dati" puoi scrivere *"Tra un mese spendo 15.000 €, il prossimo anno vorrei un PC da 3.000: conviene?"*. La risposta contiene:
   - un verdetto chiaro (Sì / Sì, ma da… / No);

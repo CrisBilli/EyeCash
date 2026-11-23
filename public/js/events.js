@@ -58,6 +58,13 @@ const ACTIONS = {
     askCur = { q: x[0], spec: x[1], ai: false };
     renderView();
   },
+  'chat-new': () => {
+    S.chat = [];
+    chatErr = '';
+    save();
+    renderView();
+  },
+  'chat-suggest': ({ el }) => chatSend(t(CHAT_SUGGEST[+el.dataset.i])),
   'adv-planner': () => askCur && affordAsk(askCur.q),
   'ask-hist': ({ el }) => {
     const h = (S.askHist || []).find(x => x.id === el.dataset.id);
@@ -585,6 +592,11 @@ document.addEventListener('submit', e => {
   if (e.target.id === 'askform') {
     const q = ($('#askq').value || '').trim();
     if (q) askAI(q);
+    return;
+  }
+  if (e.target.id === 'chatform') {
+    const q = ($('#chatq').value || '').trim();
+    if (q) chatSend(q);
     return;
   }
   if (e.target.id === 'affask') {

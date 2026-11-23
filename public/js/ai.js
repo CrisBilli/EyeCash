@@ -12,6 +12,7 @@ const PRIV_DEF = {
   quick: true,
   categorize: true,
   ask: true,
+  chat: true,
   format: true,
   assets: true,
   pdf: false,
@@ -22,6 +23,10 @@ const PRIV_INFO = {
   ask: [
     'Chiedi ai tuoi dati',
     "Invia solo la domanda che scrivi, i nomi delle categorie e il tipo dei conti (non i nomi). L'AI restituisce un calcolo che il dispositivo esegue: importi e risultati non escono mai. Vale anche per «Posso permettermelo?», dove esce solo la frase."
+  ],
+  chat: [
+    'Consulente (chat)',
+    "Solo con un modello AI locale (Ollama sul tuo server o in rete): invia la conversazione e i risultati dei calcoli sui tuoi dati, che restano in casa. Con un'AI esterna il server la rifiuta."
   ],
   categorize: [
     'Categorizzazione spese',

@@ -7,7 +7,16 @@
  * helper receives only the minimum, already anonymised, data.
  */
 const crypto = require('node:crypto');
-const { AI_LOCAL, AI_ON, AI_PDF, AI_PROVIDER, KEEP_HISTORY, VERSION, localDate } = require('./config');
+const {
+  AI_LOCAL,
+  AI_MODEL,
+  AI_ON,
+  AI_PDF,
+  AI_PROVIDER,
+  KEEP_HISTORY,
+  VERSION,
+  localDate
+} = require('./config');
 const { db, delMeta, getMeta, setMeta } = require('./db');
 const {
   authed,
@@ -27,7 +36,7 @@ const { dailyBackup } = require('./backup');
 const { spreadsheetToSheets } = require('./sheets');
 const { CATS, EN, IN_CATS, NEUTRAL_CATS, OUT_CATS, anon, parseJSONLoose } = require('./text');
 const { QUOTES_ON, historyBatch, quoteBatch, quoteCalls, searchListings } = require('./quotes');
-const { callAI } = require('./ai');
+const { callAI, callAIChat } = require('./ai');
 const { AI_WEB_SEARCH, estimateAsset } = require('./estimate');
 
 /* ---------- API ---------- */
@@ -46,6 +55,7 @@ async function api(req, res, p) {
       quotes: QUOTES_ON,
       ai_provider: AI_ON ? AI_PROVIDER : null,
       ai_local: AI_ON && AI_LOCAL,
+      ai_model: AI_ON && AI_LOCAL ? AI_MODEL : null,
       kdf_salt: getMeta('kdf_salt'),
       kdf_iter: +getMeta('kdf_iter')
     });
@@ -221,6 +231,60 @@ Scrivi "title", "answer" e "clarify" in ${lang}. Regole: nessun numero nella ris
       return json(res, 200, spec);
     } catch (e) {
       return json(res, 502, { error: e.message });
+    }
+  }
+  // The advisor chat. Here the model DOES see the results of the calculations on the
+  // user's data, so it is refused unless the model is local (Ollama or another server on
+  // the user's own machine or network): the data never leaves home.
+  if (p === '/api/ai/chat' && m === 'POST') {
+    if (!AI_LOCAL)
+      return json(res, 403, {
+        error: 'La chat del consulente funziona solo con un modello AI locale (Ollama).'
+      });
+    const b = await readJSON(req, 600000);
+    const raw = Array.isArray(b.messages) ? b.messages.slice(-60) : [];
+    const str = (x, n) => String(x == null ? '' : x).slice(0, n);
+    const messages = [];
+    for (const x of raw) {
+      if (!x || !['user', 'assistant', 'tool'].includes(x.role)) continue;
+      if (x.role === 'tool') {
+        messages.push({
+          role: 'tool',
+          tool_call_id: str(x.tool_call_id, 80),
+          name: str(x.name, 60),
+          content: str(x.content, 30000)
+        });
+        continue;
+      }
+      const o = { role: x.role, content: str(x.content, 8000) };
+      if (x.role === 'assistant' && Array.isArray(x.tool_calls) && x.tool_calls.length)
+        o.tool_calls = x.tool_calls.slice(0, 8).map((c, i) => ({
+          id: str(c && c.id, 80) || 'call_' + i,
+          type: 'function',
+          function: { name: str(c && c.name, 60), arguments: JSON.stringify((c && c.arguments) || {}) }
+        }));
+      messages.push(o);
+    }
+    if (!messages.some(x => x.role === 'user')) return json(res, 400, { error: 'Domanda vuota' });
+    const en = b.lang === 'en';
+    const system = `${en ? 'You are' : 'Sei'} ${en ? "the user's personal financial advisor inside EyeCash" : "il consulente finanziario personale dell'utente dentro EyeCash"}. Oggi è ${localDate()}.
+Hai degli strumenti che leggono i dati reali dell'utente (movimenti, conti, investimenti, beni, debiti, obiettivi, ricorrenti) e fanno calcoli. Valuta in euro.
+Regole:
+- Usa gli strumenti per ogni numero: non inventare mai importi, saldi o date. Per acquisti futuri, rate o "posso permettermi" usa simulate_cashflow; per le rate loan_payment.
+- Se la domanda non è chiara su un dettaglio essenziale, fai una sola domanda di chiarimento; altrimenti fai ipotesi ragionevoli e dichiarale.
+- Scrivi gli importi arrotondati e leggibili (es. 1.250 €, non 1250.37).
+- Rispondi in modo diretto: prima la conclusione (es. "Sì, ma aspetta marzo"), poi i motivi con i numeri, in un breve elenco. Niente lunghi preamboli.
+- Sii prudente: fondo emergenza (di solito 6 mesi di spese), rate sotto un terzo del reddito, diversificazione. Su tasse e norme specifiche invita a verificare con un professionista.
+- Categorie di spesa: ${CATS.join(', ')}.
+Rispondi in ${en ? 'inglese' : 'italiano'}.`;
+    try {
+      const out = await callAIChat({
+        messages: [{ role: 'system', content: system }, ...messages],
+        tools: b.final ? null : EN.CHAT_TOOLS
+      });
+      return json(res, 200, out);
+    } catch (e) {
+      return json(res, e.code || 502, { error: e.message });
     }
   }
   // The advisor: any question about one's money. The AI receives the question (and the

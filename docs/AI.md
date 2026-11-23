@@ -15,7 +15,7 @@ It writes `.env`, restarts the app and checks the AI is reachable. You can also 
 | `AI_PROVIDER` | Where requests go | Key | Typical settings |
 |---|---|---|---|
 | *(unset)* | nowhere: AI off | | |
-| `ollama` | **Ollama on your network** | none | `OLLAMA_URL=http://ollama:11434`, `AI_MODEL=qwen2.5:7b` |
+| `ollama` | **Ollama on your network** | none | `OLLAMA_URL=http://ollama:11434`, `AI_MODEL=qwen3:8b` |
 | `local` | **any local OpenAI-compatible server** (LM Studio, llama.cpp `server`, vLLM, LocalAI…) | none | `OPENAI_BASE_URL=http://host.docker.internal:1234/v1`, `AI_MODEL=<name>` |
 | `anthropic` | Claude API | `ANTHROPIC_API_KEY` | `AI_MODEL=claude-sonnet-5-5`, `AI_MODEL_FAST=claude-haiku-5-5` |
 | `openai` | any OpenAI-compatible cloud API (OpenAI, OpenRouter, Mistral, Groq…) | `OPENAI_API_KEY` | `OPENAI_BASE_URL`, `AI_MODEL` |
@@ -37,11 +37,11 @@ or by hand:
 
 ```bash
 docker compose --profile ollama up -d
-docker compose exec ollama ollama pull qwen2.5:7b
+docker compose exec ollama ollama pull qwen3:8b
 # .env
 AI_PROVIDER=ollama
 OLLAMA_URL=http://ollama:11434
-AI_MODEL=qwen2.5:7b
+AI_MODEL=qwen3:8b
 docker compose up -d
 ```
 
@@ -59,10 +59,13 @@ EyeCash asks for short, structured JSON answers in Italian. Small instruction-tu
 
 | Model (Ollama name) | RAM needed (approx.) | Notes |
 |---|---|---|
-| `qwen2.5:7b` | ~6 GB | Default. Good at JSON and Italian |
-| `llama3.1:8b` | ~6 GB | Good general alternative |
+| `qwen3:8b` | ~6 GB | Default. Good at JSON, Italian and tool calling (needed by the advisor chat) |
+| `qwen3.5:9b` | ~7 GB | Stronger, still fits an 8 GB graphics card |
+| `llama3.1:8b` | ~6 GB | Good general alternative, supports tool calling |
 | `mistral-nemo` | ~9 GB | Strong in European languages |
-| `qwen2.5:3b` | ~3 GB | For small machines; less reliable on new bank formats |
+| `qwen3:4b` | ~3 GB | For small machines; fine for quick entry and recipes, weak for the chat |
+
+A graphics card with 8 GB (e.g. RTX 3060 Ti/3070/4060) runs 7–9B models entirely on the GPU, with answers in a few seconds. Larger models that spill into system RAM get much slower.
 
 With Ollama, EyeCash asks the model server to return valid JSON (`response_format`), which makes small models much more reliable. For the advisor a 7–8B model is recommended; 3–4B models extract the events well but choose weaker rules (the device then applies its default checks). Models of 1–2B are not enough.
 
@@ -76,6 +79,7 @@ Every feature has its own switch in **Settings → Privacy**, and every request 
 |---|---|---|
 | Quick entry ("23 € pizzeria ieri") | the sentence you type or dictate | anything else |
 | Ask your data | the question, category names, account *types* (`conto_1 (Conto)`) | amounts, merchants, account names, results: the device computes them |
+| Advisor chat (**local models only**; refused by the server otherwise) | the conversation and the results of the tools the model calls (overview, spending by category, transaction search, portfolio, simulations…), computed on your device | nothing leaves your network: the model runs at home |
 | Advisor: opinions such as "is it a good idea…?" (same switch as Ask your data) | the question (and, for a follow-up, the previous question and its recipe); the AI returns future events and rules written with named variables | every number about you: the device computes the variables, runs the month-by-month simulation and writes the answer |
 | Can I afford it? (same switch as Ask your data) | only the sentence, e.g. *"a €250,000 house with €50,000 down over 25 years"*; the AI returns price, down payment, rate and term | income, spending, balances, loans, the verdict: the device computes them |
 | Categorisation | description and amount of newly imported rows without a category | balances, other transactions |

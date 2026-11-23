@@ -87,6 +87,23 @@ Tutti i dettagli sono in [IMPORT.md](IMPORT.md) (in inglese).
 
 Con **Solo sintesi** esercenti e singoli movimenti spariscono: è la versione da mandare a un consulente. Gli indicatori sono riferimenti orientativi, non una consulenza.
 
+## 5a-bis. La chat del consulente (solo AI locale)
+*Menu → Consulente.* Scrivi come a una persona: *"come sto messo questo mese?"*, *"dove posso risparmiare?"*, *"posso comprare un'auto da 20.000 € l'anno prossimo?"*.
+
+Il consulente cerca nei tuoi dati con alcuni strumenti:
+- quadro generale e spese per categoria;
+- ricerca nei movimenti;
+- portafoglio, beni e debiti, obiettivi;
+- simulazione della liquidità e calcolo delle rate.
+
+Poi risponde. Sotto ogni risposta, *Dati consultati* mostra cosa ha guardato. La conversazione è salvata cifrata insieme agli altri dati; *Nuova chat* la cancella.
+
+Funziona solo con un modello che gira in casa tua, perché il modello vede i risultati dei calcoli:
+- Ollama sul server, oppure su un PC con scheda video da 8 GB (es. RTX 3070) con `qwen3:8b`;
+- nel `.env`: `AI_PROVIDER=ollama`, `OLLAMA_URL=http://IP-DEL-PC:11434`, `AI_MODEL=qwen3:8b`.
+
+Con un'AI esterna la chat resta spenta.
+
 ## 5b-bis. Chiedere un parere
 In *Chiedi ai tuoi dati* puoi fare domande come *"tra un mese spendo 15.000 €, il prossimo anno vorrei un PC da 3.000: conviene?"*. Ottieni:
 - un verdetto (sì / sì, ma / no) con i motivi;

@@ -327,6 +327,7 @@ const I = {
   pat: '<path d="M3 21h18"/><path d="M5 21V10l7-5 7 5v11"/><path d="M9 21v-6h6v6"/>',
   more: '<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
   ask: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.3 2.4c-.5.2-.8.6-.8 1.1v.5M12 16.5v.01"/>',
+  chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 11h7M8.5 14h4"/>',
   afford: '<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="m9 15 2 2 4-4"/>',
   stats: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
   print: '<path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/>',
@@ -343,6 +344,7 @@ const VIEWS = [
   ['ricorrenti', 'Costi ricorrenti', 'rec', 'Ricorrenti'],
   ['obiettivi', 'Obiettivi', 'goal', 'Obiettivi'],
   ['statistiche', 'Statistiche', 'stats', 'Statistiche'],
+  ['consulente', 'Consulente', 'chat', 'Consulente'],
   ['chiedi', 'Chiedi ai tuoi dati', 'ask', 'Chiedi'],
   ['permettermelo', 'Posso permettermelo?', 'afford', 'Permettermelo?'],
   ['report', 'Report', 'print', 'Report']
