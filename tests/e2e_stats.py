@@ -141,6 +141,7 @@ with sync_playwright() as p:
     check('Logo con la nuova icona', 'icon.svg' in m.evaluate("getComputedStyle(document.querySelector('.logo i')).backgroundImage"))
     # saldi oscurati: password richiesta ogni volta
     m.evaluate("go('home')"); m.wait_for_timeout(300)
+    check('Home: anello o nessuna spesa del mese', m.locator('.ringwrap svg.ring circle[data-tip]').count() >= 1 or 'Nessuna spesa questo mese' in m.inner_text('#view'), m.locator('.ringwrap').count())
     check('Saldi oscurati di default', m.evaluate("document.body.classList.contains('hidebal')") and 'blur' in m.evaluate("getComputedStyle(document.querySelector('.sens .val')).filter"))
     check('Spese del mese restano leggibili', m.evaluate("getComputedStyle(document.querySelectorAll('.kpi .val')[1]).filter") == 'none')
     m.click('#balbtn'); m.wait_for_selector('#frm input[name=pw]'); m.fill('#frm input[name=pw]', 'sbagliata-123'); m.click('#frm button[type=submit]'); m.wait_for_timeout(2500)

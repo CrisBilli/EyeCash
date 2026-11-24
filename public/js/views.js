@@ -17,6 +17,7 @@ function txRow(t) {
   return `<div class="row" data-act="edit-tx" data-id="${t.id}">${catAv(t.cat)}<div class="main"><div class="t1">${esc(t.note || t.cat)}</div><div class="t2">${esc(t.cat)} · ${esc(accName(t.accountId))}${t.recId ? ' · <span style="color:#8fb0ff">auto</span>' : ''}${t.src === 'claude' ? ' · <span style="color:#c4b5fd">da Claude</span>' : ''}</div></div><div class="amt num ${pos ? 'up' : isNeutral(t.cat) ? '' : 'down'}" ${isNeutral(t.cat) ? 'style="color:var(--mut)"' : ''}>${pos ? '+' : ''}${eur(t.amount)}</div></div>`;
 }
 
+const mLow = k => (LANG === 'it' ? ymLabel(k).toLowerCase() : ymLabel(k));
 /** Home screen. */
 function vHome() {
   const k = today().slice(0, 7),
@@ -54,25 +55,44 @@ function vHome() {
     h12 = lastMonths(12),
     hv = h12.map(netAt);
   hv[hv.length - 1] = net;
+  const avg3 =
+      lastMonths(4)
+        .slice(0, 3)
+        .reduce((s, m) => s + monthTot(m).out, 0) / 3,
+    news = orbNews();
+  const ring = `<div class="card ringcard">
+    <div class="card-h"><div><h3>Spese di ${mLow(k)}</h3><div class="hint">Tocca una categoria per i movimenti</div></div></div>
+    ${
+      ov.length
+        ? `<div class="ringwrap">${spendRing(ov, cur.out)}<div class="ringmid"><div class="lbl">Uscite del mese</div><div class="big num">${eur0(cur.out)}</div>${avg3 ? `<span class="chip ${cur.out > avg3 ? 'c-crit' : 'c-good'}">${Math.round((cur.out / avg3) * 100)}% della media</span>` : ''}</div></div>
+    <div class="list catlist">${ov.map(x => `<div class="row" ${x.rest ? 'style="cursor:default"' : `data-act="cat-tx" data-c="${esc(x.c)}"`}>${catAv(x.c)}<div class="main"><div class="t1">${esc(x.rest ? 'Altre categorie' : x.c)}${x.rest ? '' : ` <span class="cnt">${cnt[x.c]}</span>`}</div><div class="cbar"><i style="width:${Math.max(2, Math.round((x.v / ov[0].v) * 100))}%;background:${x.col}"></i></div></div><div class="amt"><div class="num">${eur(x.v)}</div><div class="t2">${Math.round((x.v / cur.out) * 100)}%</div></div></div>`).join('')}</div>`
+        : '<div class="empty">Nessuna spesa questo mese</div>'
+    }</div>`;
   return `
-  <div class="grid g21">
+  <div class="grid g21 homegrid">
+    ${ring}
+    <div class="grid" style="gap:14px;align-content:start">
+      ${news.length ? `<button class="orbcard" data-act="orb">${orbHTML()}<span class="main"><b>${esc(news[0].t)}</b><span>${esc(news[0].d)}${news.length > 1 ? ' · ' + t('altri {n}', { n: news.length - 1 }) : ''}</span></span>${svgI('chev')}</button>` : ''}
     <div class="card kpi sens hero"><div class="lbl">Patrimonio netto</div><div class="val num" data-to="${net}">${eur(net)}</div><div class="foot">${nets[0] ? `<span class="chip ${netD >= 0 ? 'c-good' : 'c-crit'}">${netD >= 0 ? '▲' : '▼'} ${pct(netD)}</span> in 6 mesi` : 'Liquidità ' + eur0(cash()) + ' · Investimenti ' + eur0(iv)}</div>${heroChart(
       hv,
       h12.map(x => MESI[+x.slice(5) - 1])
     )}</div>
-    <div class="grid" style="gap:14px">
-      <div class="card kpi"><div class="lbl">${catIc('Stipendio')}Entrate del mese</div><div class="val num up">${eur(cur.inc)}</div><div class="foot">${cur.inc ? `<span class="${incD >= 0 ? 'up' : 'down'}">${pct(incD)}</span> vs ${pm}` : `Nessuna entrata ancora · ${pm}: ${eur0(pr.inc)}`}</div></div>
-      <div class="card kpi"><div class="lbl">${catIc('Shopping')}Uscite del mese</div><div class="val num">${eur(cur.out)}</div><div class="foot">${cur.inc ? Math.round(spentPct * 100) + '% delle entrate spese' : pr.out ? Math.round((cur.out / pr.out) * 100) + '% di quanto speso a ' + pm : '—'}</div><div class="spk">${sparkBars(dOut, 'var(--s-orange)', 30, dT)}</div></div>
+      <div class="grid g2k">
+        <div class="card kpi"><div class="lbl">${catIc('Stipendio')}Entrate del mese</div><div class="val num up">${eur(cur.inc)}</div><div class="foot">${cur.inc ? `<span class="${incD >= 0 ? 'up' : 'down'}">${pct(incD)}</span> vs ${pm}` : `Nessuna entrata ancora · ${pm}: ${eur0(pr.inc)}`}</div></div>
+        <div class="card kpi"><div class="lbl">${catIc('Shopping')}Uscite del mese</div><div class="val num">${eur(cur.out)}</div><div class="foot">${cur.inc ? Math.round(spentPct * 100) + '% delle entrate spese' : pr.out ? Math.round((cur.out / pr.out) * 100) + '% di quanto speso a ' + pm : '—'}</div><div class="spk">${sparkBars(dOut, 'var(--s-orange)', 30, dT)}</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="grid g21" style="margin-top:14px">
+    <div class="card"><div class="card-h"><div><h3>Giorno per giorno</h3><div class="hint">Uscite di ${mLow(k)} · la linea è la media al giorno</div></div><div class="legend"><span class="num">${eur0(cur.out / Math.max(dT + 1, 1))}/giorno</span></div></div>${dayBars(dOut, { today: dT })}</div>
+    <div class="grid" style="gap:14px;align-content:start">
       <div class="card kpi sens"><div class="lbl">${catIc('Investimenti')}Rendimento investimenti</div><div class="val num ${!ic ? '' : iv - ic >= 0 ? 'up' : 'down'}">${!ic ? '—' : (iv - ic >= 0 ? '+' : '') + eur(iv - ic)}</div><div class="foot">${ic ? pct((iv - ic) / ic) : '—'} su ${eur0(ic)} investiti</div></div>
+      ${ff ? `<div class="card"><div class="fact"><div class="ill pop">${ff.ill}</div><div><div class="k">Lo sapevi?</div><b>${esc(ff.t)}</b><div class="hint" style="font-size:13px;line-height:1.45">${esc(ff.d)}</div></div></div></div>` : ''}
     </div>
   </div>
   <div class="grid g2" style="margin-top:14px">
-    <div class="card"><div class="card-h"><div><h3>Panoramica del mese</h3><div class="hint">${ymLabel(k)} · tocca una categoria per i movimenti</div></div></div>
-      ${ov.length ? `<div class="donutwrap">${overviewDonut(ov, cur.out)}</div><div class="list" style="margin-top:6px">${ov.map(x => `<div class="row" ${x.rest ? 'style="cursor:default"' : `data-act="cat-tx" data-c="${esc(x.c)}"`}>${catAv(x.c)}<div class="main"><div class="t1">${esc(x.rest ? 'Altre categorie' : x.c)}</div><div class="t2">${x.rest ? '' : cnt[x.c] + (cnt[x.c] === 1 ? ' movimento' : ' movimenti') + ' · '}${Math.round((x.v / cur.out) * 100)}%</div></div><div class="amt num down">−${eur(x.v)}</div></div>`).join('')}</div>` : '<div class="empty">Nessuna spesa questo mese</div>'}</div>
-    <div class="grid" style="gap:14px;align-content:start">
-      ${ff ? `<div class="card"><div class="fact"><div class="ill pop">${ff.ill}</div><div><div class="k">Lo sapevi?</div><b>${esc(ff.t)}</b><div class="hint" style="font-size:13px;line-height:1.45">${esc(ff.d)}</div></div></div></div>` : ''}
-      ${budgetCard(cs, k)}
-    </div>
+    ${budgetCard(cs, k)}
+    <div class="card"><div class="card-h"><div><h3>Calendario spese</h3><div class="hint">Ogni quadratino è un giorno · più scuro = più speso</div></div></div>${heatmap()}</div>
   </div>
   ${(() => {
     const fc = forecastEnd(),
@@ -89,12 +109,9 @@ function vHome() {
       <div class="list">${ins.length ? ins.map(i => `<div class="row" style="cursor:default">${tile(...i.ic)}<div class="main"><div class="t1" style="white-space:normal">${esc(i.t)}</div><div class="t2" style="white-space:normal">${esc(i.d)}</div></div></div>`).join('') : '<div class="empty">Servono un paio di mesi di dati</div>'}</div></div>
   </div>`;
   })()}
-  <div style="margin-top:14px">
-    <div class="card"><div class="card-h"><div><h3>Spesa del mese</h3><div class="hint">Cumulata giorno per giorno · ${ymLabel(k)}</div></div><div class="legend"><span><i style="background:var(--s-orange)"></i>Questo mese</span><span><i style="background:none;border-top:2px dashed var(--mut);border-radius:0;height:0;width:12px"></i>${MESIL[+prev.slice(5) - 1]}</span></div></div>${monthArea()}</div>
-  </div>
   <div class="grid g2" style="margin-top:14px">
+    <div class="card"><div class="card-h"><div><h3>Spesa del mese</h3><div class="hint">Cumulata giorno per giorno · ${ymLabel(k)}</div></div><div class="legend"><span><i style="background:var(--s-orange)"></i>Questo mese</span><span><i style="background:none;border-top:2px dashed var(--mut);border-radius:0;height:0;width:12px"></i>${MESIL[+prev.slice(5) - 1]}</span></div></div>${monthArea()}</div>
     <div class="card"><div class="card-h"><div><h3>Risparmio mensile</h3><div class="hint">Entrate meno uscite · ultimi 12 mesi</div></div><div class="legend"><span><i style="background:var(--tx)"></i>Migliore ${sav.best ? MESI[+sav.best.k.slice(5) - 1] : ''}</span><span><i style="background:var(--crit)"></i>Peggiore ${sav.worst ? MESI[+sav.worst.k.slice(5) - 1] : ''}</span></div></div>${sav.svg}</div>
-    <div class="card"><div class="card-h"><div><h3>Calendario spese</h3><div class="hint">Ogni quadratino è un giorno · più scuro = più speso</div></div></div>${heatmap()}</div>
   </div>
   <div class="card" style="margin-top:14px"><div class="card-h"><div><h3>Budget per categoria</h3><div class="hint">Limiti per categoria · modificali in Impostazioni</div></div><button class="btn sm" data-act="go" data-v="impostazioni">Gestisci</button></div>
     ${
@@ -145,6 +162,22 @@ function filteredTx() {
     )
     .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
 }
+/** Summary on top of the transactions list: totals and spending per day of the chosen month. */
+function txSumHTML() {
+  const k = fM || today().slice(0, 7),
+    arr = filteredTx().filter(t => ym(t.date) === k && !isNeutral(t.cat));
+  const out = arr.reduce((s, t) => s + (t.amount < 0 ? -t.amount : 0), 0),
+    inc = arr.reduce((s, t) => s + (t.amount > 0 ? t.amount : 0), 0);
+  const d = Array(daysIn(k)).fill(0);
+  for (const t of arr) if (t.amount < 0) d[+t.date.slice(8) - 1] -= t.amount;
+  const isCur = k === today().slice(0, 7);
+  return `<div class="txsum-h"><div><div class="lbl">Uscite · ${ymLabel(k)}${fC ? ' · ' + esc(fC) : ''}</div><div class="big num">${eur(out)}</div></div><div class="txin"><div class="lbl">Entrate</div><div class="num up">+${eur0(inc)}</div></div></div>${dayBars(d, { today: isCur ? +today().slice(8) - 1 : -1, h: 96, c1: '#60A5FA', c2: '#2563EB' })}`;
+}
+function txRefresh() {
+  $('#txlist').innerHTML = txListHTML();
+  const s = $('#txsum');
+  if (s) s.innerHTML = txSumHTML();
+}
 function txListHTML() {
   const arr = filteredTx();
   if (!arr.length) return '<div class="empty">Nessun movimento trovato</div>';
@@ -170,13 +203,14 @@ function txListHTML() {
 /** Transactions screen (grouped by day, with filters). */
 function vTx() {
   const months = [...new Set(S.tx.map(t => ym(t.date)))].sort().reverse();
-  return `<div class="tools">
+  return `<div class="card txsum" id="txsum">${txSumHTML()}</div>
+  <div class="tools">
     <input class="inp" id="q" placeholder="Cerca movimenti…" value="${esc(fQ)}" style="flex:1;min-width:160px">
     <select class="inp" id="fm"><option value="">Tutti i mesi</option>${months.map(m => `<option value="${m}" ${m === fM ? 'selected' : ''}>${ymLabel(m)}</option>`).join('')}</select>
     <select class="inp" id="fc"><option value="">Tutte le categorie</option>${ALL_CATS()
       .map(c => `<option ${c === fC ? 'selected' : ''}>${c}</option>`)
       .join('')}</select>
-    <label class="btn pri">⇪ Importa estratto conto<input type="file" id="csv" accept=".xlsx,.xls,.csv,.txt,.pdf,application/pdf" hidden></label>
+    <label class="btn">${svgI('up')}Importa estratto conto<input type="file" id="csv" accept=".xlsx,.xls,.csv,.txt,.pdf,application/pdf" hidden></label>
     ${perm('categorize') && S.tx.some(t => t.cat === 'Altro' || t.cat === 'Altre entrate') ? '<button class="btn" data-act="ai-cat">Categorizza “Altro” con AI</button>' : ''}
   </div>
   <div class="hint" style="margin:-4px 0 12px">Excel, CSV o PDF della banca: se il formato è nuovo lo interpreta l'AI e lo memorizza. Quando correggi una categoria, l'app crea una regola per i prossimi import.</div>

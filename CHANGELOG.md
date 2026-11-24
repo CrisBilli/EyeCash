@@ -23,6 +23,12 @@
 
   Toccandolo vedi cosa c'è di nuovo, gli spunti e le scorciatoie per "Chiedi ai tuoi dati", "Posso permettermelo?" e FIRE. Tutto è calcolato sul dispositivo. Per ricordare cosa hai già letto, l'app salva solo un numero, mai il testo.
 - **Menu riordinato** in tre aree: Finanze, Pianifica, Analisi. Su telefono Investimenti si trova in *Altro*.
+- **Home nuova:**
+  - in cima c'è l'anello delle spese del mese diviso per categoria, con il totale al centro e quanto hai speso rispetto alla media;
+  - sotto, le categorie con il numero di movimenti, l'importo, la percentuale e una barretta colorata;
+  - quando c'è qualcosa da leggere, compare una scheda arancione del consulente;
+  - nuovo grafico **Giorno per giorno**, con le uscite di ogni giorno e la linea della media.
+- **Movimenti:** in cima c'è un riepilogo con uscite ed entrate del mese e le barre per giorno. Segue i filtri di mese, categoria e ricerca. "Importa estratto conto" diventa un pulsante più discreto.
 
 ## 1.3.0 · Il consulente
 - **Chiedi un parere, non solo una cifra.** In "Chiedi ai tuoi dati" puoi scrivere *"Tra un mese spendo 15.000 €, il prossimo anno vorrei un PC da 3.000: conviene?"*. La risposta contiene:

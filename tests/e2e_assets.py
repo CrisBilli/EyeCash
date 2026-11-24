@@ -51,6 +51,13 @@ with sync_playwright() as p:
     check('Home: scadenza assicurazione in "In arrivo"', 'Assicurazione · Golf' in t)
     check('Home: spunti presenti', 'Spunti' in t and ('Tasso di risparmio' in t or 'Assicurazione' in t))
     pg.screenshot(path='/tmp/a_home.png')
+    check('Home: anello delle spese (o nessuna spesa) e barre per giorno', (pg.locator('.ringwrap svg.ring circle[data-tip]').count() >= 1 or 'Nessuna spesa questo mese' in t) and pg.locator('.daybars rect').count() >= 28)
+    check('Home: avviso del consulente in cima', pg.locator('.orbcard').count() == 1 and 'Assicurazione' in pg.inner_text('.orbcard'))
+    pg.goto(B + '/#movimenti'); unlocked(pg)
+    check('Movimenti: riepilogo con uscite del mese e barre', 'Uscite' in pg.inner_text('#txsum') and pg.locator('#txsum .daybars rect').count() >= 28)
+    pg.select_option('#fc', 'Stipendio'); pg.wait_for_timeout(200)
+    check('Movimenti: il riepilogo segue i filtri', 'Stipendio' in pg.inner_text('#txsum'))
+    pg.select_option('#fc', ''); pg.goto(B + '/#home'); unlocked(pg)
     # privacy toggle
     pg.goto(B + '/#impostazioni'); unlocked(pg); pg.click('[data-act=priv][data-k=assets]'); pg.wait_for_timeout(300)
     pg.goto(B + '/#patrimonio'); unlocked(pg); pg.locator('.row', has_text='Golf').first.click(); pg.wait_for_selector('#frm')

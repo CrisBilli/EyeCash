@@ -55,6 +55,8 @@ const IC = {
   chart: '<path d="M4 20V11M10 20V5M16 20v-6M2.5 20h19"/>',
   piggy:
     '<path d="M19 11a6.5 5.5 0 1 0-9.5 4.9V19h3v-2h2v2h3v-3.2A5.4 5.4 0 0 0 19 13h2v-3h-2z"/><path d="M8 7.5 6.5 4.5l3 1"/>',
+  up: '<path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/>',
+  chev: '<path d="M9 6l6 6-6 6"/>',
   clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
   target: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/>',
   down: '<path d="M3 7l6 6 4-4 8 8"/><path d="M15 17h6v-6"/>',
@@ -153,33 +155,57 @@ function heroChart(vals, labels) {
    <circle class="pop" style="animation-delay:1s" cx="${last[0]}" cy="${last[1]}" r="6" fill="var(--card)" stroke="var(--accent)" stroke-width="3"/>${lb}
    ${P.map((q, i) => `<rect x="${q[0] - W / vals.length / 2}" y="0" width="${W / vals.length}" height="${H}" fill="transparent" data-tip="${labels[i]}\n${eur0(vals[i])}"/>`).join('')}</svg>`;
 }
-/* spending overview: donut with icons and percentages */
-/** Spending donut of the month with category bubbles and percentages. */
-function overviewDonut(rows, total) {
-  const S0 = 240,
-    c = S0 / 2,
-    r = 74,
-    w = 26,
-    C = 2 * Math.PI * r;
-  let acc = 0,
-    s = '',
-    bub = '';
-  rows.forEach((x, i) => {
-    const f = x.v / total,
-      L = f * C,
-      mid = ((acc + L / 2) / C) * 2 * Math.PI - Math.PI / 2;
-    s += `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${x.col}" stroke-width="${w}" stroke-dasharray="${Math.max(0, L - 3).toFixed(2)} ${C.toFixed(2)}" stroke-dashoffset="${(-acc).toFixed(2)}" transform="rotate(-90 ${c} ${c})" data-tip="${esc(x.c)}\n${eur(x.v)} · ${Math.round(f * 100)}%"/>`;
-    if (f >= 0.06) {
-      const bx = c + Math.cos(mid) * (r + 30),
-        by = c + Math.sin(mid) * (r + 30),
-        [col, k] = CAT_STYLE[x.c] || CAT_STYLE.Altro;
-      bub += `<g class="pop" style="animation-delay:${0.25 + i * 0.07}s;transform-origin:${bx}px ${by}px"><circle cx="${bx}" cy="${by}" r="15" fill="${col}"/><svg x="${bx - 8}" y="${by - 8}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${IC[k]}</svg>
-       <text x="${bx + (Math.cos(mid) >= 0 ? 20 : -20)}" y="${by + 4}" text-anchor="${Math.cos(mid) >= 0 ? 'start' : 'end'}" style="font-size:12px;font-weight:700;fill:${col}">${Math.round(f * 100)}%</text></g>`;
-    }
-    acc += L;
-  });
-  return `<svg viewBox="-40 -10 ${S0 + 80} ${S0 + 20}" width="${S0 + 80}" style="max-width:100%;overflow:visible"><g class="fadein" style="animation-delay:0s">${s}</g>${bub}
-   <text x="${c}" y="${c - 4}" text-anchor="middle" style="font-size:20px;font-weight:700;fill:var(--tx)" class="num">${eur0(total)}</text><text x="${c}" y="${c + 16}" text-anchor="middle" style="font-size:11.5px">uscite del mese</text></svg>`;
+/** Big spending ring of the month: one rounded arc per category, with small gaps. */
+function spendRing(rows, total, size = 228) {
+  const c = size / 2,
+    r = c - 16,
+    w = 18,
+    C = 2 * Math.PI * r,
+    multi = rows.length > 1,
+    cut = multi ? w + 5 : 0;
+  let acc = 0;
+  const arcs = rows
+    .map(x => {
+      const L = (x.v / total) * C,
+        dash = multi ? Math.max(0.5, L - cut) : C;
+      const el = `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${x.col}" stroke-width="${w}" stroke-linecap="${multi ? 'round' : 'butt'}" stroke-dasharray="${dash.toFixed(1)} ${C.toFixed(1)}" stroke-dashoffset="${(-acc - cut / 2).toFixed(1)}" transform="rotate(-90 ${c} ${c})" data-tip="${esc(x.c)}\n${eur(x.v)} · ${Math.round((x.v / total) * 100)}%"/>`;
+      acc += L;
+      return el;
+    })
+    .join('');
+  return `<svg class="ring" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" aria-hidden="true"><circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="var(--ringtrack)" stroke-width="${w}"/><g class="ringarcs">${arcs}</g></svg>`;
+}
+/** Bars for each day of a month, with the daily average as a dashed line and today highlighted. */
+function dayBars(vals, opt = {}) {
+  const W = 340,
+    H = opt.h || 120,
+    pb = 18,
+    n = vals.length,
+    nz = vals.filter(v => v > 0).sort((x, y) => x - y),
+    /* one rent-sized day must not flatten the rest: cap the scale, the tall bar touches the top */
+    mx = Math.max(
+      1,
+      nz.length >= 5
+        ? Math.min(nz[nz.length - 1], nz[Math.floor(nz.length * 0.8)] * 2.2)
+        : nz[nz.length - 1] || 1
+    ),
+    bw = W / n,
+    todayI = opt.today == null ? -1 : opt.today,
+    upto = todayI >= 0 ? todayI + 1 : n,
+    avg = vals.slice(0, upto).reduce((s, v) => s + v, 0) / Math.max(upto, 1),
+    ay = H - pb - (Math.min(avg, mx) / mx) * (H - pb - 6),
+    id = 'db' + gid++;
+  const bars = vals
+    .map((v, i) => {
+      const bh = v > 0 ? Math.max(3, (Math.min(v, mx) / mx) * (H - pb - 6)) : 3,
+        fut = todayI >= 0 && i > todayI;
+      return `<rect x="${(i * bw + bw * 0.18).toFixed(1)}" y="${(H - pb - bh).toFixed(1)}" width="${(bw * 0.64).toFixed(1)}" height="${bh.toFixed(1)}" rx="${Math.min(3, bw * 0.3).toFixed(1)}" fill="${v > 0 && !fut ? `url(#${id})` : 'var(--line2)'}" opacity="${fut ? 0.35 : i === todayI ? 1 : v > 0 ? 0.85 : 0.6}"${v > 0 ? ` data-tip="${i + 1} · ${eur(v)}"` : ''}/>`;
+    })
+    .join('');
+  const lab = [0, 9, 19, n - 1]
+    .map(i => `<text x="${(i * bw + bw / 2).toFixed(1)}" y="${H - 3}" text-anchor="middle">${i + 1}</text>`)
+    .join('');
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" preserveAspectRatio="none" class="daybars"><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${opt.c1 || '#A78BFA'}"/><stop offset="1" stop-color="${opt.c2 || '#2563EB'}"/></linearGradient></defs>${bars}${avg > 0 ? `<line x1="0" x2="${W}" y1="${ay.toFixed(1)}" y2="${ay.toFixed(1)}" stroke="var(--tx2)" stroke-opacity=".5" stroke-dasharray="3 4" vector-effect="non-scaling-stroke"/>` : ''}${lab}</svg>`;
 }
 /* fun facts: playful comparisons computed locally */
 /** "Did you know?" card: a playful comparison computed locally. */
