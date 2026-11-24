@@ -19,9 +19,9 @@ function showLock(mode, msg = '') {
   KEY = null;
   $('#lock').classList.remove('hidden');
   const setup = mode === 'setup';
-  $('#lockbox').innerHTML = `<div class="logo"><i></i>EyeCash</div>
+  $('#lockbox').innerHTML = `<div class="logo">${orbHTML()}EyeCash</div>
   <p>${setup ? "Crea la password. Serve ad aprire l'app <b>e a cifrare i tuoi dati</b>: il server non la conosce." : 'I tuoi dati sono cifrati. Inserisci la password per aprirli.'}</p>
-  ${setup ? '<div class="warn">⚠️ Se perdi la password, i dati <b>non si possono recuperare</b> da nessuno. Salvala in un password manager (es. Portachiavi iCloud).</div>' : ''}
+  ${setup ? '<div class="warn">Se perdi la password, i dati <b>non si possono recuperare</b> da nessuno. Salvala in un password manager (es. Portachiavi iCloud).</div>' : ''}
   <form id="lockform" autocomplete="on">
     <input type="text" name="username" value="pointofcash" autocomplete="username" hidden>
     <div class="fld"><label>Password</label><input class="inp" type="password" id="pw1" autocomplete="${setup ? 'new-password' : 'current-password'}" required minlength="${setup ? 10 : 1}" autofocus></div>
@@ -265,7 +265,7 @@ async function bioVerify() {
 function showBioLock(msg = '') {
   $('#lock').classList.remove('hidden');
   $('#lockbox').innerHTML =
-    `<div class="logo"><i></i>EyeCash</div><p>App bloccata. Sblocca con Face ID, impronta o il PIN del dispositivo.</p>
+    `<div class="logo">${orbHTML()}EyeCash</div><p>App bloccata. Sblocca con Face ID, impronta o il PIN del dispositivo.</p>
     <button class="btn pri" type="button" id="biobtn">Sblocca con Face ID</button>
     <button class="btn" type="button" id="biopw" style="margin-top:10px">Usa la password</button>
     <div class="err" id="lockerr">${esc(msg)}</div>`;

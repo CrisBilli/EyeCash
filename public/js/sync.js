@@ -12,6 +12,16 @@
 /** Calls the server API. Throws an error with `.status`; switches to offline mode on network failure. */
 async function api(method, url, body) {
   if (OFFLINE && url !== '/api/status') throw offErr();
+  const ai = url.startsWith('/api/ai/');
+  if (!ai) return apiCall(method, url, body);
+  orbBusy(1);
+  try {
+    return await apiCall(method, url, body);
+  } finally {
+    orbBusy(-1);
+  }
+}
+async function apiCall(method, url, body) {
   let r;
   try {
     r = await fetch(url, {

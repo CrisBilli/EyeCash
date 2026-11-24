@@ -9,9 +9,9 @@
 const THEME_KEY = 'eyecash_theme';
 function themePref() {
   try {
-    return localStorage.getItem(THEME_KEY) || 'light';
+    return localStorage.getItem(THEME_KEY) || 'dark';
   } catch (e) {
-    return 'light';
+    return 'dark';
   }
 }
 /** Applies the light/dark/auto theme and the matching browser chrome colours. */
@@ -20,7 +20,7 @@ function applyTheme() {
     t = p === 'auto' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : p;
   document.documentElement.dataset.theme = t;
   const m = document.querySelector('meta[name=theme-color]');
-  if (m) m.content = t === 'light' ? '#f1f0f8' : '#0b0b0c';
+  if (m) m.content = t === 'light' ? '#F3F5F9' : '#090B10';
   const s = document.querySelector('meta[name=apple-mobile-web-app-status-bar-style]');
   if (s) s.content = t === 'light' ? 'default' : 'black-translucent';
 }
@@ -55,38 +55,49 @@ const IC = {
   chart: '<path d="M4 20V11M10 20V5M16 20v-6M2.5 20h19"/>',
   piggy:
     '<path d="M19 11a6.5 5.5 0 1 0-9.5 4.9V19h3v-2h2v2h3v-3.2A5.4 5.4 0 0 0 19 13h2v-3h-2z"/><path d="M8 7.5 6.5 4.5l3 1"/>',
+  clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  target: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/>',
+  down: '<path d="M3 7l6 6 4-4 8 8"/><path d="M15 17h6v-6"/>',
+  gem: '<path d="M6 4h12l3.5 5L12 21 2.5 9z"/><path d="M2.5 9h19M9.5 4 8 9l4 12 4-12-1.5-5"/>',
+  doc: '<path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/>',
+  cup: '<path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M17 11h1.5a2.5 2.5 0 0 1 0 5H17M8 3v3M12 3v3"/>',
+  lock: '<rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',
+  mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/>',
+  print: '<path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/>',
   cash: '<rect x="2.5" y="6.5" width="19" height="11" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v5M18 9.5v5"/>'
 };
 const CAT_STYLE = {
-  Casa: ['#f59f00', 'house'],
-  Utenze: ['#f7b500', 'bolt'],
-  Spesa: ['#40c057', 'cart'],
-  Trasporti: ['#339af0', 'car'],
-  Ristoranti: ['#ff8f3a', 'food'],
-  Abbonamenti: ['#845ef7', 'repeat'],
-  Salute: ['#f06595', 'heart'],
-  Shopping: ['#e64980', 'bag'],
-  Svago: ['#12b886', 'star'],
-  Viaggi: ['#22b8cf', 'plane'],
-  'Tasse e commissioni': ['#868e96', 'bank'],
-  'Rate e finanziamenti': ['#fa5252', 'cal'],
-  'Carta di credito': ['#5c7cfa', 'card'],
-  Altro: ['#a5adba', 'dots'],
-  Stipendio: ['#2f9e44', 'brief'],
-  Freelance: ['#1098ad', 'laptop'],
-  'Dividendi e cedole': ['#37b24d', 'trend'],
-  'Altre entrate': ['#74b816', 'coin'],
-  Giroconti: ['#4dabf7', 'swap'],
-  Investimenti: ['#7950f2', 'chart']
+  Casa: ['#A78BFA', 'house'],
+  Utenze: ['#FBBF24', 'bolt'],
+  Spesa: ['#34D399', 'cart'],
+  Trasporti: ['#60A5FA', 'car'],
+  Ristoranti: ['#FB923C', 'food'],
+  Abbonamenti: ['#22D3EE', 'repeat'],
+  Salute: ['#F87171', 'heart'],
+  Shopping: ['#FB7185', 'bag'],
+  Svago: ['#E879F9', 'star'],
+  Viaggi: ['#38BDF8', 'plane'],
+  'Tasse e commissioni': ['#A1A1AA', 'bank'],
+  'Rate e finanziamenti': ['#F472B6', 'cal'],
+  'Carta di credito': ['#818CF8', 'card'],
+  Altro: ['#94A3B8', 'dots'],
+  Stipendio: ['#4ADE80', 'brief'],
+  Freelance: ['#2DD4BF', 'laptop'],
+  'Dividendi e cedole': ['#A3E635', 'trend'],
+  'Altre entrate': ['#86EFAC', 'coin'],
+  Giroconti: ['#7DD3FC', 'swap'],
+  Investimenti: ['#8B5CF6', 'chart']
 };
 const ACC_STYLE = {
-  Conto: ['#4c8df6', 'bank'],
-  Carta: ['#5c7cfa', 'card'],
-  Risparmio: ['#f06595', 'piggy'],
-  Contanti: ['#2fb36e', 'cash']
+  Conto: ['#60A5FA', 'bank'],
+  Carta: ['#818CF8', 'card'],
+  Risparmio: ['#F472B6', 'piggy'],
+  Contanti: ['#34D399', 'cash']
 };
 const svgI = (k, w = 2) =>
   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${IC[k] || IC.dots}</svg>`;
+/** Coloured tile with a line icon (replaces emoji avatars). */
+const tile = (k, c, cls = '') => `<div class="av cico ${cls}" style="--c:${c}">${svgI(k)}</div>`;
 const catCol = c => (CAT_STYLE[c] || CAT_STYLE.Altro)[0];
 /** Round coloured category avatar (icon in a circle). */
 const catAv = c => {
@@ -183,30 +194,28 @@ function funFact() {
     if (/\b(bar|caff[eè])\b/i.test(t.note || '')) bar++;
   }
   const F = [
-    ['Ristoranti', '🍕', 8, 'pizze margherita', '#fff1e6'],
-    ['Trasporti', '⛽', 70, 'pieni di benzina', '#e8f3ff'],
-    ['Svago', '🎬', 9, 'biglietti del cinema', '#e6f8f2'],
-    ['Viaggi', '🏨', 90, 'notti in hotel', '#e6f8fb'],
-    ['Shopping', '👟', 70, 'paia di scarpe da ginnastica', '#fde9f2'],
-    ['Spesa', '🛒', 60, 'carrelli della spesa media', '#eaf8ec'],
-    ['Abbonamenti', '📺', 12, 'mesi di un abbonamento streaming', '#f1ecff']
+    ['Ristoranti', '', 8, 'pizze margherita', '#fff1e6'],
+    ['Trasporti', '', 70, 'pieni di benzina', '#e8f3ff'],
+    ['Svago', '', 9, 'biglietti del cinema', '#e6f8f2'],
+    ['Viaggi', '', 90, 'notti in hotel', '#e6f8fb'],
+    ['Shopping', '', 70, 'paia di scarpe da ginnastica', '#fde9f2'],
+    ['Spesa', '', 60, 'carrelli della spesa media', '#eaf8ec'],
+    ['Abbonamenti', '', 12, 'mesi di un abbonamento streaming', '#f1ecff']
   ];
   const ok = F.filter(f => by[f[0]] >= f[2] * 2);
-  if (bar >= 10) ok.push(['__bar', '☕', 0, '', '#f6efe7']);
+  if (bar >= 10) ok.push(['__bar', '', 0, '', '']);
   if (!ok.length) return null;
   const doy = Math.floor((Date.now() - Date.parse(y + '-01-01')) / 864e5),
     f = ok[doy % ok.length];
   if (f[0] === '__bar')
     return {
-      ill: '☕',
-      bg: f[4],
+      ill: tile('cup', '#FB923C', 'big'),
       t: `Quest'anno sei passato al bar ${bar} volte`,
       d: 'Contando i pagamenti con "bar" o "caffè" nella descrizione.'
     };
   const v = by[f[0]];
   return {
-    ill: f[1],
-    bg: f[4],
+    ill: catAv(f[0]).replace('class="av cico"', 'class="av cico big"'),
     t: `Quest'anno hai già speso ${eur0(v)} in ${f[0]}`,
     d: `Con la stessa cifra potevi comprare circa ${Math.round(v / f[2])} ${f[3]}.`,
     c: f[0]
@@ -348,24 +357,85 @@ const VIEWS = [
   ['report', 'Report', 'print', 'Report']
 ];
 let view = 'home';
+/* ---------- the consultant orb: the logo eye, with three states ----------
+   idle: breathes · alert (something new to read): the chart turns orange and the eye blinks
+   until the sheet is opened · thinking (an AI request is running): the iris looks left and right. */
+const ORB_SVG =
+  '<svg class="eye" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="49" fill="url(#ec-sphere)"/><circle cx="50" cy="50" r="48.5" fill="none" stroke="#fff" stroke-opacity=".15"/>' +
+  '<g class="lid"><path d="M17 53 Q48 21 81 45 L61 63 L49 55 L36 63 Z" fill="#fff" fill-opacity=".96"/><g clip-path="url(#ec-eye)"><g class="iris"><circle cx="49" cy="46" r="12" fill="url(#ec-iris)"/><circle cx="49" cy="46" r="5.4" fill="#020617"/><circle cx="45.2" cy="42.3" r="2.4" fill="#fff"/></g></g></g>' +
+  '<path class="chart" d="M17 53 L36 63 L49 55 L61 63 L84 42" fill="none" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path class="chart" d="M75.5 41.2 L85.5 40.6 L84.6 50.4" fill="none" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const orbHTML = (cls = '') => `<span class="orb ${cls}"><span class="halo"></span>${ORB_SVG}</span>`;
+let orbBusyN = 0;
+/** Marks an AI request as running (+1) or finished (-1): the eye looks around meanwhile. */
+function orbBusy(d) {
+  orbBusyN = Math.max(0, orbBusyN + d);
+  document.body.classList.toggle('orb-think', orbBusyN > 0);
+}
+const ORB_SEEN_KEY = 'eyecash_orb_seen';
+/** Things worth reading: spending running high and deadlines. Computed on the device. */
+function orbNews() {
+  try {
+    return typeof insights === 'function' && S ? insights().filter(i => i.news) : [];
+  } catch (e) {
+    return [];
+  }
+}
+/* only a short hash is stored, never the text */
+const orbSig = list => {
+  let h = 0;
+  for (const ch of list.map(i => i.t).join('|')) h = (h * 31 + ch.charCodeAt(0)) | 0;
+  return list.length ? String(h >>> 0) : '';
+};
+/** Updates the alert state of the orb. */
+function orbRefresh() {
+  const sig = orbSig(orbNews());
+  let seen = '';
+  try {
+    seen = localStorage.getItem(ORB_SEEN_KEY) || '';
+  } catch (e) {}
+  document.body.classList.toggle('orb-alert', !!sig && sig !== seen);
+}
+function orbMarkSeen() {
+  try {
+    localStorage.setItem(ORB_SEEN_KEY, orbSig(orbNews()));
+  } catch (e) {}
+  document.body.classList.remove('orb-alert');
+}
+/* navigation grouped by area */
+const NAV_GROUPS = [
+  ['Finanze', ['home', 'movimenti', 'patrimonio', 'investimenti']],
+  ['Pianifica', ['obiettivi', 'ricorrenti', 'permettermelo', 'fire']],
+  ['Analisi', ['statistiche', 'report', 'chiedi']]
+];
 function renderNav() {
+  const btn = v =>
+    `<button class="nav ${view === v[0] ? 'on' : ''}" data-act="go" data-v="${v[0]}">${ico(v[2])}${v[1]}</button>`;
   $('#sidenav').innerHTML =
-    '<div class="navlbl">Finanze</div>' +
-    VIEWS.map(
-      v =>
-        `<button class="nav ${view === v[0] ? 'on' : ''}" data-act="go" data-v="${v[0]}">${ico(v[2])}${v[1]}</button>`
+    `<button class="nav orbnav" data-act="orb">${orbHTML()}<span class="main"><span style="display:block">Consulente</span><span class="t2">Spunti e domande sui tuoi dati</span></span></button>` +
+    NAV_GROUPS.map(
+      ([g, ks]) =>
+        `<div class="navlbl">${g}</div>` +
+        ks
+          .map(k => VIEWS.find(v => v[0] === k))
+          .filter(Boolean)
+          .map(btn)
+          .join('')
     ).join('') +
     '<div class="navlbl">Account</div>' +
     `<button class="nav ${view === 'impostazioni' ? 'on' : ''}" data-act="go" data-v="impostazioni">${ico('set')}Impostazioni</button>`;
-  const TB = ['home', 'movimenti', 'patrimonio', 'investimenti'];
+  const TB = ['home', 'movimenti', 'patrimonio'];
   const inMore = !TB.includes(view);
+  const tab = k => {
+    const v = VIEWS.find(x => x[0] === k);
+    return `<button class="${view === k ? 'on' : ''}" data-act="go" data-v="${k}">${ico(v[2])}${v[3]}</button>`;
+  };
   $('#tabbar').innerHTML =
-    VIEWS.filter(v => TB.includes(v[0]))
-      .map(
-        v =>
-          `<button class="${view === v[0] ? 'on' : ''}" data-act="go" data-v="${v[0]}">${ico(v[2])}${v[3]}</button>`
-      )
-      .join('') + `<button class="${inMore ? 'on' : ''}" data-act="more">${ico('more')}Altro</button>`;
+    tab('home') +
+    tab('movimenti') +
+    `<button class="orbtab" data-act="orb" aria-label="Consulente">${orbHTML()}<span class="sr">Consulente</span></button>` +
+    tab('patrimonio') +
+    `<button class="${inMore ? 'on' : ''}" data-act="more">${ico('more')}Altro</button>`;
+  orbRefresh();
 }
 function renderSync() {
   document.body.classList.toggle('offline', OFFLINE);
@@ -384,7 +454,7 @@ function renderSync() {
       ? 'Ultimo salvataggio ' + pad(lastSaved.getHours()) + ':' + pad(lastSaved.getMinutes())
       : 'Dati cifrati con la tua password';
   $('#syncbox').innerHTML =
-    `<div style="color:var(--tx);font-weight:500;margin-bottom:3px"><span class="dot" style="background:${m[0]}"></span>${m[1]}</div>${S && S.demo ? 'Dati di esempio: non vengono salvati.' : t}<div style="margin-top:8px"><button class="btn sm" data-act="lock">🔒 Blocca</button></div>`;
+    `<div style="color:var(--tx);font-weight:500;margin-bottom:3px"><span class="dot" style="background:${m[0]}"></span>${m[1]}</div>${S && S.demo ? 'Dati di esempio: non vengono salvati.' : t}<div style="margin-top:8px"><button class="btn sm" data-act="lock">${svgI('lock')}Blocca</button></div>`;
 }
 
 /* ---------- charts ---------- */

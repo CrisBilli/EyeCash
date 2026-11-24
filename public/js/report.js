@@ -159,7 +159,7 @@ function repControls(P) {
       REP.detail,
       200
     )}
-    <button class="btn pri" data-act="print">🖨 Stampa / Salva PDF</button>
+    <button class="btn pri" data-act="print">${svgI('print')}Stampa / Salva PDF</button>
     <span class="hint">“Solo sintesi” toglie esercenti e singoli movimenti: utile da condividere con un consulente.</span></div>`;
 }
 

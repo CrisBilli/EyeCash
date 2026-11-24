@@ -56,12 +56,16 @@ const recMonthly = () =>
   S.recurring.reduce((s, r) => s + (r.type === 'in' ? 0 : r.amount * FREQM[r.freq]), 0);
 
 /* ---------- Assets, debts, net worth ---------- */
-const AKIND = { auto: ['🚗', 'Auto / moto'], casa: ['🏠', 'Casa / immobile'], altro: ['💎', 'Altro bene'] };
+const AKIND = {
+  auto: [['car', '#60A5FA'], 'Auto / moto'],
+  casa: [['house', '#A78BFA'], 'Casa / immobile'],
+  altro: [['gem', '#22D3EE'], 'Altro bene']
+};
 const DKIND = {
-  mutuo: ['🏦', 'Mutuo'],
-  prestito: ['💶', 'Prestito personale'],
-  auto: ['🚗', 'Finanziamento auto'],
-  altro: ['📄', 'Altro debito']
+  mutuo: [['bank', '#F472B6'], 'Mutuo'],
+  prestito: [['cash', '#FB7185'], 'Prestito personale'],
+  auto: [['car', '#FB923C'], 'Finanziamento auto'],
+  altro: [['doc', '#94A3B8'], 'Altro debito']
 };
 const yearsSince = t => (t ? (Date.now() - t) / (365.25 * 864e5) : 0);
 function assetValue(a) {
@@ -192,14 +196,15 @@ function insights() {
       a = avg[c] || 0;
     if (a >= 40 && proj > a * 1.25 && proj - a >= 30)
       out.push({
-        ic: '📈',
+        ic: ['trend', '#FB923C'],
+        news: true,
         t: `${c}: verso ${eur0(proj)} questo mese`,
         d: `+${Math.round((proj / a - 1) * 100)}% rispetto alla media (${eur0(a)}/mese)`,
         w: proj - a
       });
     else if (a >= 60 && dom >= 20 && proj < a * 0.7)
       out.push({
-        ic: '👏',
+        ic: ['down', '#34D399'],
         t: `${c}: stai spendendo meno`,
         d: `${eur0(proj)} previsti contro ${eur0(a)} di media`,
         w: (a - proj) / 2
@@ -210,7 +215,7 @@ function insights() {
     .reduce((s, r) => s + r.amount * FREQM[r.freq], 0);
   if (subs > 0)
     out.push({
-      ic: '📺',
+      ic: ['repeat', '#22D3EE'],
       t: `Abbonamenti: ${eur(subs)} al mese`,
       d: `${eur0(subs * 12)} all'anno · ${S.recurring.filter(r => r.cat === 'Abbonamenti').length} attivi`,
       w: subs / 3
@@ -219,7 +224,7 @@ function insights() {
   if (p.inc > 0) {
     const rate = (p.inc - p.out) / p.inc;
     out.push({
-      ic: rate >= 0.2 ? '💪' : '🎯',
+      ic: rate >= 0.2 ? ['piggy', '#34D399'] : ['target', '#FBBF24'],
       t: `Tasso di risparmio di ${monthInText(MESIL[+lastMonths(2)[0].slice(5) - 1])}: ${Math.round(rate * 100)}%`,
       d: rate >= 0.2 ? 'Ottimo: sopra il 20%' : 'Obiettivo consigliato: almeno il 20% delle entrate',
       w: 10
@@ -227,7 +232,8 @@ function insights() {
   }
   for (const dl of upcomingDeadlines(15))
     out.push({
-      ic: '⏰',
+      ic: ['clock', '#FB7185'],
+      news: true,
       t: `${dl.label} · ${esc(dl.a.name)}`,
       d: `scade ${dLabel(dl.date)} (${daysTo(dl.date) <= 0 ? 'oggi o scaduta' : 'tra ' + daysTo(dl.date) + ' gg'})`,
       w: 999
@@ -273,9 +279,9 @@ function vPat() {
                   .filter(Boolean)
                   .sort((x, y) => (x.d < y.d ? -1 : 1))[0];
               const loan = D.find(d => d.assetId === a.id);
-              return `<div class="row" data-act="asset-edit" data-id="${a.id}"><div class="av">${AKIND[a.kind][0]}</div><div class="main"><div class="t1">${esc(a.name)} ${a.est ? `<span class="chip ${a.est.confidence === 'alta' ? 'c-good' : a.est.confidence === 'media' ? 'c-info' : 'c-warn'}">stima ${esc(a.est.confidence)}</span>` : '<span class="chip c-mut">manuale</span>'}</div>
+              return `<div class="row" data-act="asset-edit" data-id="${a.id}">${tile(...AKIND[a.kind][0])}<div class="main"><div class="t1">${esc(a.name)} ${a.est ? `<span class="chip ${a.est.confidence === 'alta' ? 'c-good' : a.est.confidence === 'media' ? 'c-info' : 'c-warn'}">stima ${esc(a.est.confidence)}</span>` : '<span class="chip c-mut">manuale</span>'}</div>
         <div class="t2">${a.est ? `forchetta ${eur0(a.est.low)}–${eur0(a.est.high)} · ${fmtTime(a.valueAt)}` : 'valore inserito a mano'}${a.kind === 'auto' && a.deprec ? ` · −${String(a.deprec).replace('.', DEC)}%/anno` : ''}</div>
-        ${dl ? `<div class="t2">${daysTo(dl.d) <= 30 ? '⏰ ' : ''}${esc(dl.l)}: ${dLabel(dl.d)}</div>` : ''}${loan ? `<div class="t2">Netto del debito: ${eur0(v - loanResidual(loan))}</div>` : ''}</div><div class="amt num">${eur0(v)}</div></div>`;
+        ${dl ? `<div class="t2">${daysTo(dl.d) <= 30 ? '<span class="chip c-warn">!</span> ' : ''}${esc(dl.l)}: ${dLabel(dl.d)}</div>` : ''}${loan ? `<div class="t2">Netto del debito: ${eur0(v - loanResidual(loan))}</div>` : ''}</div><div class="amt num">${eur0(v)}</div></div>`;
             }).join('')
           : '<div class="empty">Aggiungi la tua auto o la casa per avere il patrimonio completo</div>'
       }</div></div>
@@ -286,7 +292,7 @@ function vPat() {
               const res = loanResidual(d),
                 paid = d.principal ? 1 - res / d.principal : 0,
                 P = +d.payment || loanPayment(+d.principal, +d.rate, +d.months);
-              return `<div class="row" data-act="debt-edit" data-id="${d.id}"><div class="av">${DKIND[d.kind][0]}</div><div class="main"><div class="t1">${esc(d.name)}</div><div class="t2">Rata ${eur(P)} · ${String(d.rate).replace('.', DEC)}% · fine ${dLabel(loanEnd(d))}</div><div class="bar" style="margin-top:6px"><i style="width:${Math.min(100, paid * 100)}%;background:var(--good)"></i></div><div class="t2">${Math.round(paid * 100)}% rimborsato · ${monthsPaid(d.start)}/${d.months} rate</div></div><div class="amt num down">${eur0(res)}</div></div>`;
+              return `<div class="row" data-act="debt-edit" data-id="${d.id}">${tile(...DKIND[d.kind][0])}<div class="main"><div class="t1">${esc(d.name)}</div><div class="t2">Rata ${eur(P)} · ${String(d.rate).replace('.', DEC)}% · fine ${dLabel(loanEnd(d))}</div><div class="bar" style="margin-top:6px"><i style="width:${Math.min(100, paid * 100)}%;background:var(--good)"></i></div><div class="t2">${Math.round(paid * 100)}% rimborsato · ${monthsPaid(d.start)}/${d.months} rate</div></div><div class="amt num down">${eur0(res)}</div></div>`;
             }).join('')
           : '<div class="empty">Nessun debito</div>'
       }</div></div>
@@ -364,7 +370,7 @@ function assetForm(a, kind) {
   ];
   const est = a.est ? estHTML(a.est, false) : '';
   const ai = perm('assets')
-    ? `<button type="button" class="btn" data-act="asset-estimate" data-kind="${kind}" style="width:100%;justify-content:center">✦ Stima il valore con AI${STATUS && STATUS.ai_web ? ' (cerca annunci reali)' : ''}</button><p class="hint" style="margin:6px 0 0;line-height:1.5">Invia solo le caratteristiche qui sopra${kind === 'casa' ? " (comune, zona, m²: mai l'indirizzo)" : ''}. Nessun dato dei conti.</p>`
+    ? `<button type="button" class="btn" data-act="asset-estimate" data-kind="${kind}" style="width:100%;justify-content:center">Stima il valore con AI${STATUS && STATUS.ai_web ? ' (cerca annunci reali)' : ''}</button><p class="hint" style="margin:6px 0 0;line-height:1.5">Invia solo le caratteristiche qui sopra${kind === 'casa' ? " (comune, zona, m²: mai l'indirizzo)" : ''}. Nessun dato dei conti.</p>`
     : AI
       ? '<p class="hint">Stima AI spenta in Impostazioni → Privacy.</p>'
       : '';
@@ -441,7 +447,7 @@ async function runEstimate(kind) {
   for (const [k] of AFIELDS[kind]) if (fd['d_' + k]) fields[k] = fd['d_' + k];
   const box = $('#estbox');
   box.innerHTML =
-    '<div class="hint">✦ Sto stimando… ' +
+    '<div class="hint">Sto stimando… ' +
     (STATUS && STATUS.ai_web ? '(cerco annunci e prezzi reali, può richiedere 30–60 secondi)' : '') +
     '</div>';
   logAI(
@@ -576,7 +582,7 @@ function kindPicker() {
     `<div class="list">${Object.entries(AKIND)
       .map(
         ([k, v]) =>
-          `<div class="row" data-act="asset-kind" data-k="${k}"><div class="av">${v[0]}</div><div class="main"><div class="t1">${v[1]}</div><div class="t2">${k === 'auto' ? 'stima dal modello, deprezzamento, bollo e revisione' : k === 'casa' ? 'stima dalla zona e dai m², IMU e assicurazione' : 'orologi, bici, strumenti, arte…'}</div></div></div>`
+          `<div class="row" data-act="asset-kind" data-k="${k}">${tile(...v[0])}<div class="main"><div class="t1">${v[1]}</div><div class="t2">${k === 'auto' ? 'stima dal modello, deprezzamento, bollo e revisione' : k === 'casa' ? 'stima dalla zona e dai m², IMU e assicurazione' : 'orologi, bici, strumenti, arte…'}</div></div></div>`
       )
       .join('')}</div>`
   );

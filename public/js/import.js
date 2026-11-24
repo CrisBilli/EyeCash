@@ -396,7 +396,7 @@ function showPortfolioImport(items) {
         label: 'In quale portafoglio?',
         type: 'select',
         v: PF,
-        options: [['', pfName('')], ...pfs().map(p => [p.id, p.name]), ['__new', '➕ Nuovo portafoglio…']]
+        options: [['', pfName('')], ...pfs().map(p => [p.id, p.name]), ['__new', 'Nuovo portafoglio…']]
       },
       { k: 'pfname', label: 'Nome del nuovo portafoglio (solo se ne crei uno)', v: '', ph: 'es. Fineco' }
     );
@@ -892,7 +892,7 @@ function showImport(res) {
       if (d.ai === '1') await aiCategorize(added.filter(t => t.cat === 'Altro' || t.cat === 'Altre entrate'));
     },
     null,
-    `<p class="hint" style="line-height:1.6;margin-bottom:8px"><span class="chip c-info">${esc(res.source || '')}</span><br>Trovati <b style="color:var(--tx)">${items.length}</b> movimenti dal ${dLabel(dates[0])} al ${dLabel(dates[dates.length - 1])}, <b style="color:var(--tx)">${auto}</b> già categorizzati.${nCard ? ` <br><b style="color:var(--tx)">💳 Carta di credito riconosciuta:</b> ${nCard} acquisti vanno sul conto “Carta di credito” e i ${nSet} addebiti mensili diventano giroconti, così ogni spesa conta una volta sola.` : ''}${nEx ? ` <b style="color:var(--tx)">${nEx}</b> erano già stati importati e verranno saltati.` : ''}${nMan ? ` <b style="color:var(--tx)">${nMan}</b> corrispondono a spese che hai inserito a mano (stesso importo, data vicina).` : ''}${S.demo ? ' I dati di esempio verranno sostituiti.' : ''}</p>
+    `<p class="hint" style="line-height:1.6;margin-bottom:8px"><span class="chip c-info">${esc(res.source || '')}</span><br>Trovati <b style="color:var(--tx)">${items.length}</b> movimenti dal ${dLabel(dates[0])} al ${dLabel(dates[dates.length - 1])}, <b style="color:var(--tx)">${auto}</b> già categorizzati.${nCard ? ` <br><b style="color:var(--tx)">Carta di credito riconosciuta:</b> ${nCard} acquisti vanno sul conto “Carta di credito” e i ${nSet} addebiti mensili diventano giroconti, così ogni spesa conta una volta sola.` : ''}${nEx ? ` <b style="color:var(--tx)">${nEx}</b> erano già stati importati e verranno saltati.` : ''}${nMan ? ` <b style="color:var(--tx)">${nMan}</b> corrispondono a spese che hai inserito a mano (stesso importo, data vicina).` : ''}${S.demo ? ' I dati di esempio verranno sostituiti.' : ''}</p>
     <div style="margin-bottom:10px">${prev}</div>
     ${perm('format') && lastSheets && !/AI/.test(res.source || '') ? '<button type="button" class="btn sm" data-act="reimport-ai" style="margin-bottom:8px">Non torna? Fai interpretare il file all\'AI</button>' : ''}`
   );

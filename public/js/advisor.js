@@ -244,6 +244,6 @@ function adviceRender(cur) {
       ${R.events.length ? `<ul class="hint" style="margin:8px 0 0 18px;line-height:1.6">${R.events.map(e => `<li translate="no">${esc(adviceEventText(e))}</li>`).join('')}</ul>` : ''}
       ${rules ? `<div class="hint" style="margin-top:8px">Regole verificate:</div><ul class="hint" style="margin:4px 0 0 18px;line-height:1.6">${rules}</ul>` : ''}
       <p class="hint" style="margin-top:8px">All'AI è arrivata solo la domanda. Ha scritto eventi e regole; i numeri sono stati calcolati su questo dispositivo e non sono stati inviati.</p></details>
-    ${isAffordQ(cur.q) || EN.parseAffordText(anon(cur.q)).price ? `<button class="btn sm" style="margin-top:12px" data-act="adv-planner">🏠 Apri nel simulatore</button>` : ''}
+    ${isAffordQ(cur.q) || EN.parseAffordText(anon(cur.q)).price ? `<button class="btn sm" style="margin-top:12px" data-act="adv-planner">Apri nel simulatore</button>` : ''}
     <div class="hint" style="margin-top:12px">Puoi continuare con «e se lo prendo a rate?» o «e tra sei mesi?». Simulazione orientativa, non una consulenza finanziaria.</div></div>`;
 }

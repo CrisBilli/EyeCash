@@ -14,7 +14,7 @@
 const AFF_KINDS = {
   mortgage: {
     label: 'Casa (mutuo)',
-    icon: '🏠',
+    icon: 'house',
     price: 250000,
     downPayment: 50000,
     extraCosts: 15000,
@@ -25,7 +25,7 @@ const AFF_KINDS = {
   },
   car: {
     label: 'Auto',
-    icon: '🚗',
+    icon: 'car',
     price: 25000,
     downPayment: 5000,
     extraCosts: 800,
@@ -36,7 +36,7 @@ const AFF_KINDS = {
   },
   purchase: {
     label: 'Altro acquisto',
-    icon: '🛍️',
+    icon: 'bag',
     price: 5000,
     downPayment: 0,
     extraCosts: 0,
@@ -249,7 +249,7 @@ function vAfford() {
   const kinds = `<div class="seg" style="margin:14px 0">${Object.entries(AFF_KINDS)
     .map(
       ([k, v]) =>
-        `<button type="button" class="${k === F.kind ? 'on' : ''}" data-act="aff-kind" data-k="${k}">${v.icon} ${v.label}</button>`
+        `<button type="button" class="${k === F.kind ? 'on' : ''}" data-act="aff-kind" data-k="${k}">${svgI(v.icon)}${v.label}</button>`
     )
     .join('')}</div>`;
   const form = `<div class="card"><form id="affform"><div class="grid g4" style="gap:10px">

@@ -241,7 +241,7 @@ function quickAdd() {
       });
     },
     null,
-    `<div style="display:flex;gap:8px;margin:-4px 0 6px"><button type="button" class="btn" data-act="mic" id="micbtn">🎙️ Detta</button><button type="button" class="btn ghost" data-act="manual-tx">Inserimento manuale</button></div>
+    `<div style="display:flex;gap:8px;margin:-4px 0 6px"><button type="button" class="btn" data-act="mic" id="micbtn">${svgI('mic')}<span>Detta</span></button><button type="button" class="btn ghost" data-act="manual-tx">Inserimento manuale</button></div>
   <p class="hint" style="line-height:1.5">${useAI ? "La frase viene interpretata dall'AI (solo la frase, nient'altro). Controlli tutto prima di salvare." : 'Riconoscimento locale: nessun dato esce dal server.'} Puoi anche usare il microfono della tastiera dell'iPhone.</p>`
   );
 }
@@ -263,7 +263,7 @@ function startMic() {
   rec.interimResults = true;
   rec.maxAlternatives = 1;
   const b = $('#micbtn');
-  if (b) b.textContent = '⏺ In ascolto…';
+  if (b) b.lastChild.textContent = 'In ascolto…';
   rec.onresult = e => {
     let s = '';
     for (const r of e.results) s += r[0].transcript;
@@ -272,7 +272,7 @@ function startMic() {
   rec.onend = () => {
     rec = null;
     const b = $('#micbtn');
-    if (b) b.textContent = '🎙️ Detta';
+    if (b) b.lastChild.textContent = 'Detta';
     if (inp && inp.value.trim()) document.querySelector('#frm button[type=submit]').click();
   };
   rec.onerror = () => {
@@ -540,7 +540,7 @@ function vAsk() {
       .map(([l], i) => `<button class="btn sm" data-act="ask-quick" data-i="${i}">${esc(l)}</button>`)
       .join(
         ''
-      )}<button class="btn sm" data-act="go" data-v="permettermelo">🏠 Posso permettermelo?</button></div></div>
+      )}<button class="btn sm" data-act="go" data-v="permettermelo">Posso permettermelo?</button></div></div>
   ${askRender()}
   ${hist.length ? `<div class="card" style="margin-top:14px"><h3>Domande recenti</h3><div class="list">${hist.map(h => `<div class="row" data-act="ask-hist" data-id="${h.id}"><div class="av">?</div><div class="main"><div class="t1">${esc(h.q)}</div><div class="t2">${dLabel(h.d)} · ricalcolata sui dati di oggi</div></div></div>`).join('')}</div></div>` : ''}`;
 }

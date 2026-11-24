@@ -320,7 +320,7 @@ function vTaxes() {
       .filter(r => +r.h.ter > 0.5)
       .map(
         r =>
-          `<div class="hint" style="margin-top:4px">⚠️ ${esc(r.h.name)}: TER ${String(r.h.ter).replace('.', DEC)}%, alto rispetto agli ETF indicizzati (spesso sotto 0,3%)</div>`
+          `<div class="hint" style="margin-top:4px">${esc(r.h.name)}: TER ${String(r.h.ter).replace('.', DEC)}%, alto rispetto agli ETF indicizzati (spesso sotto 0,3%)</div>`
       )
       .join('')}
     <div style="height:10px"></div>

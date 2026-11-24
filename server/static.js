@@ -15,6 +15,8 @@ const TYPES = {
   '.css': 'text/css; charset=utf-8',
   '.png': 'image/png',
   '.svg': 'image/svg+xml',
+  '.woff': 'font/woff',
+  '.txt': 'text/plain; charset=utf-8',
   '.webmanifest': 'application/manifest+json'
 };
 function serveStatic(req, res, p) {
@@ -31,7 +33,7 @@ function serveStatic(req, res, p) {
     }
     res.writeHead(200, {
       'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream',
-      'Cache-Control': /\.(png|svg)$/.test(file) ? 'max-age=86400' : 'no-cache'
+      'Cache-Control': /\.(png|svg|woff)$/.test(file) ? 'max-age=86400' : 'no-cache'
     });
     res.end(data);
   });

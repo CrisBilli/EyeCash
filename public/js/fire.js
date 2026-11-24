@@ -272,7 +272,7 @@ function vFire() {
   const startParts = [t('investimenti {v}', { v: eur0(iv) })];
   if (cashIn) startParts.push(t('liquidità {v}', { v: eur0(cashIn) }));
   if (+F.extraStart) startParts.push(eur0(+F.extraStart));
-  const head = `<div class="card"><div class="card-h"><div><h3>🔥 Simulazione FIRE</h3><div class="hint">Monte Carlo · 2.000 scenari · calcolato sul tuo dispositivo, nessun dato inviato</div></div></div>
+  const head = `<div class="card"><div class="card-h"><div><h3>Simulazione FIRE</h3><div class="hint">Monte Carlo · 2.000 scenari · calcolato sul tuo dispositivo, nessun dato inviato</div></div></div>
     <div class="hint" style="margin-bottom:12px;line-height:1.55">${t('Capitale di partenza')}: ${startParts.join(' + ')} = <b style="color:var(--tx)">${eur0(p.start)}</b> · ${t('costi medi {p}%/anno', { p: String(ter.toFixed(2)).replace('.', DEC) })} · ${t('aliquota media sui guadagni {p}%', { p: Math.round(taxRate) })} · ${t('bollo 0,2%')}</div>${form}</div>`;
   if (!r)
     return (

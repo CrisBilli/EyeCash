@@ -273,6 +273,7 @@ const ACTIONS = {
     renderView();
   },
   more: () => moreSheet(),
+  orb: () => orbSheet(),
   'go-close': ({ el }) => {
     closeForm();
     go(el.dataset.v);

@@ -111,7 +111,7 @@ Plain scripts loaded in this order by `index.html`. They share the global scope,
 | `js/i18n.js` | Language, locale-aware formats, translator (`t()` and the page observer) |
 | `js/i18n-en.js` | English dictionary |
 | `js/core.js` | Formatting, dates, ids, category lists |
-| `js/ui.js` | Theme, icons, navigation, SVG chart helpers |
+| `js/ui.js` | Theme, icons and colour tiles, grouped navigation, the consultant orb (idle / alert / thinking), SVG chart helpers |
 | `js/state.js` | The state `S`, empty and demo states, recurring items |
 | `js/sync.js` | `api()`, key derivation, encryption, save/pull, three-way merge |
 | `js/lock.js` | Lock screen, biometric unlock, masked balances |
@@ -131,6 +131,8 @@ Plain scripts loaded in this order by `index.html`. They share the global scope,
 | `js/offline.js` | Offline copy and reconnection |
 | `js/events.js` | Delegated event handlers (`data-act` attributes) |
 | `js/main.js` | Start-up |
+
+**Look and feel.** Design tokens (colours, card depth, radii) are CSS variables in `index.html`; the dark theme is the default and the light theme overrides the same variables. Each view sets `body[data-view]`, which picks the pair of background glows. Fonts (Inter, Inter Display) are bundled as WOFF subsets in `public/fonts`, so the app makes no request to font services. The consultant orb is the logo drawn inline (gradients in one shared hidden `<svg>`); its state is a class on `<body>`: `orb-alert` while there is something unread (only a hash of it is kept in `localStorage`), `orb-think` while an `/api/ai/*` request runs (counted inside `api()`).
 
 **Conventions.** Views are functions returning HTML strings (`vHome()`, `vTx()`…), composed from small helpers (`settingRow()`, `segmented()`, the `rep*()` sections of the report). Every user-provided value is passed through `esc()`; the strict Content-Security-Policy (`script-src 'self'`, no inline scripts) is a second line of defence. Buttons declare an action with `data-act="name"`; `events.js` runs `ACTIONS[name]({ el, id, e, a })` from a single table.
 

@@ -172,7 +172,7 @@ function holdForm(h, pre) {
   const qx = h.qSym
     ? `<div class="bcard" style="margin:0 0 12px"><div class="k"><span>Quotazione automatica</span>${quoteBadge(h)}</div><div style="margin-top:6px;font-size:13px">${esc(h.qSym)}${h.priceExch ? ' · ' + esc(h.priceExch) : ''}${h.priceCur ? ' · ' + esc(h.priceCur) : ''}</div>${!isNew ? `<div style="display:flex;gap:6px;margin-top:8px"><button type="button" class="btn sm" data-act="q-link" data-id="${h.id}">Cambia listino</button><button type="button" class="btn sm ghost" data-act="q-unlink" data-id="${h.id}">Scollega</button></div>` : ''}</div>`
     : !isNew && perm('quotes')
-      ? `<button type="button" class="btn" data-act="q-link" data-id="${h.id}" style="width:100%;justify-content:center;margin-bottom:12px">🔎 Collega quotazione automatica</button>`
+      ? `<button type="button" class="btn" data-act="q-link" data-id="${h.id}" style="width:100%;justify-content:center;margin-bottom:12px">Collega quotazione automatica</button>`
       : '';
   openForm(
     isNew ? 'Nuova posizione' : esc(h.name),

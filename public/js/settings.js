@@ -7,7 +7,7 @@
 /** Privacy switches: each one decides what may be sent to the AI. */
 function privacyCard() {
   const P = S.privacy || PRIV_DEF;
-  return `<div class="card"><h3>🔐 Privacy · cosa può uscire</h3>
+  return `<div class="card"><h3>Privacy · cosa può uscire</h3>
   <p class="hint" style="margin:6px 0 10px;line-height:1.6"><b style="color:var(--tx)">Regola fissa:</b> saldi, conti, investimenti, obiettivi e lo storico non vengono mai inviati. L'AI serve solo a inserire dati e riceve solo ciò che stai inserendo. ${AI ? `Servizio AI configurato: <b style="color:var(--tx)">${esc(STATUS.ai_provider)}</b>${STATUS.ai_local ? ' · modello locale sul tuo server: le richieste non escono dalla tua rete' : ''}.` : '<b style="color:var(--tx)">Nessuna AI configurata.</b>'} Ogni invio verso l'esterno è elencato nel registro qui sotto.</p>
   ${Object.keys(PRIV_DEF)
     .filter(k => (k === 'quotes' ? STATUS && STATUS.quotes : AI))
@@ -29,7 +29,7 @@ function privacyCard() {
 }
 
 function mcpCard() {
-  return `<div class="card"><h3>🎙️ Claude via MCP · solo inserimento</h3>
+  return `<div class="card"><h3>Claude via MCP · solo inserimento</h3>
   <p class="hint" style="margin:6px 0 10px;line-height:1.6">Collega Claude Desktop per aggiungere spese a voce o a parole (“segna 12 euro di benzina”). Il collegamento è di <b style="color:var(--tx)">sola scrittura</b>: Claude non può leggere saldi né movimenti. Le spese arrivano cifrate e solo quest'app può aprirle.</p>
   <div id="mcpbox"><div class="hint">Caricamento…</div></div></div>`;
 }
@@ -120,12 +120,12 @@ function budgetsCard() {
 /** Data, security and privacy of this device. */
 function securityCard() {
   const language = settingRow(
-    '🌐 Lingua',
+    'Lingua',
     "Lingua dell'interfaccia su questo dispositivo. Di partenza è quella del telefono.",
     segmented('lang', LANGS, LANG, 220)
   );
   const theme = settingRow(
-    '🎨 Aspetto',
+    'Aspetto',
     'Chiaro, scuro o come il telefono. Vale per questo dispositivo.',
     segmented(
       'theme',
@@ -138,30 +138,30 @@ function securityCard() {
     )
   );
   const autoLock = settingRow(
-    '⏱ Blocco automatico',
+    'Blocco automatico',
     `Dopo quanto tempo fuori dall'app serve di nuovo ${bioOn() ? 'Face ID o la password' : 'la password'}. Vale per questo dispositivo. Nel multitasking del telefono il contenuto è sempre nascosto.`,
     segmented('autolock', AUTOLOCK_OPTIONS, autoLockMin(), 250)
   );
   const offline = settingRow(
-    '📴 Copia offline',
+    'Copia offline',
     "Tiene sul dispositivo una copia dei dati, cifrata con la tua password, per aprire l'app e segnare spese anche senza rete. Le modifiche si sincronizzano da sole al ritorno della connessione.",
     toggleBtn('off-pref', offAllowed(), 'Attiva', 'Disattivata')
   );
   const bio = window.PublicKeyCredential
     ? settingRow(
-        '🔓 Sblocco con Face ID / impronta',
+        'Sblocco con Face ID / impronta',
         "Su questo dispositivo: l'app si apre e mostra i saldi con Face ID, impronta o PIN del dispositivo, senza scrivere la password. La password funziona sempre.",
         toggleBtn('bio-pref', bioOn())
       )
     : '';
   const masked = settingRow(
-    '👁 Saldi oscurati',
+    'Saldi oscurati',
     "Saldi, patrimonio e investimenti restano sfocati: per vederli tocca l'occhio in alto e inserisci la password. Tornano nascosti dopo 2 minuti o quando chiudi l'app.",
     toggleBtn('bal-pref', S.hideBal !== false, 'Attivo', 'Disattivato')
   );
   const backup = `<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="export-enc">⬇️ Scarica backup cifrato</button><button class="btn" data-act="export">Esporta copia leggibile (JSON)</button><button class="btn" data-act="import">Ripristina da JSON</button>${S.demo ? '<button class="btn pri" data-act="fresh">Inizia con i miei dati</button>' : '<button class="btn" data-act="demo">Carica dati di esempio</button>'}</div>`;
-  const session = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn" data-act="lock">🔒 Blocca ora</button><button class="btn" data-act="logout">Esci da questo dispositivo</button><button class="btn danger" data-act="reset">Cancella tutti i dati</button></div>`;
-  return `<div class="card"><h3>Dati e sicurezza</h3><div class="hint" style="margin:4px 0 12px;line-height:1.55">🔒 I dati sono cifrati sul dispositivo con la tua password prima di arrivare al server. Il server tiene la cronologia delle ultime 200 versioni e un backup cifrato al giorno.</div>
+  const session = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn" data-act="lock">${svgI('lock')}Blocca ora</button><button class="btn" data-act="logout">Esci da questo dispositivo</button><button class="btn danger" data-act="reset">Cancella tutti i dati</button></div>`;
+  return `<div class="card"><h3>Dati e sicurezza</h3><div class="hint" style="margin:4px 0 12px;line-height:1.55">I dati sono cifrati sul dispositivo con la tua password prima di arrivare al server. Il server tiene la cronologia delle ultime 200 versioni e un backup cifrato al giorno.</div>
     ${language}${theme}${autoLock}${offline}${bio}${masked}${backup}${session}</div>`;
 }
 
