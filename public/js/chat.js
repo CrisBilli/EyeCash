@@ -43,6 +43,8 @@ const CHAT_RUN = {
       avg_monthly_income: r2(b.income),
       avg_monthly_spending: r2(b.spending),
       avg_monthly_saving: r2(b.income - b.spending),
+      regular_investing_monthly: r2(b.investing),
+      cash_growth_monthly: r2(b.income - b.spending - b.investing),
       saving_rate_pct: b.income ? r2(((b.income - b.spending) / b.income) * 100) : null,
       cash: r2(b.cash),
       credit_cards_to_be_debited: r2(b.cardDebt),
@@ -194,8 +196,9 @@ const CHAT_RUN = {
       mon = m => (m == null ? null : EN.ymAdd(ym(today()), m));
     const out = {
       months_simulated: V.horizon,
-      monthly_saving_used: r2(V.saving),
+      monthly_cash_growth_used: r2(V.cash_growth),
       emergency_fund_target: r2(V.emergency_target),
+      already_below_emergency_fund_today: V.cash < V.emergency_target,
       cash_lowest: r2(V.cash_min),
       cash_lowest_month: mon(V.cash_min_month),
       cash_at_end: r2(V.cash_end),

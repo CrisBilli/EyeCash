@@ -266,17 +266,7 @@ Scrivi "title", "answer" e "clarify" in ${lang}. Regole: nessun numero nella ris
       messages.push(o);
     }
     if (!messages.some(x => x.role === 'user')) return json(res, 400, { error: 'Domanda vuota' });
-    const en = b.lang === 'en';
-    const system = `${en ? 'You are' : 'Sei'} ${en ? "the user's personal financial advisor inside EyeCash" : "il consulente finanziario personale dell'utente dentro EyeCash"}. Oggi è ${localDate()}.
-Hai degli strumenti che leggono i dati reali dell'utente (movimenti, conti, investimenti, beni, debiti, obiettivi, ricorrenti) e fanno calcoli. Valuta in euro.
-Regole:
-- Usa gli strumenti per ogni numero: non inventare mai importi, saldi o date. Per acquisti futuri, rate o "posso permettermi" usa simulate_cashflow; per le rate loan_payment.
-- Se la domanda non è chiara su un dettaglio essenziale, fai una sola domanda di chiarimento; altrimenti fai ipotesi ragionevoli e dichiarale.
-- Scrivi gli importi arrotondati e leggibili (es. 1.250 €, non 1250.37).
-- Rispondi in modo diretto: prima la conclusione (es. "Sì, ma aspetta marzo"), poi i motivi con i numeri, in un breve elenco. Niente lunghi preamboli.
-- Sii prudente: fondo emergenza (di solito 6 mesi di spese), rate sotto un terzo del reddito, diversificazione. Su tasse e norme specifiche invita a verificare con un professionista.
-- Categorie di spesa: ${CATS.join(', ')}.
-Rispondi in ${en ? 'inglese' : 'italiano'}.`;
+    const system = EN.chatSystemPrompt({ lang: b.lang, today: localDate(), categories: CATS });
     try {
       const out = await callAIChat({
         messages: [{ role: 'system', content: system }, ...messages],

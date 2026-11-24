@@ -1490,6 +1490,8 @@
     income: ['eur', 'entrate medie al mese (ultimi 12 mesi)'],
     spending: ['eur', 'spese medie al mese (ultimi 12 mesi)'],
     saving: ['eur', 'risparmio medio al mese (entrate − spese)'],
+    investing: ['eur', 'investimenti periodici al mese (es. PAC): escono dai conti ma non sono spese'],
+    cash_growth: ['eur', 'di quanto cresce la liquidità al mese (risparmio − investimenti periodici)'],
     saving_rate: ['pct', 'tasso di risparmio'],
     cash: ['eur', 'liquidità oggi sui conti'],
     investments: ['eur', 'valore degli investimenti oggi'],
@@ -1735,7 +1737,10 @@
     const income = Math.max(0, +base.income || 0),
       spending = Math.max(0, +base.spending || 0);
     const emMonths = R.emergencyMonths || base.emergencyMonths || 6;
-    const b = { cash: +base.cash || 0, saving: income - spending };
+    // regular investments (e.g. a monthly ETF plan) leave the accounts without being spending:
+    // the cash simulation grows by saving minus investing
+    const investing = Math.max(0, +base.investing || 0);
+    const b = { cash: +base.cash || 0, saving: income - spending - investing };
     const ev = R.events || [];
     const lastEv = ev.reduce(
       (m, e) => Math.max(m, e.month + (e.type === 'monthly' ? Math.min(e.months, 24) : 0)),
@@ -1747,8 +1752,10 @@
     const V = {
       income,
       spending,
-      saving: b.saving,
-      saving_rate: income ? b.saving / income : 0,
+      saving: income - spending,
+      saving_rate: income ? (income - spending) / income : 0,
+      investing,
+      cash_growth: b.saving,
       cash: b.cash,
       investments: +base.investments || 0,
       invested_gain: (+base.investments || 0) - (+base.invCost || 0),
@@ -1790,10 +1797,12 @@
       V.cash_before_target = without[T.month];
       V.cash_after_target = path[T.month];
       V.dti_after = income ? (V.debt_payments + V.target_payment) / income : null;
-      V.saving_after = b.saving - V.target_payment;
+      V.saving_after = income - spending - V.target_payment;
       V.best_month = null;
-      for (let s = T.month; s <= H; s++) {
-        const p = advPath(b, [...others, { ...T, month: s }], H);
+      // look up to 5 years ahead, even when the chart shows fewer months
+      const HB = 60;
+      for (let s = T.month; s <= HB; s++) {
+        const p = advPath(b, [...others, { ...T, month: s }], Math.max(HB, s + 12));
         if (p.slice(s).every(v => v >= em)) {
           V.best_month = s;
           break;
@@ -1917,7 +1926,7 @@
     ),
     tool(
       'simulate_cashflow',
-      'Simulates cash month by month on the real numbers with future events (purchases, loans, bonuses). Returns the lowest cash, the first month in the red, months below the emergency fund and, for the target event, the earliest safe month.',
+      'Simulates cash month by month on the real numbers with future events (purchases, loans, bonuses). Cash grows by saving minus regular investments. Returns the lowest cash, the first month in the red, months below the emergency fund and, for the target event, the earliest safe month.',
       obj(
         {
           events: { type: 'array', items: EVENT },
@@ -1937,6 +1946,21 @@
       ])
     )
   ];
+
+  /** The advisor chat's instructions; shared by the server and the benchmark (bench/run.js). */
+  function chatSystemPrompt({ lang, today, categories }) {
+    const en = lang === 'en';
+    return `${en ? 'You are' : 'Sei'} ${en ? "the user's personal financial advisor inside EyeCash" : "il consulente finanziario personale dell'utente dentro EyeCash"}. Oggi è ${today}.
+Hai degli strumenti che leggono i dati reali dell'utente (movimenti, conti, investimenti, beni, debiti, obiettivi, ricorrenti) e fanno calcoli. Valuta in euro.
+Regole:
+- Usa gli strumenti per ogni numero: non inventare mai importi, saldi o date. Per acquisti futuri, rate o "posso permettermi" usa simulate_cashflow; per le rate loan_payment.
+- Se la domanda non è chiara su un dettaglio essenziale, fai una sola domanda di chiarimento; altrimenti fai ipotesi ragionevoli e dichiarale.
+- Scrivi gli importi arrotondati e leggibili (es. 1.250 €, non 1250.37).
+- Rispondi in modo diretto: prima la conclusione (es. "Sì, ma aspetta marzo"), poi i motivi con i numeri, in un breve elenco. Niente lunghi preamboli.
+- Sii prudente: fondo emergenza (di solito 6 mesi di spese), rate sotto un terzo del reddito, diversificazione. Su tasse e norme specifiche invita a verificare con un professionista.
+- Categorie di spesa: ${categories.join(', ')}.
+Rispondi in ${en ? 'inglese' : 'italiano'}.`;
+  }
 
   const API = {
     CLASSES,
@@ -1983,6 +2007,7 @@
     runAdvice,
     renderAdvice,
     CHAT_TOOLS,
+    chatSystemPrompt,
     loanPayment,
     loanPrincipal,
     MEASURES,

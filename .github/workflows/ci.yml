@@ -18,11 +18,11 @@ jobs:
         with:
           node-version: 22
       - name: Check formatting
-        run: npx --yes prettier@3.8.1 --check "public/**/*.js" "server/**/*.js" server.js "tests/**/*.js" "tools/**/*.js"
+        run: npx --yes prettier@3.8.1 --check "public/**/*.js" "server/**/*.js" server.js "tests/**/*.js" "tools/**/*.js" "bench/**/*.js"
       - name: Lint (undefined names, unused code, unreachable code…)
         run: npm i --no-save --no-package-lock eslint@10.1.0 && node tools/lint.js
       - name: Tests
-        run: node --test tests/engine.test.js tests/api.test.js tests/local-ai.test.js
+        run: node --test tests/engine.test.js tests/api.test.js tests/local-ai.test.js tests/bench.test.js
         env:
           NODE_NO_WARNINGS: 1
 
