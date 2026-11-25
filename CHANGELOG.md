@@ -1,5 +1,11 @@
 # EyeCash · Novità
 
+## 1.5.3
+- **Nuova pagina del progetto** con una demo di 65 secondi in italiano e in inglese, con musica originale e una scena che mostra come tutto resta in casa (telefono, server, PC con l'AI): le risposte dell'Occhio sono quelle vere di un modello locale (qwen3:8b su una scheda da 8 GB), i dati sono di una persona inventata.
+- **Quanto costa un'AI privata in casa:** una tabella con tre fasce di scheda video (8, 24 e 48 GB), il costo indicativo, il modello consigliato e il livello atteso per cifre, pareri e consigli. Cosa è misurato e cosa è atteso è scritto chiaramente, con le fonti.
+- **Patrimonio:** il riquadro degli investimenti mostrava "0 posizioni" anche con il portafoglio pieno. Ora conta le posizioni giuste.
+- **Banco di prova:** salva i risultati dopo ogni domanda. Se il PC si spegne o si interrompe, `--resume` riprende da dove si era fermato; `--pause 5` aspetta qualche secondo tra una domanda e l'altra, per non scaldare troppo la scheda.
+
 ## 1.5.2
 - **L'Occhio legge i dati come serve.** Con l'AI locale ha un nuovo strumento: totali con qualsiasi filtro (testo o esercente, categoria, date, giorno della settimana, importi, conto) e raggruppati per categoria, mese, giorno della settimana, giorno, esercente o conto. Ad esempio: "quanto ho speso di martedì nell'ultimo mese?", "in che giorno spendo di più?", "quanto nei weekend di ottobre?". Anche la ricerca dei movimenti accetta giorno della settimana e conto.
 - **Istruzioni più chiare al modello:**

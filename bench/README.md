@@ -33,8 +33,10 @@ node bench/run.js --cat pareri
 
 ```bash
 cd ~/eyecash
-docker run --rm -v "$PWD":/app -w /app node:22-alpine node bench/run.js --url http://192.168.1.8:11434/v1 --model qwen3:8b
+docker run --rm -v "$PWD":/app -w /app node:22-alpine node bench/run.js --url http://MODEL-PC-IP:11434/v1 --model qwen3:8b
 ```
+
+**Long runs.** Progress is saved after every question in `bench/results/<model>-in-corso.json`. If the run stops (Ctrl+C, a crash, the PC switched off), start it again with `--resume` and it continues where it stopped. `--pause 5` waits 5 seconds between questions, which keeps a consumer GPU cooler on a long run.
 
 The results are written to `bench/results/`:
 - a `.json` file with every question, the tools called, their results, the answer and the automatic checks;

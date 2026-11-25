@@ -18,8 +18,8 @@
 </p>
 
 <p align="center">
-  <img src="docs/media/demo-it.webp" width="300" alt="EyeCash in 30 secondi"><br>
-  <sub><a href="docs/media/eyecash-spot-it.mp4">▶ Guarda il video di 30 secondi con l'audio</a> · <a href="docs/media/eyecash-spot-en.mp4">English version</a> · tutti i dati mostrati sono dati di esempio inventati</sub>
+  <a href="docs/media/eyecash-demo-it.mp4"><img src="docs/media/demo-it.webp" width="760" alt="L'Occhio risponde con un'AI locale, dentro EyeCash"></a><br>
+  <sub><a href="docs/media/eyecash-demo-it.mp4">▶ Guarda la demo di 65 secondi, con musica</a> · <a href="docs/media/eyecash-demo-en.mp4">English version</a> · le risposte sono vere risposte di un modello locale (qwen3:8b su una scheda da 8 GB), i dati sono di una persona inventata</sub>
 </p>
 
 ---
@@ -39,7 +39,7 @@ EyeCash fa il contrario:
 
 ## Funzioni
 
-<p align="center"><img src="docs/media/screens-it.png" alt="Schermate Home, nuova spesa, Chiedi ai tuoi dati e report di salute finanziaria"></p>
+<p align="center"><img src="docs/media/screens.png" alt="Home, l'Occhio che risponde con l'AI locale, una spesa registrata a parole e la pagina degli investimenti"></p>
 
 **Ogni giorno**
 - Conti (corrente, carte di credito, risparmio, contanti) con i saldi aggiornati.
@@ -134,6 +134,20 @@ Poi:
 Per aggiornare basta `bash update.sh`: fa una copia di sicurezza del database, scarica la nuova versione, ricostruisce l'app e verifica che risponda.
 
 La guida passo passo completa è in [docs/GUIDA.md](docs/GUIDA.md): firewall, Tailscale, backup, MCP, manutenzione.
+
+## Un'AI privata in casa: cosa sa fare, quanto costa
+
+Con un modello locale l'Occhio è un piccolo agente: legge i tuoi dati con strumenti che girano sul telefono, e il modello gira su un PC di casa. **Niente va a servizi esterni**, e quando il PC è spento il telefono risponde comunque a cifre e simulazioni e mette in coda il resto.
+
+<p align="center"><img src="docs/media/ai-hardware-it.png" alt="Tre livelli di hardware per un'AI locale: schede da 8, 24 e 48 GB, con costo, modello e qualità per categoria"></p>
+
+Quanto è brava? Nel repository c'è un **banco di prova di 104 domande** su una persona inventata ([`bench/`](bench/README.md)), per misurare da soli qualsiasi modello. Il nostro primo giro di `qwen3:8b` su una scheda da 8 GB, su un campione di 9 domande:
+
+- **Cifre e fatti:** 5 giuste su 6, in 8–17 secondi ciascuna.
+- **Pareri sugli acquisti:** calcola la rata giusta, ma spesso si ferma lì e chiede dati che potrebbe leggere da solo.
+- **Consigli e rischi:** corretti ma poco approfonditi, di solito basati su un solo strumento.
+
+I livelli delle fasce da 24 e 48 GB sono **attesi, non misurati**: vengono dai benchmark pubblici di Qwen3.8 27B (fonti in fondo all'immagine). I prezzi sono stime di novembre 2026, schede usate comprese. In breve: per le cifre basta una scheda da 8 GB che magari hai già; con una 24 GB usata (circa 1.150 € con l'alimentatore) pareri e consigli diventano davvero utili; oltre, si compra soprattutto velocità e contesto più lungo, non molta più intelligenza.
 
 ## AI: cloud o locale, sempre facoltativa
 
