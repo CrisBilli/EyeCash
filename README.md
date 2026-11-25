@@ -26,8 +26,8 @@
 </p>
 
 <p align="center">
-  <img src="docs/media/demo-en.webp" width="300" alt="EyeCash in 30 seconds"><br>
-  <sub><a href="docs/media/eyecash-spot-en.mp4">▶ Watch the 30-second video with sound</a> · <a href="docs/media/eyecash-spot-it.mp4">versione italiana</a> · all data shown is fictional sample data</sub>
+  <a href="docs/media/eyecash-demo-en.mp4"><img src="docs/media/demo-en.webp" width="760" alt="The Eye answering questions with a local AI, inside EyeCash"></a><br>
+  <sub><a href="docs/media/eyecash-demo-en.mp4">▶ Watch the 70-second demo</a> · <a href="docs/media/eyecash-demo-it.mp4">versione italiana</a> · the answers are real answers of a local model (qwen3:8b on an 8 GB graphics card), the data is a made-up person</sub>
 </p>
 
 ---
@@ -47,7 +47,8 @@ EyeCash turns that around:
 
 ## Features
 
-<p align="center"><img src="docs/media/screens-en.png" alt="Home, new expense, Ask your data and financial-health report screens"></p>
+<p align="center"><img src="docs/media/screens.png" alt="Home, the Eye answering with a local AI, an expense recorded by text, and the investments page"></p>
+<p align="center"><sub>Screens shown in Italian · the English interface is one switch away in Settings</sub></p>
 
 **Everyday money**
 - Accounts (current, credit cards, savings, cash) with live balances.
@@ -137,6 +138,20 @@ node server.js         # listens on 127.0.0.1:8080, data in ./data
 </details>
 
 The full step-by-step guide (in Italian) is in [docs/GUIDA.md](docs/GUIDA.md): firewall, Tailscale, backups, MCP, maintenance.
+
+## A private AI at home: what it can do, what it costs
+
+With a local model the Eye is a small agent: it reads your data through tools that run on your phone, and the model runs on a PC in your home. **Nothing goes to outside services**, and when the PC is off the phone still answers figures and simulations and queues the rest.
+
+<p align="center"><img src="docs/media/ai-hardware-en.png" alt="Three hardware tiers for a local AI: 8 GB, 24 GB and 48 GB graphics cards, with cost, model and quality per category"></p>
+
+How good is it? The repository includes a **test bench of 104 questions** about a made-up person ([`bench/`](bench/README.md)), so you can measure any model yourself. Our first run of `qwen3:8b` on an 8 GB card, on a sample of 9 questions:
+
+- **Figures and facts:** 5 of 6 right, in 8–17 seconds each.
+- **Purchase opinions:** it computes the right payment, but often stops there and asks for data it could read itself.
+- **Advice and risks:** correct but shallow, usually based on a single tool.
+
+The levels for the 24 GB and 48 GB tiers are **expected, not measured**: they come from public benchmarks of Qwen3.8 27B (sources at the bottom of the image). Prices are November 2026 estimates, used cards included. The short version: an 8 GB card you may already own is enough for figures; a used 24 GB card (about €1,150 with power supply) is where opinions and advice become genuinely useful; beyond that you mostly buy speed and longer context, not much more intelligence.
 
 ## AI: cloud or local, always optional
 

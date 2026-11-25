@@ -260,7 +260,7 @@ function vPat() {
   hv[hv.length - 1] = net;
   const d12 = net - hv[0],
     accs = S.accounts.filter(a => a.type !== 'Carta'),
-    pos = (S.inv || []).length;
+    pos = (S.holdings || []).length;
   const srow = (ic, c, l, d, v, act) =>
     `<div class="row" ${act ? `data-act="go" data-v="${act}"` : 'style="cursor:default"'}>${tile(ic, c)}<div class="main"><div class="t1">${l}</div><div class="t2">${d}</div></div><div class="amt num ${v < 0 ? 'down' : ''}">${eur(v)}</div></div>`;
   return `<div class="grid g21">

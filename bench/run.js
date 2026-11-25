@@ -12,6 +12,10 @@
  *   node bench/run.js --url http://pc-casa:11434/v1 --model qwen3:8b
  *   node bench/run.js --only q001,q072 --verbose        # a few questions, printing answers
  *   node bench/run.js --cat pareri                      # one category
+ *
+ * Long runs: progress is saved after every question in results/<model>-in-corso.json.
+ *   --resume     continue an interrupted run instead of starting over
+ *   --pause 5    wait 5 seconds between questions (lets the GPU cool down)
  */
 'use strict';
 const fs = require('fs');
@@ -43,6 +47,8 @@ const ONLY = (opt('only', '') || '').split(',').filter(Boolean);
 const CAT = opt('cat', '');
 const VERBOSE = flag('verbose');
 const OUT = opt('out', path.join(__dirname, 'results'));
+const PAUSE = 1000 * +opt('pause', 0);
+const RESUME = flag('resume');
 
 /* ---------- the model ---------- */
 function parseArgs(a) {
@@ -163,9 +169,20 @@ async function ask(T, system, question) {
     process.exit(1);
   }
 
-  const results = [];
+  // progress is saved after every question, so a crash or Ctrl+C loses nothing: --resume continues
+  fs.mkdirSync(OUT, { recursive: true });
+  const partial = path.join(OUT, `${MODEL.replace(/[^a-z0-9.]+/gi, '_')}-in-corso.json`);
+  let results = [];
+  if (RESUME && fs.existsSync(partial)) {
+    results = JSON.parse(fs.readFileSync(partial, 'utf8')).results || [];
+    console.log(`Riprendo: ${results.length} domande già fatte\n`);
+  } else if (fs.existsSync(partial))
+    console.log(`(c'è un test interrotto: aggiungi --resume per continuarlo invece di ricominciare)\n`);
+  const done = new Set(results.map(r => r.id));
   const started = Date.now();
   for (const [i, q] of Q.entries()) {
+    if (done.has(q.id)) continue;
+    if (PAUSE && results.length) await new Promise(r => setTimeout(r, PAUSE));
     process.stdout.write(
       `[${String(i + 1).padStart(3)}/${Q.length}] ${q.id} ${q.q.slice(0, 60).padEnd(60)} `
     );
@@ -197,6 +214,7 @@ async function ask(T, system, question) {
       `${auto.pass ? '✓' : '✕'} ${Math.round(auto.score * 100)}% · ${r.seconds}s${r.error ? ' · ERRORE ' + r.error : ''}`
     );
     if (VERBOSE) console.log('    ' + (r.answer || '').replace(/\n/g, '\n    ') + '\n');
+    fs.writeFileSync(partial, JSON.stringify({ model: MODEL, results }, null, 1));
   }
 
   /* summary */
@@ -225,7 +243,6 @@ async function ask(T, system, question) {
     minutes: Math.round((Date.now() - started) / 6000) / 10,
     median_seconds: secs[Math.floor(secs.length / 2)] || 0
   };
-  fs.mkdirSync(OUT, { recursive: true });
   const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
   const base = path.join(OUT, `${MODEL.replace(/[^a-z0-9.]+/gi, '_')}-${stamp}`);
   fs.writeFileSync(base + '.json', JSON.stringify({ meta, total, by_category: by, results }, null, 1));
@@ -261,4 +278,5 @@ async function ask(T, system, question) {
     `\nSuperate: ${total.pass}/${total.n} · punteggio medio ${Math.round(total.score * 100)}% · ${meta.minutes} minuti`
   );
   console.log(`Risultati: ${base}.json\nReport:    ${base}.md`);
+  fs.rmSync(partial, { force: true });
 })();
