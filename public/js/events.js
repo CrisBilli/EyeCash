@@ -273,6 +273,7 @@ const ACTIONS = {
     renderView();
   },
   more: () => moreSheet(),
+  orb: () => orbSheet(),
   'go-close': ({ el }) => {
     closeForm();
     go(el.dataset.v);
@@ -644,18 +645,18 @@ document.addEventListener('input', e => {
   if (e.target.form && e.target.form.id === 'affform' && e.target.tagName === 'INPUT') affFromForm(false);
   if (e.target.id === 'q') {
     fQ = e.target.value;
-    $('#txlist').innerHTML = txListHTML();
+    txRefresh();
   }
 });
 document.addEventListener('change', e => {
   if (e.target.form && e.target.form.id === 'affform' && e.target.tagName === 'SELECT') affFromForm(true);
   if (e.target.id === 'fm') {
     fM = e.target.value;
-    $('#txlist').innerHTML = txListHTML();
+    txRefresh();
   }
   if (e.target.id === 'fc') {
     fC = e.target.value;
-    $('#txlist').innerHTML = txListHTML();
+    txRefresh();
   }
   if (e.target.id === 'repm') {
     REP.key = e.target.value;

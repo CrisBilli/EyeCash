@@ -1,6 +1,6 @@
 /* EyeCash – service worker: keeps a copy of the app (not of the data) so it opens without network.
    Data stays in the browser database, encrypted with your password: it never passes through here. */
-const CACHE = 'eyecash-shell-v6';
+const CACHE = 'eyecash-shell-v7';
 const SHELL = [
   '/',
   '/js/i18n.js',
@@ -27,11 +27,18 @@ const SHELL = [
   '/js/events.js',
   '/js/main.js',
   '/engine.js',
-  '/manifest.webmanifest?v=4',
-  '/icon.svg?v=4',
-  '/apple-touch-icon.png?v=4',
-  '/icon-192.png?v=4',
-  '/icon-512.png?v=4'
+  '/manifest.webmanifest?v=5',
+  '/icon.svg?v=5',
+  '/apple-touch-icon.png?v=5',
+  '/icon-192.png?v=5',
+  '/icon-512.png?v=5',
+  '/logo.svg',
+  '/fonts/inter-400.woff',
+  '/fonts/inter-500.woff',
+  '/fonts/inter-600.woff',
+  '/fonts/inter-700.woff',
+  '/fonts/inter-display-700.woff',
+  '/fonts/inter-display-800.woff'
 ];
 self.addEventListener('install', e => {
   e.waitUntil(
