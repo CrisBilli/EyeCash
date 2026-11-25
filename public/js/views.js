@@ -55,10 +55,13 @@ function vHome() {
     h12 = lastMonths(12),
     hv = h12.map(netAt);
   hv[hv.length - 1] = net;
-  const avg3 =
-      lastMonths(4)
-        .slice(0, 3)
-        .reduce((s, m) => s + monthTot(m).out, 0) / 3,
+  /* average of the last 3 complete months that have spending: empty months (before the
+     first import) would make the average too low */
+  const prev3 = lastMonths(4)
+      .slice(0, 3)
+      .map(m => monthTot(m).out)
+      .filter(v => v > 0),
+    avg3 = prev3.length ? prev3.reduce((s, v) => s + v, 0) / prev3.length : 0,
     news = orbNews();
   const ring = `<div class="card ringcard">
     <div class="card-h"><div><h3>Spese di ${mLow(k)}</h3><div class="hint">Tocca una categoria per i movimenti</div></div></div>
@@ -694,7 +697,6 @@ function moreSheet() {
     () => {},
     null,
     `<div class="list">${[
-      ['investimenti', 'inv', 'Investimenti'],
       ['fire', 'fire', 'Simulazione FIRE'],
       ['ricorrenti', 'rec', 'Costi ricorrenti'],
       ['obiettivi', 'goal', 'Obiettivi'],

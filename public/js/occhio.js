@@ -19,7 +19,10 @@ const OCC_STEPS = 6; // tool rounds per question (local agent)
 const OCC_KEEP = 40; // messages kept in the encrypted history
 
 let occBusy = false,
-  occStatus = '';
+  occStatus = '',
+  occReach = null, // local model reachable? null = not checked yet
+  occPingAt = 0,
+  occFlushing = false;
 
 /** How the Eye answers right now: 'local' agent, 'blind' recipes, or 'device' only. */
 function occMode() {
@@ -35,6 +38,10 @@ const OCC_MODE_TXT = {
   blind: [
     'AI esterna, alla cieca',
     "All'AI arriva solo la domanda: risponde con un calcolo che il dispositivo esegue sui tuoi dati. Importi e movimenti non escono."
+  ],
+  off: [
+    'AI locale spenta',
+    'Il modello di casa non risponde (PC spento o non raggiungibile). Rispondo sul telefono a quello che posso; il resto lo metto in coda e lo mando appena torna disponibile.'
   ],
   device: [
     'Sul dispositivo',
@@ -471,8 +478,9 @@ async function occAfford(q) {
 }
 
 /** The local agent: the model calls the tools above and reads their results. */
-async function occAgent(q) {
+async function occAgent(q, upto) {
   const msgs = S.chat
+    .slice(0, upto == null ? S.chat.length : upto)
     .filter(m => m.role === 'user' || m.kind === 'md')
     .slice(-12)
     .map(m => ({ role: m.role, content: m.role === 'user' ? m.content : m.text }));
@@ -504,17 +512,39 @@ async function occAgent(q) {
   return { kind: 'md', text: answer, steps };
 }
 
-/** Answers one message, choosing the path by what it is and by the mode. */
-async function occAnswer(q) {
-  if (isEntryQ(q)) return { kind: 'tx', tx: await entryFromText(q), state: 'new' };
-  const mode = occMode();
-  if (mode === 'local') return occAgent(q);
-  if (mode === 'blind') {
-    const prev = [...S.chat].reverse().find(m => m.role === 'assistant' && m.kind === 'advice');
-    const r = await askCompute(q, prev ? { q: prev.q, advice: prev.advice } : null);
-    return r.advice ? { kind: 'advice', q, advice: r.advice } : { kind: 'ask', q, spec: r.spec, ai: true };
+/** Checks whether the home model answers. Only with a local model; nothing is contacted otherwise. */
+async function occPing(force) {
+  if (!(AI && !OFFLINE && STATUS && STATUS.ai_local && perm('chat'))) return;
+  if (!force && Date.now() - occPingAt < 30000) return;
+  occPingAt = Date.now();
+  const was = occReach;
+  try {
+    occReach = !!(await api('GET', '/api/ai/ping')).ok;
+  } catch (e) {
+    occReach = false;
   }
-  // on the device only
+  if (was !== occReach && view === 'occhio' && !occBusy) renderView();
+  if (occReach) occFlush();
+}
+/** What the header says: [state, label, explanation, chip class]. */
+function occState() {
+  const mode = occMode();
+  if (mode === 'local' && occReach === false) return ['off', ...OCC_MODE_TXT.off, 'c-warn'];
+  return [mode, ...OCC_MODE_TXT[mode], mode === 'local' ? 'c-good' : mode === 'blind' ? 'c-info' : 'c-mut'];
+}
+const OCC_PROV = { anthropic: 'Claude', openai: 'API OpenAI-compatibile' };
+/** Who answered a message, shown under it. */
+function occVia(v) {
+  if (v === 'local') return t('AI locale') + (STATUS.ai_model ? ' · ' + STATUS.ai_model : '');
+  if (v === 'blind')
+    return t('AI esterna') + ' · ' + t(OCC_PROV[STATUS.ai_provider] || 'API') + ' · ' + t('solo la domanda');
+  if (v === 'fallback') return t('Sul telefono · AI di casa spenta');
+  if (v === 'device') return t('Sul telefono, senza AI');
+  return '';
+}
+
+/** What the device can answer by itself; null if it needs a model. */
+async function occDevice(q) {
   if (isAffordQ(q) || EN.parseAffordText(anon(q)).price) return occAfford(q);
   // a category or a merchant in the question: the local recipe; otherwise the closest quick question
   const sp = occLocalSpec(q);
@@ -523,8 +553,78 @@ async function occAnswer(q) {
   const m = occQuickMatch(q);
   if (m) return { kind: 'ask', q: m[0], spec: m[1], ai: false };
   if (sp) return { kind: 'ask', q, spec: sp, ai: false };
-  return { kind: 'note', text: t(OCC_MODE_TXT.device[1]) };
+  return null;
 }
+
+/** Answers one message, choosing the path by what it is and by the mode. */
+async function occAnswer(q) {
+  const mode = occMode();
+  if (isEntryQ(q)) {
+    const viaAI = perm('quick') && !OFFLINE && !(mode === 'local' && occReach === false);
+    return {
+      kind: 'tx',
+      tx: await entryFromText(q, !viaAI),
+      state: 'new',
+      via: viaAI ? (STATUS.ai_local ? 'local' : 'blind') : 'device'
+    };
+  }
+  if (mode === 'local') {
+    // a PC that is off may not even refuse the connection: check first rather than wait
+    if (occReach === null || Date.now() - occPingAt > 120000) await occPing(true);
+    if (occReach !== false) {
+      try {
+        return { ...(await occAgent(q)), via: 'local' };
+      } catch (e) {
+        if (e.status === 403) throw e;
+        await occPing(true);
+        if (occReach !== false) throw e;
+      }
+    }
+    // the home model is off: answer here if possible, otherwise queue it
+    const d = await occDevice(q);
+    return d ? { ...d, via: 'fallback' } : { kind: 'queued', q, via: 'fallback' };
+  }
+  if (mode === 'blind') {
+    const prev = [...S.chat].reverse().find(m => m.role === 'assistant' && m.kind === 'advice');
+    const r = await askCompute(q, prev ? { q: prev.q, advice: prev.advice } : null);
+    return r.advice
+      ? { kind: 'advice', q, advice: r.advice, via: 'blind' }
+      : { kind: 'ask', q, spec: r.spec, ai: true, via: 'blind' };
+  }
+  const d = await occDevice(q);
+  return { ...(d || { kind: 'note', text: t(OCC_MODE_TXT.device[1]) }), via: 'device' };
+}
+
+/** Sends the queued questions to the home model, in order, once it is back. */
+async function occFlush() {
+  if (occFlushing || occBusy || occMode() !== 'local' || occReach !== true) return;
+  const waiting = (S.chat || []).filter(m => m.kind === 'queued');
+  if (!waiting.length) return;
+  occFlushing = true;
+  try {
+    for (const m of waiting) {
+      const at = S.chat.indexOf(m);
+      if (at < 0) continue;
+      try {
+        const a = await occAgent(m.q, at);
+        Object.assign(m, a, { via: 'local', late: true });
+        delete m.q;
+        m.kind = a.kind;
+      } catch (e) {
+        if (e.status !== 403) occReach = false;
+        break;
+      }
+      save();
+      if (view === 'occhio') renderView();
+    }
+  } finally {
+    occFlushing = false;
+  }
+  if (view === 'occhio') renderView();
+}
+setInterval(() => {
+  if (S && KEY && (S.chat || []).some(m => m.kind === 'queued')) occPing();
+}, 60000);
 
 /** Sends a message and shows the answer. */
 async function occSend(text) {
@@ -631,6 +731,17 @@ function occTxCard(m) {
 
 function occMsg(m) {
   if (m.role === 'user') return `<div class="occ-u" translate="no">${esc(m.content)}</div>`;
+  const v = m.kind === 'queued' ? '' : occVia(m.via);
+  return (
+    occBody(m) +
+    (v
+      ? `<div class="occ-via">${t('Risposto da')}: ${esc(v)}${m.late ? ' · ' + t('dalla coda') : ''}</div>`
+      : '')
+  );
+}
+function occBody(m) {
+  if (m.kind === 'queued')
+    return `<div class="occ-a occ-q">${svgI('clock')}<span>${t('In coda: la mando al modello di casa appena torna disponibile. Intanto puoi chiudere l’app.')}</span><button class="btn sm ghost" data-act="occ-unqueue" data-id="${m.id}">${t('Annulla')}</button></div>`;
   if (m.kind === 'ask') return `<div class="occ-card-w">${askRender(m)}</div>`;
   if (m.kind === 'advice') return `<div class="occ-card-w">${adviceRender(m)}</div>`;
   if (m.kind === 'afford') return occAffordCard(m);
@@ -660,7 +771,7 @@ function occBar() {
 }
 /** The Eye: what is new, then the conversation. */
 function vOcchio() {
-  const mode = occMode(),
+  const [st, stLabel, stText, stCls] = occState(),
     news = orbNews(),
     msgs = S.chat || [];
   const all = S ? insights() : [];
@@ -668,11 +779,11 @@ function vOcchio() {
   const item = i =>
     `<div class="row" style="cursor:default">${tile(...i.ic)}<div class="main"><div class="t1" style="white-space:normal">${esc(i.t)}</div><div class="t2" style="white-space:normal">${esc(i.d)}</div></div></div>`;
   const quick = quickAsks();
-  const chip = `<span class="chip ${mode === 'local' ? 'c-good' : mode === 'blind' ? 'c-info' : 'c-mut'}" data-tip="${esc(t(OCC_MODE_TXT[mode][1]))}">${svgI('lock')}${t(OCC_MODE_TXT[mode][0])}${mode === 'local' && STATUS.ai_model ? ' · ' + esc(STATUS.ai_model) : ''}</span>`;
+  const chip = `<span class="chip occ-state ${stCls}" data-tip="${esc(t(stText))}"><i class="dot"></i>${t(stLabel)}${(st === 'local' || st === 'off') && STATUS.ai_model ? ' · ' + esc(STATUS.ai_model) : st === 'blind' ? ' · ' + esc(t(OCC_PROV[STATUS.ai_provider] || 'API')) : ''}</span>`;
   const head = msgs.length
-    ? `<div class="occ-head small"><div class="orb-sm">${orbHTML()}</div><div class="occ-mode">${chip}</div></div>`
+    ? `<div class="occ-head small"><div class="orb-sm">${orbHTML()}</div><div class="occ-mode">${chip}</div></div>${st === 'off' ? `<div class="hint occ-modetxt">${t(stText)}</div>` : ''}`
     : `<div class="occ-head"><div class="orb-big">${orbHTML()}</div><div class="occ-mode">${chip}</div>
-    <div class="hint occ-modetxt">${t(OCC_MODE_TXT[mode][1])}</div></div>`;
+    <div class="hint occ-modetxt">${t(stText)}</div></div>`;
   const reads =
     news.length || rest.length
       ? `<div class="card occ-news"><div class="card-h"><div><h3>${news.length ? 'Da leggere' : 'Spunti'}</h3><div class="hint">Calcolati sul dispositivo</div></div></div><div class="list">${[
@@ -687,6 +798,7 @@ function vOcchio() {
     .slice(0, msgs.length ? 0 : 6)
     .map(([l], i) => `<button class="btn sm" data-act="ask-quick" data-i="${i}">${esc(t(l))}</button>`)
     .join('')}</div>`;
+  occPing();
   return `<div class="occ">
     ${head}
     ${reads}

@@ -207,9 +207,9 @@ function localParse(s) {
   };
 }
 /** A transaction from a sentence: the AI reads only the sentence (if allowed), the device fills the gaps. */
-async function entryFromText(q) {
+async function entryFromText(q, noAI) {
   let r = null;
-  if (perm('quick') && !OFFLINE) {
+  if (!noAI && perm('quick') && !OFFLINE) {
     try {
       logAI('Inserimento rapido', q);
       r = await api('POST', '/api/ai/parse-entry', { text: q });
