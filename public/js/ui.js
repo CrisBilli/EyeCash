@@ -419,7 +419,7 @@ const VIEWS = [
   ['ricorrenti', 'Costi ricorrenti', 'rec', 'Ricorrenti'],
   ['obiettivi', 'Obiettivi', 'goal', 'Obiettivi'],
   ['statistiche', 'Statistiche', 'stats', 'Statistiche'],
-  ['chiedi', 'Chiedi ai tuoi dati', 'ask', 'Chiedi'],
+  ['occhio', 'Occhio', 'ask', 'Occhio'],
   ['permettermelo', 'Posso permettermelo?', 'afford', 'Permettermelo?'],
   ['report', 'Report', 'print', 'Report']
 ];
@@ -471,14 +471,14 @@ function orbMarkSeen() {
 /* navigation grouped by area */
 const NAV_GROUPS = [
   ['Finanze', ['home', 'movimenti', 'patrimonio', 'investimenti']],
-  ['Pianifica', ['obiettivi', 'ricorrenti', 'permettermelo', 'fire']],
-  ['Analisi', ['statistiche', 'report', 'chiedi']]
+  ['Pianifica', ['obiettivi', 'ricorrenti', 'fire']],
+  ['Analisi', ['statistiche', 'report']]
 ];
 function renderNav() {
   const btn = v =>
     `<button class="nav ${view === v[0] ? 'on' : ''}" data-act="go" data-v="${v[0]}">${ico(v[2])}${v[1]}</button>`;
   $('#sidenav').innerHTML =
-    `<button class="nav orbnav" data-act="orb">${orbHTML()}<span class="main"><span style="display:block">Consulente</span><span class="t2">Spunti e domande sui tuoi dati</span></span></button>` +
+    `<button class="nav orbnav ${view === 'occhio' ? 'on' : ''}" data-act="orb">${orbHTML()}<span class="main"><span style="display:block">Occhio</span><span class="t2">Chiedi, simula, registra</span></span></button>` +
     NAV_GROUPS.map(
       ([g, ks]) =>
         `<div class="navlbl">${g}</div>` +
@@ -491,7 +491,7 @@ function renderNav() {
     '<div class="navlbl">Account</div>' +
     `<button class="nav ${view === 'impostazioni' ? 'on' : ''}" data-act="go" data-v="impostazioni">${ico('set')}Impostazioni</button>`;
   const TB = ['home', 'movimenti', 'patrimonio'];
-  const inMore = !TB.includes(view);
+  const inMore = !TB.includes(view) && view !== 'occhio';
   const tab = k => {
     const v = VIEWS.find(x => x[0] === k);
     return `<button class="${view === k ? 'on' : ''}" data-act="go" data-v="${k}">${ico(v[2])}${v[3]}</button>`;
@@ -499,7 +499,7 @@ function renderNav() {
   $('#tabbar').innerHTML =
     tab('home') +
     tab('movimenti') +
-    `<button class="orbtab" data-act="orb" aria-label="Consulente">${orbHTML()}<span class="sr">Consulente</span></button>` +
+    `<button class="orbtab ${view === 'occhio' ? 'on' : ''}" data-act="orb" aria-label="Occhio">${orbHTML()}<span class="sr">Occhio</span></button>` +
     tab('patrimonio') +
     `<button class="${inMore ? 'on' : ''}" data-act="more">${ico('more')}Altro</button>`;
   orbRefresh();

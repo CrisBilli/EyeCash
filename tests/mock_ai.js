@@ -6,8 +6,45 @@ http
     q.on('data', d => (b += d));
     q.on('end', () => {
       const j = JSON.parse(b);
-      const u = j.messages[j.messages.length - 1].content;
+      const last = j.messages[j.messages.length - 1];
+      const u = last.content;
       fs.appendFileSync('/tmp/mockai.log', JSON.stringify(j.messages) + '\n');
+      // the advisor chat (local model with tools): one tool call, then an answer from its result
+      if (j.tools && last.role === 'user') {
+        const call = /auto/i.test(u)
+          ? ['simulate_cashflow', { events: [{ label: 'Auto', amount: 20000, month: 2 }], target_index: 0 }]
+          : /ristoranti/i.test(u)
+            ? ['search_transactions', { category: 'Ristoranti', limit: 5 }]
+            : ['get_overview', {}];
+        return r.end(
+          JSON.stringify({
+            choices: [
+              {
+                message: {
+                  content: '',
+                  tool_calls: [
+                    {
+                      id: 'c1',
+                      type: 'function',
+                      function: { name: call[0], arguments: JSON.stringify(call[1]) }
+                    }
+                  ]
+                }
+              }
+            ]
+          })
+        );
+      }
+      if (last.role === 'tool') {
+        const x = JSON.parse(last.content);
+        const out =
+          last.name === 'get_overview'
+            ? `**Stai andando bene.**\n- Risparmi circa ${x.avg_monthly_saving} € al mese\n- Liquidità: ${x.cash} €`
+            : last.name === 'simulate_cashflow'
+              ? `**${x.verdict === 'safe' ? 'Sì' : 'Non ancora'}.** Mese sicuro: ${x.earliest_safe_month_for_target}. Liquidità minima ${x.cash_lowest} €.`
+              : `Ho trovato ${x.count} movimenti, totale ${x.total} €.`;
+        return r.end(JSON.stringify({ choices: [{ message: { content: '<think>calcolo</think>' + out } }] }));
+      }
       let out = '{}';
       if (/Traduci la domanda/.test(u)) {
         if (/«[^»]*ristoranti[^»]*»/i.test(u))

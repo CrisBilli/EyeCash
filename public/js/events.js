@@ -55,16 +55,51 @@ const ACTIONS = {
   },
   'ask-quick': ({ el }) => {
     const x = quickAsks()[+el.dataset.i];
-    askCur = { q: x[0], spec: x[1], ai: false };
+    S.chat = S.chat || [];
+    S.chat.push(
+      { id: uid(), role: 'user', content: t(x[0]), t: Date.now() },
+      { id: uid(), role: 'assistant', kind: 'ask', q: x[0], spec: x[1], ai: false, t: Date.now() }
+    );
+    save();
+    renderView();
+    occScroll();
+  },
+  'adv-planner': ({ el }) => affordAsk(el.dataset.q),
+  'occ-suggest': ({ el }) => occSend(t(OCC_SUGGEST[+el.dataset.i])),
+  'occ-new': () => {
+    S.chat = [];
+    save();
     renderView();
   },
-  'adv-planner': () => askCur && affordAsk(askCur.q),
-  'ask-hist': ({ el }) => {
-    const h = (S.askHist || []).find(x => x.id === el.dataset.id);
-    if (h) {
-      askCur = h.advice ? { q: h.q, advice: h.advice, ai: true } : { q: h.q, spec: h.spec, ai: true };
-      renderView();
-    }
+  'occ-tx-ok': ({ el }) => {
+    const m = (S.chat || []).find(x => x.id === el.dataset.id);
+    if (!m || m.state !== 'new') return;
+    S.tx.push({ id: uid(), ...m.tx });
+    m.state = 'saved';
+    save();
+    renderView();
+    toast('Movimento registrato');
+  },
+  'occ-tx-no': ({ el }) => {
+    const m = (S.chat || []).find(x => x.id === el.dataset.id);
+    if (m) m.state = 'dropped';
+    save();
+    renderView();
+  },
+  'occ-tx-edit': ({ el }) => {
+    const m = (S.chat || []).find(x => x.id === el.dataset.id);
+    if (!m) return;
+    m.state = 'dropped';
+    save();
+    txForm(null, m.tx);
+  },
+  'occ-sim': ({ el }) => {
+    const m = (S.chat || []).find(x => x.id === el.dataset.id);
+    if (!m) return;
+    S.afford = { ...m.F };
+    affNote = m.note;
+    save();
+    go('permettermelo');
   },
   'pf-sel': ({ el }) => {
     invPf = el.dataset.k === 'all' ? null : el.dataset.k;
@@ -273,7 +308,7 @@ const ACTIONS = {
     renderView();
   },
   more: () => moreSheet(),
-  orb: () => orbSheet(),
+  orb: () => go('occhio'),
   'go-close': ({ el }) => {
     closeForm();
     go(el.dataset.v);
@@ -583,9 +618,9 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('submit', e => {
   e.preventDefault();
-  if (e.target.id === 'askform') {
-    const q = ($('#askq').value || '').trim();
-    if (q) askAI(q);
+  if (e.target.id === 'occform') {
+    const q = ($('#occq').value || '').trim();
+    if (q) occSend(q);
     return;
   }
   if (e.target.id === 'affask') {

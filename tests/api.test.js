@@ -886,6 +886,17 @@ test('AI consulente: esce solo la domanda, la ricetta torna ripulita', async () 
   assert.match(c.json.clarify, /soldi/);
   assert.equal((await req('POST', '/api/ai/advise', { body: { question: 'x' } })).status, 401);
 });
+test('chat del consulente rifiutata con un modello AI esterno', async () => {
+  aiLog = [];
+  const r = await req('POST', '/api/ai/chat', {
+    cookie: COOKIE,
+    body: { messages: [{ role: 'user', content: 'saldo?' }] }
+  });
+  assert.equal(r.status, 403);
+  assert.equal(aiLog.length, 0, 'nulla inviato');
+  const st = await req('GET', '/api/status');
+  assert.equal(st.json.ai_model, null);
+});
 test('service worker servito come script, senza cache', async () => {
   const r = await req('GET', '/sw.js');
   assert.equal(r.status, 200);

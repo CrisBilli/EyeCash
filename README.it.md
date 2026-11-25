@@ -68,14 +68,17 @@ EyeCash fa il contrario:
   - rendimento annuo (XIRR);
   - plusvalenze realizzate anno per anno.
 - **Simulatore FIRE:** simulazione Monte Carlo dell'indipendenza finanziaria, con scenari di stress. Gira tutta sul dispositivo.
-- **Chiedi ai tuoi dati:** domande in italiano, con risposta in una frase, un grafico e una tabella.
+- **L'Occhio** (il logo al centro della barra) è un unico posto per parlare con i tuoi dati. Puoi chiedere cifre, chiedere un parere, simulare un acquisto o raccontare una spesa da registrare (*"ho speso 12 € al bar"*, poi confermi con un tocco). Sbatte le palpebre quando c'è qualcosa di nuovo da leggere. Come risponde dipende dall'AI:
+  - **AI locale** (Ollama in casa): un vero agente. Il modello usa strumenti che girano sul tuo dispositivo (spese per categoria, ricerca nei movimenti, simulazione della liquidità, portafoglio…) e ne legge i risultati. Nulla esce di casa.
+  - **AI esterna** (Claude, OpenAI…): alla cieca. Esce solo la domanda; l'AI risponde con una ricetta e il telefono calcola ogni numero.
+  - **Senza AI o offline:** domande rapide, cifre semplici (*"quanto ho speso in ristoranti negli ultimi 6 mesi?"*), simulazioni d'acquisto e spese vengono capite sul dispositivo.
 - **Consulente:** puoi chiedere un parere, non solo una cifra. Per esempio: *"Tra un mese spendo 15.000 €, il prossimo anno vorrei un PC da 3.000: conviene?"*.
   - L'AI trasforma la domanda in una ricetta: gli eventi futuri e le regole da verificare (non andare in rosso, tenere il fondo emergenza, rate sotto un terzo del reddito…).
   - Il telefono simula la liquidità mese per mese sui numeri reali e risponde *Sì / Sì, ma da marzo / No*, con i motivi e un grafico.
   - Puoi continuare con domande come *"e se lo prendo a rate?"*.
 
   Esce solo la domanda, mai un numero.
-- **"Posso permettermelo?"** Mutuo, auto o qualsiasi grande acquisto, simulati sulle tue entrate, spese, risparmi e rate reali. Ottieni:
+- **"Posso permettermelo?"** (dentro l'Occhio, con il simulatore completo a un tocco) Mutuo, auto o qualsiasi grande acquisto, simulati sulle tue entrate, spese, risparmi e rate reali. Ottieni:
   - un verdetto chiaro e la rata mensile;
   - i controlli che farebbe una banca: rate sul reddito, mutuo sul prezzo, fondo di emergenza che resta, risparmio dopo l'acquisto;
   - il prezzo massimo che li supera tutti e tra quanto avresti i soldi;
