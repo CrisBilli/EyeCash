@@ -27,7 +27,7 @@
 
 <p align="center">
   <a href="docs/media/eyecash-demo-en.mp4"><img src="docs/media/demo-en.webp" width="760" alt="The Eye answering questions with a local AI, inside EyeCash"></a><br>
-  <sub><a href="docs/media/eyecash-demo-en.mp4">▶ Watch the 70-second demo</a> · <a href="docs/media/eyecash-demo-it.mp4">versione italiana</a> · the answers are real answers of a local model (qwen3:8b on an 8 GB graphics card), the data is a made-up person</sub>
+  <sub><a href="docs/media/eyecash-demo-en.mp4">▶ Watch the 65-second demo, with music</a> · <a href="docs/media/eyecash-demo-it.mp4">versione italiana</a> · the answers are real answers of a local model (qwen3:8b on an 8 GB graphics card), the data is a made-up person</sub>
 </p>
 
 ---

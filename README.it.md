@@ -19,7 +19,7 @@
 
 <p align="center">
   <a href="docs/media/eyecash-demo-it.mp4"><img src="docs/media/demo-it.webp" width="760" alt="L'Occhio risponde con un'AI locale, dentro EyeCash"></a><br>
-  <sub><a href="docs/media/eyecash-demo-it.mp4">▶ Guarda la demo di 70 secondi</a> · <a href="docs/media/eyecash-demo-en.mp4">English version</a> · le risposte sono vere risposte di un modello locale (qwen3:8b su una scheda da 8 GB), i dati sono di una persona inventata</sub>
+  <sub><a href="docs/media/eyecash-demo-it.mp4">▶ Guarda la demo di 65 secondi, con musica</a> · <a href="docs/media/eyecash-demo-en.mp4">English version</a> · le risposte sono vere risposte di un modello locale (qwen3:8b su una scheda da 8 GB), i dati sono di una persona inventata</sub>
 </p>
 
 ---
