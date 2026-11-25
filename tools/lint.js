@@ -67,7 +67,11 @@ const others = [
   'server.js',
   'mcp/eyecash-mcp.js',
   'public/sw.js',
-  ...fs.readdirSync(path.join(ROOT, 'server')).map(f => 'server/' + f)
+  ...fs.readdirSync(path.join(ROOT, 'server')).map(f => 'server/' + f),
+  ...fs
+    .readdirSync(path.join(ROOT, 'bench'))
+    .filter(f => f.endsWith('.js'))
+    .map(f => 'bench/' + f)
 ];
 for (const f of others) {
   const globals = f.endsWith('sw.js')

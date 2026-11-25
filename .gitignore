@@ -19,3 +19,4 @@ __pycache__/
 
 # local AI models downloaded by the optional Ollama container
 ollama/
+bench/results/

@@ -97,7 +97,7 @@ with sync_playwright() as p:
         pg.click(f'[data-act=st-per][data-k="{k}"]'); pg.wait_for_timeout(150)
     check('Tutti i periodi si aprono senza errori', not errs, errs[:2])
     m = br.new_page(viewport={'width': 390, 'height': 844}); m.goto(B); m.wait_for_selector('#pw1'); m.fill('#pw1', PW); m.click('#lockbtn'); unlocked(m)
-    m.click('[data-act=more]'); m.wait_for_timeout(300)
+    m.click('.top [data-act=more]'); m.wait_for_timeout(300)
     check('Statistiche nel menu Altro su iPhone', m.locator('[data-act=go-close][data-v=statistiche]').count() == 1)
     m.click('[data-act=go-close][data-v=statistiche]'); m.wait_for_timeout(400)
     check('Statistiche su iPhone', 'Spese medie per categoria' in m.inner_text('#view'))

@@ -31,7 +31,12 @@ function adviceBase() {
     for (const [c, v] of Object.entries(catSpend(k))) cats[c] = (cats[c] || 0) + v;
   }
   for (const c in cats) cats[c] = cats[c] / Math.max(1, n);
+  // regular investments (category Investimenti) leave the accounts without being spending
+  const inv = S.tx
+    .filter(t => t.cat === 'Investimenti' && t.amount < 0 && months.includes(String(t.date).slice(0, 7)))
+    .reduce((s, t) => s - t.amount, 0);
   return {
+    investing: inv / Math.max(1, n),
     income: M.income,
     spending: M.spending,
     cash: M.cash,

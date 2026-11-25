@@ -1,6 +1,6 @@
 /* EyeCash – service worker: keeps a copy of the app (not of the data) so it opens without network.
    Data stays in the browser database, encrypted with your password: it never passes through here. */
-const CACHE = 'eyecash-shell-v9';
+const CACHE = 'eyecash-shell-v10';
 const SHELL = [
   '/',
   '/js/i18n.js',

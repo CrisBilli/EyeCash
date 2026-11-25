@@ -18,9 +18,11 @@ http
       if (j.tools && last.role === 'user') {
         const call = /auto/i.test(u)
           ? ['simulate_cashflow', { events: [{ label: 'Auto', amount: 20000, month: 2 }], target_index: 0 }]
-          : /ristoranti/i.test(u)
-            ? ['search_transactions', { category: 'Ristoranti', limit: 5 }]
-            : ['get_overview', {}];
+          : /marted/i.test(u)
+            ? ['aggregate_transactions', { weekday: ['tuesday'], from: '2026-10-26', to: '2026-11-25' }]
+            : /ristoranti/i.test(u)
+              ? ['search_transactions', { category: 'Ristoranti', limit: 5 }]
+              : ['get_overview', {}];
         return r.end(
           JSON.stringify({
             choices: [

@@ -115,41 +115,26 @@ const OCC_RUN = {
     });
   },
   search_transactions(a = {}) {
-    const txt = String(a.text || '').toLowerCase(),
-      cat = String(a.category || '').toLowerCase();
     const lim = Math.min(50, Math.max(1, Math.round(+a.limit || 25)));
-    const hit = S.tx
-      .filter(t => {
-        if (
-          txt &&
-          !String(t.note || '')
-            .toLowerCase()
-            .includes(txt)
-        )
-          return false;
-        if (cat && String(t.cat || '').toLowerCase() !== cat) return false;
-        if (a.from && t.date < a.from) return false;
-        if (a.to && t.date > a.to) return false;
-        if (a.kind === 'expense' && t.amount >= 0) return false;
-        if (a.kind === 'income' && t.amount <= 0) return false;
-        const v = Math.abs(t.amount);
-        if (a.min_amount != null && v < +a.min_amount) return false;
-        if (a.max_amount != null && v > +a.max_amount) return false;
-        return true;
-      })
-      .sort((x, y) => (x.date < y.date ? 1 : -1));
+    const hit = EN.txFilter(S.tx, a, { neutral: NEUTRAL_CATS, accountName: accName }).sort((x, y) =>
+      x.date < y.date ? 1 : -1
+    );
     return {
       count: hit.length,
       total: r2(hit.reduce((s, t) => s + t.amount, 0)),
       shown: Math.min(lim, hit.length),
       items: hit.slice(0, lim).map(t => ({
         date: t.date,
+        weekday: EN.weekdayOf(t.date),
         description: t.note || '',
         amount: r2(t.amount),
         category: t.cat,
         account: accName(t.accountId)
       }))
     };
+  },
+  aggregate_transactions(a = {}) {
+    return EN.txAggregate(S.tx, a, { neutral: NEUTRAL_CATS, accountName: accName });
   },
   list_recurring() {
     return S.recurring.map(r => ({
@@ -275,6 +260,7 @@ const OCC_STEP = {
   spending_by_category: 'Spese per categoria',
   monthly_trend: 'Andamento mese per mese',
   search_transactions: 'Ricerca nei movimenti',
+  aggregate_transactions: 'Totali dei movimenti',
   list_recurring: 'Spese e entrate ricorrenti',
   list_goals: 'Obiettivi',
   get_portfolio: 'Portafoglio',
@@ -285,8 +271,14 @@ const OCC_STEP = {
 function occStepLabel(s) {
   const a = s.args || {};
   const extra =
-    s.name === 'search_transactions'
-      ? [a.text && '«' + a.text + '»', a.category, a.from && a.from + (a.to ? ' → ' + a.to : '')]
+    s.name === 'search_transactions' || s.name === 'aggregate_transactions'
+      ? [
+          a.text && '«' + a.text + '»',
+          a.category,
+          a.weekday && [].concat(a.weekday).join(', '),
+          a.group_by && a.group_by !== 'none' && t('per {0}', [a.group_by]),
+          a.from && a.from + (a.to ? ' → ' + a.to : '')
+        ]
           .filter(Boolean)
           .join(' · ')
       : (s.name === 'spending_by_category' || s.name === 'monthly_trend') && a.months
@@ -659,7 +651,13 @@ function occScroll() {
 
 /** Minimal, safe markdown: escapes everything, then **bold**, *italic*, lists, headings. */
 function occMd(s) {
-  const lines = esc(String(s || '').replace(/<think>[\s\S]*?<\/think>/g, '')).split('\n');
+  const lines = esc(
+    String(s || '')
+      .replace(/<think>[\s\S]*?<\/think>/g, '')
+      // no emoji in a finance app, even if the model adds them
+      .replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}]/gu, '')
+      .replace(/^\s*\**(risposta|answer)\**:?\**\s*$/gim, '')
+  ).split('\n');
   let html = '',
     list = null;
   const inline = x =>

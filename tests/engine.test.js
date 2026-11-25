@@ -881,3 +881,13 @@ test('consulente: espressioni sicure', () => {
   assert.equal(s.checks.length, 0, 'regola non valida scartata');
   assert.equal(E.sanitizeAdvice({ events: [], checks: [] }), null);
 });
+test('consulente: gli investimenti periodici escono dalla liquidità ma non sono spese', () => {
+  const r = E.sanitizeAdvice({ events: [{ label: 'PC', amount: 3000, month: 1 }], target: 0 });
+  const x = E.runAdvice(r, { ...BASE, investing: 300 });
+  assert.equal(x.vars.saving, 900, 'risparmio = entrate − spese');
+  assert.equal(x.vars.cash_growth, 600, 'la liquidità cresce di risparmio − PAC');
+  assert.equal(x.path[2], 18000 + 2 * 600 - 3000);
+  // con 2.000 di partenza: 2.000 − 3.000 + 600·m ≥ 10.200 solo da m = 19, oltre i 13 mesi del grafico
+  const late = E.runAdvice(r, { ...BASE, cash: 2000, investing: 300 });
+  assert.ok(late.vars.best_month > late.vars.horizon, 'il mese migliore si cerca fino a 5 anni');
+});

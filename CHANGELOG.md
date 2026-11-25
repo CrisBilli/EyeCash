@@ -1,5 +1,15 @@
 # EyeCash · Novità
 
+## 1.5.2
+- **L'Occhio legge i dati come serve.** Con l'AI locale ha un nuovo strumento: totali con qualsiasi filtro (testo o esercente, categoria, date, giorno della settimana, importi, conto) e raggruppati per categoria, mese, giorno della settimana, giorno, esercente o conto. Ad esempio: "quanto ho speso di martedì nell'ultimo mese?", "in che giorno spendo di più?", "quanto nei weekend di ottobre?". Anche la ricerca dei movimenti accetta giorno della settimana e conto.
+- **Istruzioni più chiare al modello:**
+  - sa che giorno è oggi e cosa vuol dire "ultimo mese" (30 giorni), "mese scorso" e "quest'anno";
+  - risponde sempre nella lingua dell'app;
+  - va dritto alla conclusione, senza emoji né "Risposta:" (le emoji vengono comunque tolte).
+- **Simulazioni più giuste:** i versamenti periodici negli investimenti (ad esempio un PAC) escono dai conti ma non sono spese. Il miglior mese per un acquisto ora si cerca fino a 5 anni avanti.
+- **Banco di prova:** sono nel repository le 104 domande su una persona inventata, per misurare quanto è bravo un modello come Occhio (`bench/`, istruzioni in `bench/README.md`). Si possono lanciare anche dal server, con un container usa e getta.
+- **Barra in basso:** su telefono l'occhio è esattamente al centro, tra Home e Movimenti a sinistra e Patrimonio e Investimenti a destra. "Altro" passa in alto, al posto dell'ingranaggio, e contiene anche Impostazioni.
+
 ## 1.5.1
 - **Si vede sempre chi risponde.**
   - In alto nell'Occhio c'è lo stato, con un pallino colorato: AI locale con il nome del modello, AI esterna con il servizio, oppure "Sul dispositivo".
