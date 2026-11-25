@@ -55,7 +55,7 @@ with sync_playwright() as p:
     pg.screenshot(path='/tmp/f_fire.png', full_page=True)
     # mobile
     m = br.new_context(viewport={'width': 390, 'height': 844}).new_page(); m.goto(B); m.wait_for_selector('#pw1'); m.fill('#pw1', PW); m.click('#lockbtn'); unlocked(m)
-    m.click('#tabbar [data-act=more]'); m.click('[data-act=go-close][data-v=fire]'); m.wait_for_timeout(400)
+    m.click('.top [data-act=more]'); m.click('[data-act=go-close][data-v=fire]'); m.wait_for_timeout(400)
     check('Mobile: Altro → FIRE', m.inner_text('#ttl') == 'Simulazione FIRE'); m.screenshot(path='/tmp/f_mob.png', full_page=True)
     br.close()
 print('ERRORI CONSOLE:', errs[:8]); print(f'RISULTATO: {sum(res)}/{len(res)} superati')

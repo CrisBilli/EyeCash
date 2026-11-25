@@ -9,7 +9,7 @@ PORT=8091
 export NODE_NO_WARNINGS=1
 
 echo "== Node suites"
-node --test tests/engine.test.js tests/api.test.js tests/local-ai.test.js 2>&1 | grep -E "^# (pass|fail)|^not ok"
+node --test tests/engine.test.js tests/api.test.js tests/local-ai.test.js tests/bench.test.js 2>&1 | grep -E "^# (pass|fail)|^not ok"
 
 echo "== Browser suites"
 node tests/mock_ai.js >/dev/null 2>&1 & MOCK1=$!

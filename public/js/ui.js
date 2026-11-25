@@ -500,8 +500,6 @@ function renderNav() {
     ).join('') +
     '<div class="navlbl">Account</div>' +
     `<button class="nav ${view === 'impostazioni' ? 'on' : ''}" data-act="go" data-v="impostazioni">${ico('set')}Impostazioni</button>`;
-  const TB = ['home', 'movimenti', 'patrimonio', 'investimenti'];
-  const inMore = !TB.includes(view) && view !== 'occhio';
   const tab = k => {
     const v = VIEWS.find(x => x[0] === k);
     return `<button class="${view === k ? 'on' : ''}" data-act="go" data-v="${k}">${ico(v[2])}<span class="tl">${v[3]}</span></button>`;
@@ -511,8 +509,7 @@ function renderNav() {
     tab('movimenti') +
     `<button class="orbtab ${view === 'occhio' ? 'on' : ''}" data-act="orb" aria-label="Occhio">${orbHTML()}<span class="sr">Occhio</span></button>` +
     tab('patrimonio') +
-    tab('investimenti') +
-    `<button class="${inMore ? 'on' : ''}" data-act="more">${ico('more')}<span class="tl">Altro</span></button>`;
+    tab('investimenti');
   orbRefresh();
 }
 function renderSync() {

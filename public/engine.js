@@ -1490,6 +1490,8 @@
     income: ['eur', 'entrate medie al mese (ultimi 12 mesi)'],
     spending: ['eur', 'spese medie al mese (ultimi 12 mesi)'],
     saving: ['eur', 'risparmio medio al mese (entrate − spese)'],
+    investing: ['eur', 'investimenti periodici al mese (es. PAC): escono dai conti ma non sono spese'],
+    cash_growth: ['eur', 'di quanto cresce la liquidità al mese (risparmio − investimenti periodici)'],
     saving_rate: ['pct', 'tasso di risparmio'],
     cash: ['eur', 'liquidità oggi sui conti'],
     investments: ['eur', 'valore degli investimenti oggi'],
@@ -1735,7 +1737,10 @@
     const income = Math.max(0, +base.income || 0),
       spending = Math.max(0, +base.spending || 0);
     const emMonths = R.emergencyMonths || base.emergencyMonths || 6;
-    const b = { cash: +base.cash || 0, saving: income - spending };
+    // regular investments (e.g. a monthly ETF plan) leave the accounts without being spending:
+    // the cash simulation grows by saving minus investing
+    const investing = Math.max(0, +base.investing || 0);
+    const b = { cash: +base.cash || 0, saving: income - spending - investing };
     const ev = R.events || [];
     const lastEv = ev.reduce(
       (m, e) => Math.max(m, e.month + (e.type === 'monthly' ? Math.min(e.months, 24) : 0)),
@@ -1747,8 +1752,10 @@
     const V = {
       income,
       spending,
-      saving: b.saving,
-      saving_rate: income ? b.saving / income : 0,
+      saving: income - spending,
+      saving_rate: income ? (income - spending) / income : 0,
+      investing,
+      cash_growth: b.saving,
       cash: b.cash,
       investments: +base.investments || 0,
       invested_gain: (+base.investments || 0) - (+base.invCost || 0),
@@ -1790,10 +1797,12 @@
       V.cash_before_target = without[T.month];
       V.cash_after_target = path[T.month];
       V.dti_after = income ? (V.debt_payments + V.target_payment) / income : null;
-      V.saving_after = b.saving - V.target_payment;
+      V.saving_after = income - spending - V.target_payment;
       V.best_month = null;
-      for (let s = T.month; s <= H; s++) {
-        const p = advPath(b, [...others, { ...T, month: s }], H);
+      // look up to 5 years ahead, even when the chart shows fewer months
+      const HB = 60;
+      for (let s = T.month; s <= HB; s++) {
+        const p = advPath(b, [...others, { ...T, month: s }], Math.max(HB, s + 12));
         if (p.slice(s).every(v => v >= em)) {
           V.best_month = s;
           break;
@@ -1883,7 +1892,7 @@
     ),
     tool(
       'search_transactions',
-      'Find transactions by text (description), category, dates (YYYY-MM-DD), amount range or kind. Returns count, total and up to 50 items.',
+      'Lists single transactions by text (description), category, dates (YYYY-MM-DD), amount range, kind, weekday or account. Returns count, total and up to 50 items. For totals or breakdowns use aggregate_transactions.',
       obj({
         text: { type: 'string' },
         category: { type: 'string' },
@@ -1892,6 +1901,40 @@
         min_amount: { type: 'number' },
         max_amount: { type: 'number' },
         kind: { type: 'string', enum: ['expense', 'income'] },
+        weekday: {
+          type: 'array',
+          items: {
+            type: 'string',
+            enum: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+          }
+        },
+        account: { type: 'string' },
+        limit: { type: 'integer' }
+      })
+    ),
+    tool(
+      'aggregate_transactions',
+      'Totals of transactions with any filter, optionally grouped. Use it for "how much did I spend on Tuesdays / at X / in category Y / per month / per weekday / per merchant". Expenses by default (kind=income for income). Dates as YYYY-MM-DD or YYYY-MM. Returns total, count, average per transaction and the groups.',
+      obj({
+        group_by: {
+          type: 'string',
+          enum: ['none', 'category', 'month', 'weekday', 'day', 'merchant', 'account']
+        },
+        text: { type: 'string', description: 'part of the description, e.g. a merchant' },
+        category: { type: 'string' },
+        from: { type: 'string' },
+        to: { type: 'string' },
+        weekday: {
+          type: 'array',
+          items: {
+            type: 'string',
+            enum: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+          }
+        },
+        kind: { type: 'string', enum: ['expense', 'income'] },
+        min_amount: { type: 'number' },
+        max_amount: { type: 'number' },
+        account: { type: 'string' },
         limit: { type: 'integer' }
       })
     ),
@@ -1917,7 +1960,7 @@
     ),
     tool(
       'simulate_cashflow',
-      'Simulates cash month by month on the real numbers with future events (purchases, loans, bonuses). Returns the lowest cash, the first month in the red, months below the emergency fund and, for the target event, the earliest safe month.',
+      'Simulates cash month by month on the real numbers with future events (purchases, loans, bonuses). Cash grows by saving minus regular investments. Returns the lowest cash, the first month in the red, months below the emergency fund and, for the target event, the earliest safe month.',
       obj(
         {
           events: { type: 'array', items: EVENT },
@@ -1937,6 +1980,130 @@
       ])
     )
   ];
+
+  /* ---------- transactions for the chat tools: one filter, one aggregation ----------
+     Shared by the app (public/js/occhio.js) and the benchmark (bench/tools.js). */
+  const WEEKDAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const WD_IT = ['domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato'];
+  /** Day of the week of a YYYY-MM-DD date, 0 = Sunday, without time zone surprises. */
+  const weekdayOf = d => new Date(Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10))).getUTCDay();
+  function wdIndex(x) {
+    if (typeof x === 'number' && x >= 0 && x <= 6) return x;
+    const w = String(x || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '');
+    const i = WEEKDAYS.findIndex(n => n.startsWith(w.slice(0, 3)));
+    if (w.length >= 3 && i >= 0) return i;
+    const j = WD_IT.findIndex(n => n.normalize('NFD').replace(/[̀-ͯ]/g, '').startsWith(w.slice(0, 3)));
+    return w.length >= 3 && j >= 0 ? j : null;
+  }
+  /**
+   * Keeps the transactions matching the chat arguments: text, category, from/to (YYYY-MM-DD or
+   * YYYY-MM), kind, amount range, weekday(s), account. Transfers and investments are excluded
+   * unless asked for by category.
+   */
+  function txFilter(tx, a = {}, { neutral = [], accountName = () => '' } = {}) {
+    const txt = String(a.text || '').toLowerCase(),
+      cat = String(a.category || '').toLowerCase(),
+      acc = String(a.account || '').toLowerCase();
+    const from = a.from ? String(a.from).slice(0, 10) : '',
+      to = a.to ? (String(a.to).length === 7 ? a.to + '-31' : String(a.to).slice(0, 10)) : '';
+    const wds = (Array.isArray(a.weekday) ? a.weekday : a.weekday != null ? [a.weekday] : [])
+      .map(wdIndex)
+      .filter(x => x != null);
+    return tx.filter(t => {
+      if (!cat && neutral.includes(t.cat)) return false;
+      if (
+        txt &&
+        !String(t.note || '')
+          .toLowerCase()
+          .includes(txt)
+      )
+        return false;
+      if (cat && String(t.cat || '').toLowerCase() !== cat) return false;
+      if (acc && !String(accountName(t.accountId)).toLowerCase().includes(acc)) return false;
+      if (from && t.date < from) return false;
+      if (to && t.date > to) return false;
+      if (a.kind === 'expense' && t.amount >= 0) return false;
+      if (a.kind === 'income' && t.amount <= 0) return false;
+      const v = Math.abs(t.amount);
+      if (a.min_amount != null && v < +a.min_amount) return false;
+      if (a.max_amount != null && v > +a.max_amount) return false;
+      if (wds.length && !wds.includes(weekdayOf(t.date))) return false;
+      return true;
+    });
+  }
+  /** Totals of the filtered transactions, optionally grouped. Expenses count as positive amounts. */
+  function txAggregate(tx, a = {}, opt = {}) {
+    const hit = txFilter(tx, { kind: 'expense', ...a }, opt);
+    const g = a.group_by || 'none';
+    const key = t =>
+      g === 'category'
+        ? t.cat
+        : g === 'month'
+          ? t.date.slice(0, 7)
+          : g === 'weekday'
+            ? WEEKDAYS[weekdayOf(t.date)]
+            : g === 'day'
+              ? t.date
+              : g === 'merchant'
+                ? String(t.note || '').trim() || '—'
+                : g === 'account'
+                  ? (opt.accountName || (() => ''))(t.accountId)
+                  : 'all';
+    const groups = {};
+    for (const t of hit) {
+      const k = key(t);
+      const x = (groups[k] = groups[k] || { group: k, total: 0, count: 0 });
+      x.total += Math.abs(t.amount);
+      x.count++;
+    }
+    const days = hit.map(t => t.date).sort();
+    const rows = Object.values(groups)
+      .map(x => ({
+        ...x,
+        total: Math.round(x.total * 100) / 100,
+        avg: Math.round((x.total / x.count) * 100) / 100
+      }))
+      .sort((x, y) =>
+        g === 'month' || g === 'day'
+          ? x.group < y.group
+            ? -1
+            : 1
+          : g === 'weekday'
+            ? WEEKDAYS.indexOf(x.group) - WEEKDAYS.indexOf(y.group)
+            : y.total - x.total
+      );
+    const total = hit.reduce((s, t) => s + Math.abs(t.amount), 0);
+    return {
+      kind: a.kind || 'expense',
+      period: days.length ? days[0] + ' → ' + days[days.length - 1] : null,
+      count: hit.length,
+      total: Math.round(total * 100) / 100,
+      avg_per_transaction: hit.length ? Math.round((total / hit.length) * 100) / 100 : 0,
+      groups: g === 'none' ? undefined : rows.slice(0, Math.min(60, Math.max(1, +a.limit || 31)))
+    };
+  }
+
+  /** The advisor chat's instructions; shared by the server and the benchmark (bench/run.js). */
+  function chatSystemPrompt({ lang, today, categories }) {
+    const en = lang === 'en';
+    const wd = WD_IT[weekdayOf(today)];
+    return `Sei l'Occhio, il consulente finanziario personale dell'utente dentro EyeCash. Oggi è ${wd} ${today}.
+Hai degli strumenti che leggono i dati reali dell'utente (movimenti, conti, investimenti, beni, debiti, obiettivi, ricorrenti) e fanno calcoli. Valuta in euro.
+Regole:
+- Usa gli strumenti per ogni numero: non inventare mai importi, saldi o date.
+- I dati li puoi leggere come serve: per totali e scomposizioni (per categoria, mese, giorno della settimana, giorno, esercente, conto, con qualsiasi filtro) usa aggregate_transactions; per l'elenco dei singoli movimenti search_transactions. Non dire mai che non puoi filtrare: combina i filtri.
+- Periodi: "ultimo mese" = gli ultimi 30 giorni fino a oggi; "mese scorso" = il mese di calendario precedente; "quest'anno" = dal 1° gennaio a oggi. Dichiara il periodo usato nella risposta.
+- Per acquisti futuri, rate o "posso permettermi" usa simulate_cashflow; per le rate loan_payment.
+- Se manca un dettaglio essenziale fai una sola domanda; altrimenti fai ipotesi ragionevoli e dichiarale.
+- Importi arrotondati e leggibili (es. 1.250 €, non 1250.37).
+- Rispondi in modo diretto: prima la conclusione, poi i motivi con i numeri in un breve elenco. Niente preamboli, niente emoji, niente titoli come "Risposta:".
+- Sii prudente: fondo emergenza (di solito 6 mesi di spese), rate sotto un terzo del reddito, diversificazione. Su tasse e norme specifiche invita a verificare con un professionista.
+- Categorie di spesa: ${categories.join(', ')}.
+Rispondi sempre in ${en ? 'inglese' : 'italiano'}, anche se i dati o le domande precedenti sono in un'altra lingua.`;
+  }
 
   const API = {
     CLASSES,
@@ -1983,6 +2150,10 @@
     runAdvice,
     renderAdvice,
     CHAT_TOOLS,
+    chatSystemPrompt,
+    txFilter,
+    txAggregate,
+    weekdayOf,
     loanPayment,
     loanPrincipal,
     MEASURES,

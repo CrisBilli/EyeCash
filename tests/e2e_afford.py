@@ -90,7 +90,7 @@ with sync_playwright() as p:
     over = pg.evaluate("document.documentElement.scrollWidth")
     check('Mobile: niente scorrimento orizzontale', over <= 392, over)
     pg.screenshot(path='/tmp/afford_mob.png', full_page=True)
-    pg.click('#tabbar [data-act=more]'); pg.wait_for_timeout(300)
+    pg.click('.top [data-act=more]'); pg.wait_for_timeout(300)
     check('Mobile: il simulatore non è più nel menu (si apre dall\'Occhio)', pg.locator('[data-act=go-close][data-v=permettermelo]').count() == 0)
     pg.keyboard.press('Escape')
     # English

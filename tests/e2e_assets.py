@@ -71,10 +71,11 @@ with sync_playwright() as p:
     check('Stima AI spenta: pulsante nascosto', pg.locator('[data-act=asset-estimate]').count() == 0); pg.click('[data-act=close]')
     # mobile
     m = br.new_context(viewport={'width': 390, 'height': 844}); mp = m.new_page(); mp.goto(B); mp.wait_for_selector('#pw1'); mp.fill('#pw1', PW); mp.click('#lockbtn'); unlocked(mp)
-    check('Mobile: 6 pulsanti in basso con Investimenti, l\'occhio e "Altro"', mp.locator('#tabbar button').count() == 6 and 'Investimenti' in mp.inner_text('#tabbar') and 'Altro' in mp.inner_text('#tabbar'))
+    check('Mobile: 5 pulsanti in basso, l\'occhio al centro', mp.locator('#tabbar button').count() == 5 and 'Investimenti' in mp.inner_text('#tabbar') and mp.evaluate("(()=>{const b=document.querySelector('#tabbar .orbtab').getBoundingClientRect(),t=document.querySelector('#tabbar').getBoundingClientRect();return Math.abs((b.left+b.width/2)-(t.left+t.width/2))<3})()"))
+    check('Mobile: "Altro" in alto al posto dell\'ingranaggio', mp.locator('.top [data-act=more]').is_visible() and not mp.locator('.top .desk-only').is_visible())
     ob = mp.evaluate("document.querySelector('#tabbar .orb').getBoundingClientRect().width")
     check('Mobile: occhio più piccolo', 44 <= ob <= 56, ob)
-    mp.click('#tabbar [data-act=more]'); mp.click('[data-act=go-close][data-v=ricorrenti]'); mp.wait_for_timeout(300)
+    mp.click('.top [data-act=more]'); mp.click('[data-act=go-close][data-v=ricorrenti]'); mp.wait_for_timeout(300)
     check('Mobile: Altro → Ricorrenti funziona', mp.inner_text('#ttl') == 'Costi ricorrenti')
     # the consultant orb: alert while something is unread (insurance deadline), cleared once opened; thinks during AI calls
     mp.evaluate("localStorage.removeItem('eyecash_orb_seen');orbRefresh()")
