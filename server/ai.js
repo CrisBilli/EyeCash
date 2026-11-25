@@ -71,7 +71,78 @@ async function callAI({ system, messages, fast, max_tokens, json }) {
     throw Object.assign(new Error((j.error && (j.error.message || j.error)) || 'Errore AI ' + r.status), {
       code: 502
     });
-  return (((j.choices || [])[0] || {}).message || {}).content || '';
+  // reasoning models (e.g. qwen3) may put their thinking in the text: drop it
+  return String((((j.choices || [])[0] || {}).message || {}).content || '')
+    .replace(/<think>[\s\S]*?<\/think>/g, '')
+    .trim();
 }
 
-module.exports = { callAI };
+/**
+ * One round of the advisor chat with tools (OpenAI-compatible function calling, as
+ * offered by Ollama). Only ever called for LOCAL models: see /api/ai/chat.
+ * Returns { content, tool_calls: [{ id, name, arguments }] }.
+ */
+async function callAIChat({ messages, tools }) {
+  const r = await fetch(OPENAI_BASE + '/chat/completions', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      ...(OPENAI_KEY ? { authorization: 'Bearer ' + OPENAI_KEY } : {})
+    },
+    body: JSON.stringify({
+      model: AI_MODEL,
+      temperature: 0.3,
+      max_tokens: 2000,
+      messages,
+      ...(tools && tools.length ? { tools } : {})
+    }),
+    signal: AbortSignal.timeout(AI_TIMEOUT)
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    const msg = (j.error && (j.error.message || j.error)) || 'Errore AI ' + r.status;
+    throw Object.assign(
+      new Error(
+        /tool/i.test(String(msg))
+          ? 'Il modello locale non supporta gli strumenti: usa ad esempio qwen3:8b o llama3.1:8b (' +
+              msg +
+              ')'
+          : String(msg)
+      ),
+      { code: 502 }
+    );
+  }
+  const m = ((j.choices || [])[0] || {}).message || {};
+  let content = String(m.content || '')
+    .replace(/<think>[\s\S]*?<\/think>/g, '')
+    .trim();
+  let calls = (m.tool_calls || []).map((c, i) => ({
+    id: c.id || 'call_' + i,
+    name: c.function && c.function.name,
+    arguments: parseArgs(c.function && c.function.arguments)
+  }));
+  // some small models write the call as text instead of using the tools field
+  if (!calls.length && tools && tools.length) {
+    const t =
+      content.match(/<tool_call>\s*([\s\S]*?)\s*<\/tool_call>/) ||
+      content.match(/^\s*(\{[\s\S]*"name"[\s\S]*\})\s*$/);
+    if (t) {
+      const o = parseArgs(t[1]);
+      if (o && typeof o.name === 'string' && tools.some(x => x.function.name === o.name)) {
+        calls = [{ id: 'call_0', name: o.name, arguments: parseArgs(o.arguments || o.parameters) }];
+        content = '';
+      }
+    }
+  }
+  return { content, tool_calls: calls.filter(c => c.name) };
+}
+function parseArgs(a) {
+  if (a && typeof a === 'object') return a;
+  try {
+    return JSON.parse(a || '{}') || {};
+  } catch (e) {
+    return {};
+  }
+}
+
+module.exports = { callAI, callAIChat };

@@ -63,34 +63,18 @@ function adviceFmt(type, v) {
   return Math.round(v).toLocaleString(LOCALE);
 }
 
-/** Sends the question (and, for a follow-up, the previous question and recipe) and shows the result. */
-async function adviseAI(q, prev) {
-  askBusy = true;
-  askCur = null;
-  renderView();
-  try {
-    logAI(
-      'advise',
-      `Domanda: «${q.slice(0, 200)}»${prev ? ` · con la domanda precedente («${prev.q.slice(0, 60)}») e la sua ricetta` : ''}. Nessun importo, saldo o movimento.`
-    );
-    const recipe = await api('POST', '/api/ai/advise', {
-      question: anon(q),
-      lang: LANG,
-      previous: prev ? { question: anon(prev.q), recipe: prev.advice } : null
-    });
-    askCur = { q, advice: recipe, ai: true };
-    if (recipe.events.length || recipe.checks.length) {
-      S.askHist = [
-        { id: uid(), q, d: today(), advice: recipe },
-        ...(S.askHist || []).filter(h => h.q !== q)
-      ].slice(0, 15);
-      save();
-    }
-  } catch (e) {
-    askCur = { q, err: e.message, ai: true };
-  }
-  askBusy = false;
-  renderView();
+/** Sends the question (and, for a follow-up, the previous question and recipe); returns the recipe. */
+async function adviseCompute(q, prev) {
+  logAI(
+    'advise',
+    `Domanda: «${q.slice(0, 200)}»${prev ? ` · con la domanda precedente («${prev.q.slice(0, 60)}») e la sua ricetta` : ''}. Nessun importo, saldo o movimento.`
+  );
+  const recipe = await api('POST', '/api/ai/advise', {
+    question: anon(q),
+    lang: LANG,
+    previous: prev ? { question: anon(prev.q), recipe: prev.advice } : null
+  });
+  return { q, advice: recipe, ai: true };
 }
 
 /** Short labels for the key numbers (the meanings in EN.ADV_VARS are written for the AI). */
@@ -244,6 +228,6 @@ function adviceRender(cur) {
       ${R.events.length ? `<ul class="hint" style="margin:8px 0 0 18px;line-height:1.6">${R.events.map(e => `<li translate="no">${esc(adviceEventText(e))}</li>`).join('')}</ul>` : ''}
       ${rules ? `<div class="hint" style="margin-top:8px">Regole verificate:</div><ul class="hint" style="margin:4px 0 0 18px;line-height:1.6">${rules}</ul>` : ''}
       <p class="hint" style="margin-top:8px">All'AI è arrivata solo la domanda. Ha scritto eventi e regole; i numeri sono stati calcolati su questo dispositivo e non sono stati inviati.</p></details>
-    ${isAffordQ(cur.q) || EN.parseAffordText(anon(cur.q)).price ? `<button class="btn sm" style="margin-top:12px" data-act="adv-planner">Apri nel simulatore</button>` : ''}
+    ${isAffordQ(cur.q) || EN.parseAffordText(anon(cur.q)).price ? `<button class="btn sm" style="margin-top:12px" data-act="adv-planner" data-q="${esc(cur.q)}">Apri nel simulatore</button>` : ''}
     <div class="hint" style="margin-top:12px">Puoi continuare con «e se lo prendo a rate?» o «e tra sei mesi?». Simulazione orientativa, non una consulenza finanziaria.</div></div>`;
 }

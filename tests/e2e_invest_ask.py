@@ -87,19 +87,19 @@ with sync_playwright() as p:
     pg.evaluate("go('movimenti')"); pg.set_input_files('#csv', F); pg.wait_for_selector('#frm', timeout=15000); pg.click('#frm button[type=submit]'); pg.wait_for_timeout(700)
     check('Estratto conto dopo il dossier: nessuna operazione doppia', pg.evaluate("S.trades.length") == 6)
     # ---- chiedi ai tuoi dati
-    pg.evaluate("go('chiedi')"); pg.wait_for_timeout(300); pg.evaluate("balShown=true;applyBalMask()")
+    pg.evaluate("S.chat=[];go('occhio')"); pg.wait_for_timeout(300); pg.evaluate("balShown=true;applyBalMask()")
     pg.click('[data-act=ask-quick][data-i="2"]'); pg.wait_for_timeout(200)
     check('Domanda rapida calcolata in locale', 'ESSELUNGA' in pg.inner_text('#view').upper() and 'senza AI' in pg.inner_html('#view'), pg.inner_text('#view')[400:700])
-    pg.click('[data-act=ask-quick][data-i="5"]'); pg.wait_for_timeout(200)
+    pg.evaluate("S.chat=[];renderView()"); pg.click('[data-act=ask-quick][data-i="5"]'); pg.wait_for_timeout(200)
     check('Domanda rapida sul portafoglio (torta)', 'Il portafoglio vale' in pg.inner_text('#view') and pg.locator('#view svg circle').count() >= 2)
-    if pg.locator('#askq').count():
+    if pg.locator('#occq').count():
         open('/tmp/mockai.log', 'a').close(); before = len(open('/tmp/mockai.log').read())
-        pg.fill('#askq', 'quanto ho speso in ristoranti quest\'anno rispetto all\'anno scorso?'); pg.click('#askform button'); pg.wait_for_timeout(1500)
+        pg.evaluate("S.chat=[];renderView()"); pg.fill('#occq', 'quanto ho speso in ristoranti quest\'anno rispetto all\'anno scorso?'); pg.click('#occform button[type=submit]'); pg.wait_for_timeout(1500)
         v = pg.inner_text('#view'); sent = open('/tmp/mockai.log').read()[before:]
         check('Domanda libera: risposta calcolata sul dispositivo', "l'anno scorso" in v and pg.evaluate("eur(29)") in v, v[:400])
         check('All\'AI non arrivano importi né esercenti', 'PIZZERIA' not in sent.upper() and 'ESSELUNGA' not in sent.upper() and '4925' not in sent and 'quanto ho speso in ristoranti' in sent)
         check('Registro privacy della domanda', 'Nessun importo' in pg.evaluate("S.aiLog[0].p"))
-        check('Domanda salvata tra le recenti', pg.evaluate("S.askHist.length") == 1)
+        check('Domanda salvata nella conversazione (cifrata)', pg.evaluate("S.chat.length") == 2 and pg.evaluate("S.chat[1].kind") == 'ask')
     else: check('AI attiva sul server di test', False)
     check('Nessun errore JavaScript', not errs, errs[:3])
     br.close()

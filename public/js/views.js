@@ -620,7 +620,7 @@ const TITLES = {
   obiettivi: 'Obiettivi',
   report: 'Report',
   statistiche: 'Statistiche',
-  chiedi: 'Chiedi ai tuoi dati',
+  occhio: 'Occhio',
   permettermelo: 'Posso permettermelo?',
   patrimonio: 'Patrimonio',
   fire: 'Simulazione FIRE',
@@ -638,7 +638,7 @@ function renderView() {
       obiettivi: vGoals,
       report: vReport,
       statistiche: vStats,
-      chiedi: vAsk,
+      occhio: vOcchio,
       permettermelo: vAfford,
       patrimonio: vPat,
       fire: vFire,
@@ -646,6 +646,8 @@ function renderView() {
     }[view] || vHome;
   const V = $('#view');
   document.body.dataset.view = view;
+  if (view === 'occhio') orbMarkSeen();
+  $('#occbar').innerHTML = occBar();
   V.innerHTML = v();
   if (lastView !== view) {
     V.classList.remove('vin');
@@ -697,8 +699,6 @@ function moreSheet() {
       ['ricorrenti', 'rec', 'Costi ricorrenti'],
       ['obiettivi', 'goal', 'Obiettivi'],
       ['statistiche', 'stats', 'Statistiche'],
-      ['chiedi', 'ask', 'Chiedi'],
-      ['permettermelo', 'afford', 'Posso permettermelo?'],
       ['report', 'print', 'Report'],
       ['impostazioni', 'set', 'Impostazioni']
     ]
@@ -709,29 +709,4 @@ function moreSheet() {
       .join('')}</div>`
   );
   document.querySelector('#frm .btns').style.display = 'none';
-}
-/** The consultant sheet, opened from the orb: what is new to read, then the ways to ask. */
-function orbSheet() {
-  const news = orbNews(),
-    all = S ? insights() : [];
-  const rest = all.filter(i => !news.some(n => n.t === i.t));
-  const item = i =>
-    `<div class="row" style="cursor:default">${tile(...i.ic)}<div class="main"><div class="t1" style="white-space:normal">${esc(i.t)}</div><div class="t2" style="white-space:normal">${esc(i.d)}</div></div></div>`;
-  const go = (v, i, l, d) =>
-    `<div class="row" data-act="go-close" data-v="${v}"><div class="av">${ico(i)}</div><div class="main"><div class="t1">${l}</div><div class="t2">${d}</div></div></div>`;
-  openForm(
-    'Consulente',
-    [],
-    () => {},
-    null,
-    `<div class="orb-big">${orbHTML()}</div>
-    <div class="hint" style="text-align:center;margin:-4px 0 14px">Tutto calcolato sul dispositivo · nessun dato esce</div>
-    ${news.length ? `<div class="navlbl" style="padding-left:4px">Da leggere</div><div class="list">${news.map(item).join('')}</div>` : ''}
-    ${rest.length ? `<div class="navlbl" style="padding-left:4px">Spunti</div><div class="list">${rest.map(item).join('')}</div>` : ''}
-    ${all.length ? '' : '<div class="empty">Niente di nuovo da segnalare</div>'}
-    <div class="navlbl" style="padding-left:4px">Chiedi</div>
-    <div class="list">${go('chiedi', 'ask', 'Chiedi ai tuoi dati', 'Domande libere su spese e patrimonio')}${go('permettermelo', 'afford', 'Posso permettermelo?', 'Una spesa futura, mese per mese')}${go('fire', 'fire', 'Simulazione FIRE', 'Quando potresti smettere di lavorare')}</div>`
-  );
-  document.querySelector('#frm .btns').style.display = 'none';
-  orbMarkSeen();
 }

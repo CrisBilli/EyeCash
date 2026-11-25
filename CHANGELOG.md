@@ -1,5 +1,21 @@
 # EyeCash · Novità
 
+## 1.5.0 · L'Occhio
+- **Tutta l'interazione con i dati è nell'Occhio.** Toccando il logo al centro della barra si apre un'unica conversazione, che prende il posto di "Chiedi ai tuoi dati" e di "Posso permettermelo?". Puoi:
+  - chiedere cifre;
+  - chiedere un parere ("conviene…?");
+  - simulare un acquisto: il verdetto e il grafico della liquidità compaiono nella risposta, con *Modifica nel simulatore* per i dettagli;
+  - raccontare una spesa ("ho speso 12,50 € al bar"): l'Occhio la propone e tu la registri, la modifichi o la annulli. C'è anche il microfono.
+
+  In alto trovi cosa c'è di nuovo da leggere. La conversazione è salvata cifrata.
+- **Risponde in modo diverso a seconda dell'AI**, e lo dice sotto l'occhio:
+  - **AI locale:** è un vero agente. Il modello usa strumenti che girano sul dispositivo (quadro generale, spese per categoria, ricerca nei movimenti, ricorrenti, obiettivi, portafoglio, beni e debiti, simulazione della liquidità, rata) e ragiona sui numeri veri. Nulla esce di casa, e il server rifiuta questa modalità se l'AI configurata è esterna.
+  - **AI esterna:** alla cieca, come prima. Esce solo la domanda e i numeri li calcola il dispositivo.
+  - **Senza AI od offline:** sul dispositivo vengono capite le domande rapide, le cifre semplici (categoria, esercente e periodo, ad esempio "quanto ho speso in ristoranti negli ultimi 6 mesi?"), le simulazioni d'acquisto e le spese.
+- **Menu più semplice:** spariscono le voci "Chiedi" e "Posso permettermelo?".
+- **Modello locale predefinito:** `qwen3:8b`, che sa usare gli strumenti e sta in una GPU da 8 GB. Chi ha già impostato `AI_MODEL` non deve cambiare nulla.
+- Corretto il riconoscimento di frasi come "12,50 € bar": il simbolo € non finisce più nella descrizione.
+
 ## 1.4.0 · Nuovo stile
 - **Nuovo logo:** un occhio con la palpebra inferiore che è un grafico in salita. Nuove icone dell'app, nuova favicon e nuova schermata di sblocco.
 - **Nuovo tema scuro, ora predefinito:**

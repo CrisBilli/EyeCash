@@ -59,9 +59,10 @@ Cosa fa l'AI (ogni voce si accende o spegne in *Impostazioni → Privacy*):
 | Funzione | Cosa viene inviato |
 |---|---|
 | Inserimento rapido | solo la frase che scrivi o detti |
-| Chiedi ai tuoi dati | la domanda, i nomi delle categorie e il tipo dei conti: i numeri li calcola il telefono |
-| Consulente: "conviene…?", "posso…?" (stesso interruttore) | la domanda, e per le domande di seguito quella precedente con la sua ricetta: l'AI restituisce eventi e regole, i numeri li calcola il telefono |
-| Posso permettermelo? (stesso interruttore) | solo la frase: l'AI ne ricava prezzo, anticipo, tasso e durata; entrate, spese e saldi restano sul telefono |
+| Occhio con AI esterna: cifre | la domanda, i nomi delle categorie e il tipo dei conti: i numeri li calcola il telefono |
+| Occhio con AI esterna: "conviene…?", "posso…?" (stesso interruttore) | la domanda, e per le domande di seguito quella precedente con la sua ricetta: l'AI restituisce eventi e regole, i numeri li calcola il telefono |
+| Occhio con AI esterna: simulazione d'acquisto (stesso interruttore) | solo la frase: l'AI ne ricava prezzo, anticipo, tasso e durata; entrate, spese e saldi restano sul telefono |
+| Occhio con AI **locale** (interruttore a parte) | la conversazione e i risultati dei calcoli sui tuoi dati, solo verso il modello in casa: con un'AI esterna il server rifiuta |
 | Categorizzazione | descrizione e importo dei soli movimenti nuovi senza categoria |
 | Formato banca nuovo | intestazioni e al massimo 12 righe, con le cifre degli importi mascherate; una volta per banca, poi il formato viene memorizzato |
 | Stima di auto e casa | solo le caratteristiche del bene (mai l'indirizzo) |
@@ -87,16 +88,27 @@ Tutti i dettagli sono in [IMPORT.md](IMPORT.md) (in inglese).
 
 Con **Solo sintesi** esercenti e singoli movimenti spariscono: è la versione da mandare a un consulente. Gli indicatori sono riferimenti orientativi, non una consulenza.
 
-## 5b-bis. Chiedere un parere
-In *Chiedi ai tuoi dati* puoi fare domande come *"tra un mese spendo 15.000 €, il prossimo anno vorrei un PC da 3.000: conviene?"*. Ottieni:
-- un verdetto (sì / sì, ma / no) con i motivi;
-- i numeri principali e il grafico della liquidità mese per mese;
-- in *Come è stato calcolato*, gli eventi e le regole usati.
+## 5b-bis. L'Occhio: parla con i tuoi dati
+Tocca l'occhio al centro della barra in basso (su computer è in cima al menu). In alto trovi cosa c'è di nuovo da leggere, sotto la conversazione. Puoi:
+- **chiedere cifre**: *"quanto ho speso in ristoranti negli ultimi 6 mesi?"*, *"spese da Esselunga questo mese"*;
+- **chiedere un parere**: *"tra un mese spendo 15.000 €, il prossimo anno vorrei un PC da 3.000: conviene?"*. Ottieni un verdetto (sì / sì, ma / no) con i motivi, i numeri principali e il grafico della liquidità. Puoi continuare con *"e se lo prendo a rate?"*;
+- **simulare un acquisto**: *"posso permettermi un'auto da 20.000 €?"*. Il risultato compare nella conversazione, con *Modifica nel simulatore* per cambiare anticipo, tasso e durata;
+- **registrare una spesa**: *"ho speso 12,50 € al bar"*. L'Occhio la propone e tu la registri con un tocco, la modifichi o la annulli. Funziona anche con il microfono.
 
-Puoi continuare con *"e se lo prendo a rate?"*. Con un modello locale servono modelli da 7–8B per risposte affidabili.
+L'occhio ha tre stati:
+- respira quando è a riposo;
+- diventa arancione e sbatte le palpebre quando c'è qualcosa da leggere;
+- guarda a destra e a sinistra mentre pensa.
+
+Come risponde dipende dall'AI, ed è scritto sotto l'occhio:
+- **AI locale** (Ollama in casa): il modello consulta i tuoi dati con degli strumenti che girano sul telefono e ragiona sui numeri veri. Nulla esce di casa. Serve un modello che sappia usare gli strumenti, ad esempio `qwen3:8b`.
+- **AI esterna**: esce solo la domanda, i numeri li calcola il telefono.
+- **Senza AI o offline**: domande rapide, cifre semplici, simulazioni e spese vengono capite sul telefono.
+
+La conversazione è salvata cifrata insieme agli altri dati. *Nuova conversazione* la cancella.
 
 ## 5c. Posso permettermelo?
-*Menu → Posso permettermelo?* (su iPhone in *Altro*), oppure il pulsante *Simula un acquisto* nel report. Puoi anche scrivere la domanda in *Chiedi ai tuoi dati*.
+Si apre dall'Occhio (*Modifica nel simulatore*) o dal pulsante *Simula un acquisto* nel report.
 1. Scegli **Casa (mutuo)**, **Auto** o **Altro acquisto**, oppure scrivi la domanda a parole, ad esempio *"posso permettermi una casa da 250.000 € con 50.000 di anticipo in 25 anni?"*.
 2. Controlla i campi. L'affitto viene preso dai costi ricorrenti, entrate e spese dalla media degli ultimi 12 mesi completi.
 3. Leggi il verdetto e i controlli. Il risultato si aggiorna mentre scrivi.

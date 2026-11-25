@@ -12,6 +12,7 @@ const PRIV_DEF = {
   quick: true,
   categorize: true,
   ask: true,
+  chat: true,
   format: true,
   assets: true,
   pdf: false,
@@ -20,8 +21,12 @@ const PRIV_DEF = {
 const PRIV_INFO = {
   quick: ['Inserimento rapido', 'Invia solo la frase che scrivi o detti (es. “23 € pizzeria ieri”).'],
   ask: [
-    'Chiedi ai tuoi dati',
-    "Invia solo la domanda che scrivi, i nomi delle categorie e il tipo dei conti (non i nomi). L'AI restituisce un calcolo che il dispositivo esegue: importi e risultati non escono mai. Vale anche per «Posso permettermelo?», dove esce solo la frase."
+    'Occhio con AI esterna',
+    "Invia solo la domanda che scrivi, i nomi delle categorie e il tipo dei conti (non i nomi). L'AI restituisce un calcolo che il dispositivo esegue: importi e risultati non escono mai. Vale anche per le simulazioni d'acquisto, dove esce solo la frase."
+  ],
+  chat: [
+    'Occhio con AI locale',
+    "Solo con un modello AI locale (Ollama sul tuo server o in rete): invia la conversazione e i risultati dei calcoli sui tuoi dati, che restano in casa. Con un'AI esterna il server la rifiuta."
   ],
   categorize: [
     'Categorizzazione spese',
@@ -155,7 +160,7 @@ async function pullInbox() {
 /* ---------- Quick entry (voice or text) ---------- */
 /** Parses a quick entry like "12,50 pizza carta" without any AI. */
 function localParse(s) {
-  const t = ' ' + s.toLowerCase().replace(/€/g, ' € ') + ' ';
+  const t = ' ' + s.toLowerCase().replace(/€/g, ' euro ') + ' ';
   const m =
     t.match(/(\d+(?:[.,]\d{1,2})?)\s*(?:€|euro|eur)\b/) || t.match(/(?:^|\s)(\d+(?:[.,]\d{1,2})?)(?=\s)/);
   const amount = m ? num(m[1]) : 0;
@@ -201,9 +206,34 @@ function localParse(s) {
     account_hint: hint
   };
 }
+/** A transaction from a sentence: the AI reads only the sentence (if allowed), the device fills the gaps. */
+async function entryFromText(q) {
+  let r = null;
+  if (perm('quick') && !OFFLINE) {
+    try {
+      logAI('Inserimento rapido', q);
+      r = await api('POST', '/api/ai/parse-entry', { text: q });
+    } catch (e) {
+      r = null;
+    }
+  }
+  const L = localParse(q);
+  if (!r) r = L;
+  if (!r.amount && L.amount) r.amount = L.amount;
+  if (!r.account_hint) r.account_hint = L.account_hint;
+  const sign = r.type === 'entrata' ? 1 : -1;
+  const note = r.description || L.description;
+  return {
+    amount: sign * (r.amount || 0),
+    note,
+    date: r.date || today(),
+    cat: r.category && signOk(r.category, sign) ? r.category : autoCat(note, sign),
+    accountId: matchAccount(r.account_hint)
+  };
+}
 /** Quick entry: local parsing first, AI only if allowed and needed. */
 function quickAdd() {
-  const useAI = perm('quick');
+  const useAI = perm('quick') && !OFFLINE;
   openForm(
     'Aggiungi movimento',
     [
@@ -217,28 +247,7 @@ function quickAdd() {
     async d => {
       const q = (d.q || '').trim();
       if (!q) return txForm();
-      let r = null;
-      if (useAI) {
-        try {
-          logAI('Inserimento rapido', q);
-          r = await api('POST', '/api/ai/parse-entry', { text: q });
-        } catch (e) {
-          toast('AI non disponibile, uso il riconoscimento locale');
-        }
-      }
-      if (!r) r = localParse(q);
-      const L = localParse(q);
-      if (!r.amount && L.amount) r.amount = L.amount;
-      if (!r.account_hint) r.account_hint = L.account_hint;
-      const sign = r.type === 'entrata' ? 1 : -1;
-      const note = r.description || L.description;
-      txForm(null, {
-        amount: sign * (r.amount || 0),
-        note,
-        date: r.date || today(),
-        cat: r.category && signOk(r.category, sign) ? r.category : autoCat(note, sign),
-        accountId: matchAccount(r.account_hint)
-      });
+      txForm(null, await entryFromText(q));
     },
     null,
     `<div style="display:flex;gap:8px;margin:-4px 0 6px"><button type="button" class="btn" data-act="mic" id="micbtn">${svgI('mic')}<span>Detta</span></button><button type="button" class="btn ghost" data-act="manual-tx">Inserimento manuale</button></div>
@@ -246,9 +255,11 @@ function quickAdd() {
   );
 }
 let rec = null;
+/** Dictation into the quick entry, or into the Eye when its input is on screen. */
 function startMic() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const inp = document.querySelector('#frm input[name=q]');
+  const occ = document.querySelector('#occq');
+  const inp = occ || document.querySelector('#frm input[name=q]');
   if (!SR) {
     toast("Usa il tasto microfono della tastiera dell'iPhone");
     inp && inp.focus();
@@ -264,6 +275,7 @@ function startMic() {
   rec.maxAlternatives = 1;
   const b = $('#micbtn');
   if (b) b.lastChild.textContent = 'In ascolto…';
+  document.body.classList.add('orb-listen');
   rec.onresult = e => {
     let s = '';
     for (const r of e.results) s += r[0].transcript;
@@ -271,9 +283,11 @@ function startMic() {
   };
   rec.onend = () => {
     rec = null;
+    document.body.classList.remove('orb-listen');
     const b = $('#micbtn');
     if (b) b.lastChild.textContent = 'Detta';
-    if (inp && inp.value.trim()) document.querySelector('#frm button[type=submit]').click();
+    if (inp && inp.value.trim())
+      document.querySelector(occ ? '#occform button[type=submit]' : '#frm button[type=submit]').click();
   };
   rec.onerror = () => {
     toast('Microfono non disponibile: usa quello della tastiera');
@@ -286,8 +300,6 @@ function startMic() {
 }
 
 /* ---------- Ask your data: the AI writes only the recipe, the device does the maths ---------- */
-let askCur = null,
-  askBusy = false;
 const accAliases = () =>
   S.accounts.map((a, i) => ({ alias: 'conto_' + (i + 1), type: a.type || 'Conto', id: a.id }));
 function askCtx() {
@@ -502,12 +514,13 @@ function askChart(r, kind) {
     )
     .join('');
 }
-function askRender() {
-  if (!askCur) return '';
-  if (askCur.err)
-    return `<div class="card" style="margin-top:14px"><b>Non sono riuscito a rispondere</b><div class="hint" style="margin-top:6px">${esc(askCur.err)}</div></div>`;
-  if (askCur.advice) return adviceRender(askCur);
-  const sp = askCur.spec;
+/** A figures answer: the recipe from the AI (or a quick question) computed on today's data. */
+function askRender(cur) {
+  if (!cur) return '';
+  if (cur.err)
+    return `<div class="card" style="margin-top:14px"><b>Non sono riuscito a rispondere</b><div class="hint" style="margin-top:6px">${esc(cur.err)}</div></div>`;
+  if (cur.advice) return adviceRender(cur);
+  const sp = cur.spec;
   if (sp.clarify && !sp.queries.length)
     return `<div class="card" style="margin-top:14px"><b>Mi serve un chiarimento</b><div class="hint" style="margin-top:6px;line-height:1.6">${esc(sp.clarify)}</div></div>`;
   const ctx = askCtx(),
@@ -519,67 +532,33 @@ function askRender() {
     if (R[q.id].top) R[q.id].top.label = t(R[q.id].top.label);
   }
   // built-in answers are written in Italian: translate the template before filling it in
-  const ans = EN.renderAnswer(askCur.ai ? sp.answer || '' : t(sp.answer || ''), R, ASK_FMT),
+  const ans = EN.renderAnswer(cur.ai ? sp.answer || '' : t(sp.answer || ''), R, ASK_FMT),
     ch = sp.chart && R[sp.chart.query];
   const tables = sp.queries.filter(
     q => R[q.id].rows.length && (!sp.chart || sp.chart.query !== q.id || sp.chart.kind === 'linea')
   );
-  return `<div class="card sens" style="margin-top:14px"><div class="hint" style="margin-bottom:6px">${esc(askCur.q)}</div><h3 style="margin-bottom:10px">${esc(sp.title || 'Risposta')}</h3>
+  return `<div class="card sens" style="margin-top:14px"><div class="hint" style="margin-bottom:6px">${esc(cur.q)}</div><h3 style="margin-bottom:10px">${esc(sp.title || 'Risposta')}</h3>
     <p style="font-size:17px;line-height:1.55">${esc(ans) || '—'}</p>
     ${ch ? `<div style="margin-top:14px">${askChart(ch, sp.chart.kind)}</div>` : ''}
     ${tables.map(q => `<table class="tbl" style="margin-top:14px"><tbody>${R[q.id].rows.map(x => `<tr><td>${esc(x.label)}</td><td class="r num">${R[q.id].isCount ? ASK_FMT.n(x.value) : eur(x.value)}</td></tr>`).join('')}</tbody></table>`).join('')}
     <details style="margin-top:14px"><summary class="hint" style="cursor:pointer">Come è stato calcolato</summary><ul class="hint" style="margin:8px 0 0 18px;line-height:1.6">${sp.queries.map(q => `<li><b>${q.id}</b>: ${esc(describeQ(q))} — ${t(q.source === 'investimenti' ? '{n} posizioni' : '{n} movimenti', { n: R[q.id].n })}</li>`).join('')}</ul>
-     <p class="hint" style="margin-top:8px">${askCur.ai ? "All'AI è arrivata solo la domanda, con l'elenco delle categorie e il tipo dei conti. I numeri sono stati calcolati su questo dispositivo e non sono stati inviati." : 'Domanda rapida: calcolata interamente su questo dispositivo, senza AI.'}</p></details></div>`;
+     <p class="hint" style="margin-top:8px">${cur.ai ? "All'AI è arrivata solo la domanda, con l'elenco delle categorie e il tipo dei conti. I numeri sono stati calcolati su questo dispositivo e non sono stati inviati." : 'Domanda rapida: calcolata interamente su questo dispositivo, senza AI.'}</p></details></div>`;
 }
-function vAsk() {
-  const canAI = perm('ask') && !OFFLINE,
-    hist = (S.askHist || []).slice(0, 8);
-  return `<div class="card"><h3>Fai una domanda sui tuoi soldi</h3><div class="hint" style="margin:4px 0 12px;line-height:1.5">${canAI ? "Chiedi cifre («quanto ho speso in ristoranti?») o un parere («tra un mese spendo 15.000 €: conviene un PC da 3.000 a gennaio?»). L'AI riceve solo la domanda e scrive il calcolo o le regole da verificare; i numeri li calcola il tuo dispositivo e non escono mai." : OFFLINE ? 'Sei offline: funzionano le domande rapide.' : AI ? 'Attiva “Chiedi ai tuoi dati” in Impostazioni → Privacy AI per le domande libere.' : "Le domande libere richiedono l'AI sul server; le domande rapide funzionano sempre."}</div>
-    ${canAI ? `<form id="askform" style="display:flex;gap:8px"><input class="inp" id="askq" maxlength="300" placeholder="es. quanto ho speso al supermercato quest'anno rispetto all'anno scorso?" style="flex:1" autocomplete="off"><button class="btn pri" type="submit" ${askBusy ? 'disabled' : ''}>${askBusy ? '…' : 'Chiedi'}</button></form>` : ''}
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px">${quickAsks()
-      .map(([l], i) => `<button class="btn sm" data-act="ask-quick" data-i="${i}">${esc(l)}</button>`)
-      .join(
-        ''
-      )}<button class="btn sm" data-act="go" data-v="permettermelo">Posso permettermelo?</button></div></div>
-  ${askRender()}
-  ${hist.length ? `<div class="card" style="margin-top:14px"><h3>Domande recenti</h3><div class="list">${hist.map(h => `<div class="row" data-act="ask-hist" data-id="${h.id}"><div class="av">?</div><div class="main"><div class="t1">${esc(h.q)}</div><div class="t2">${dLabel(h.d)} · ricalcolata sui dati di oggi</div></div></div>`).join('')}</div></div>` : ''}`;
-}
-/** Sends only the question, category names and account aliases; runs the returned recipe locally. */
-async function askAI(q) {
-  if (askBusy) return;
-  const canAI = perm('ask') && !OFFLINE;
-  const prevAdv = askCur && askCur.advice ? askCur : null;
-  // judgements ("conviene…?", "posso permettermi…?") and follow-ups go to the advisor
-  if (canAI && (isAdviceQ(q) || isAffordQ(q) || (prevAdv && isFollowUp(q))))
-    return adviseAI(q, prevAdv && isFollowUp(q) ? prevAdv : null);
-  // without AI, "posso permettermi…?" is still understood by the planner on the device
-  if (isAffordQ(q)) return affordAsk(q);
-  askBusy = true;
-  askCur = null;
-  renderView();
-  try {
-    const accounts = accAliases().map(({ alias, type }) => ({ alias, type }));
-    logAI(
-      'ask',
-      `Domanda: «${q.slice(0, 200)}» · più l'elenco delle categorie e i tipi dei conti (${accounts.map(a => a.alias + ' ' + a.type).join(', ')}). Nessun importo o movimento.`
-    );
-    const spec = await api('POST', '/api/ai/ask', { question: q, accounts, lang: LANG });
-    // not a question about figures: let the advisor try
-    if (!(spec.queries && spec.queries.length) && canAI) {
-      askBusy = false;
-      return adviseAI(q, null);
-    }
-    askCur = { q, spec, ai: true };
-    if (spec.queries && spec.queries.length) {
-      S.askHist = [{ id: uid(), q, d: today(), spec }, ...(S.askHist || []).filter(h => h.q !== q)].slice(
-        0,
-        15
-      );
-      save();
-    }
-  } catch (e) {
-    askCur = { q, err: e.message, ai: true };
-  }
-  askBusy = false;
-  renderView();
+/**
+ * A question to an external AI, blind: only the question, the category names and the account
+ * types leave. Figures questions come back as queries, judgements as an advisor recipe; both
+ * are computed on this device. Returns the message to show.
+ */
+async function askCompute(q, prev) {
+  if (isAdviceQ(q) || isAffordQ(q) || (prev && isFollowUp(q)))
+    return adviseCompute(q, prev && isFollowUp(q) ? prev : null);
+  const accounts = accAliases().map(({ alias, type }) => ({ alias, type }));
+  logAI(
+    'ask',
+    `Domanda: «${q.slice(0, 200)}» · più l'elenco delle categorie e i tipi dei conti (${accounts.map(a => a.alias + ' ' + a.type).join(', ')}). Nessun importo o movimento.`
+  );
+  const spec = await api('POST', '/api/ai/ask', { question: q, accounts, lang: LANG });
+  // not a question about figures: let the advisor try
+  if (!(spec.queries && spec.queries.length)) return adviseCompute(q, null);
+  return { q, spec, ai: true };
 }

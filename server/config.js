@@ -39,7 +39,7 @@ const OPENAI_BASE = (
 ).replace(/\/+$/, '');
 const AI_MODEL =
   process.env.AI_MODEL ||
-  (AI_PROVIDER === 'anthropic' ? 'claude-sonnet-5-5' : AI_PROVIDER === 'ollama' ? 'qwen2.5:7b' : '');
+  (AI_PROVIDER === 'anthropic' ? 'claude-sonnet-5-5' : AI_PROVIDER === 'ollama' ? 'qwen3:8b' : '');
 const AI_MODEL_FAST =
   process.env.AI_MODEL_FAST || (AI_PROVIDER === 'anthropic' ? 'claude-haiku-5-5' : AI_MODEL);
 /* local models can be slow on small servers: give them more time (seconds) */

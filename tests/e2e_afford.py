@@ -60,15 +60,13 @@ with sync_playwright() as p:
     check('Domanda generale su un acquisto in contanti', pg.evaluate("S.afford.kind") == 'purchase' and ('fino a circa' in pg.inner_text('#view') or 'non resta margine' in pg.inner_text('#view')))
     pg.fill('#affq', 'cosa mi conviene fare?'); pg.click('#affask button'); pg.wait_for_timeout(300)
     check('Senza prezzo: lo chiede', 'Non ho trovato un prezzo' in pg.inner_text('#view'))
-    # from "Chiedi ai tuoi dati"
-    pg.evaluate("S.privacy.ask=true;go('chiedi')"); pg.wait_for_timeout(300)
-    check('Chiedi: pulsante verso il simulatore', pg.locator('#view [data-act=go][data-v=permettermelo]').count() == 1)
-    pg.fill('#askq', 'posso permettermi una macchina da 30000 a rate in 4 anni?'); pg.click('#askform button'); pg.wait_for_timeout(1500)
-    check('Chiedi: "posso permettermi…" risponde il consulente', pg.evaluate("!!(askCur&&askCur.advice)") and pg.locator('[data-act=adv-planner]').count() == 1)
+    # from the Eye
+    pg.evaluate("S.privacy.ask=true;S.chat=[];go('occhio')"); pg.wait_for_timeout(300)
+    pg.fill('#occq', 'posso permettermi una macchina da 30000 a rate in 4 anni?'); pg.click('#occform button[type=submit]'); pg.wait_for_timeout(1500)
+    check('Occhio: "posso permettermi…" risponde il consulente', pg.evaluate("!!S.chat[1].advice") and pg.locator('[data-act=adv-planner]').count() == 1)
     pg.click('[data-act=adv-planner]'); pg.wait_for_timeout(1500)
     a = pg.evaluate("S.afford")
     check('Consulente → "Apri nel simulatore"', pg.evaluate("view") == 'permettermelo' and a['kind'] == 'car' and a['price'] == 30000 and a['years'] == 4, a)
-    pg.evaluate("go('chiedi')"); pg.wait_for_timeout(300)
     pg.evaluate("go('permettermelo')"); pg.wait_for_timeout(300)
     pg.fill('#affq', 'Posso fare un mutuo da 200k in 20 anni?'); pg.click('#affask button'); pg.wait_for_timeout(1500)
     a = pg.evaluate("S.afford")
@@ -93,7 +91,7 @@ with sync_playwright() as p:
     check('Mobile: niente scorrimento orizzontale', over <= 392, over)
     pg.screenshot(path='/tmp/afford_mob.png', full_page=True)
     pg.click('#tabbar [data-act=more]'); pg.wait_for_timeout(300)
-    check('Mobile: Altro → Posso permettermelo?', pg.locator('[data-act=go-close][data-v=permettermelo]').count() == 1)
+    check('Mobile: il simulatore non è più nel menu (si apre dall\'Occhio)', pg.locator('[data-act=go-close][data-v=permettermelo]').count() == 0)
     pg.keyboard.press('Escape')
     # English
     pg.set_viewport_size({'width': 1300, 'height': 950})
