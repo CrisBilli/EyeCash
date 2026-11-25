@@ -658,6 +658,10 @@ document.addEventListener('change', e => {
     fC = e.target.value;
     txRefresh();
   }
+  if (e.target.id === 'stcat') {
+    stCat = e.target.value;
+    renderView();
+  }
   if (e.target.id === 'repm') {
     REP.key = e.target.value;
     renderView();

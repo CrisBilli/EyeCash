@@ -384,7 +384,8 @@ body[data-view=obiettivi],body[data-view=ricorrenti],body[data-view=permettermel
 .icon-btn{border-radius:12px;background:linear-gradient(180deg,#262B39,#1C202B);border-color:var(--line)}
 .chip{border-radius:999px;padding:3px 9px}
 .seg{border-radius:999px;padding:4px;background:rgba(255,255,255,.04);border-color:var(--line)}
-.seg button{border-radius:999px}
+.seg button{border-radius:999px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.seg button svg{width:15px;height:15px;flex:none}
 .seg button.on{background:#F4F6FA;color:#0B0E14;box-shadow:0 4px 12px rgba(0,0,0,.3)}
 .inp{border-radius:12px;background-color:rgba(255,255,255,.04);border-color:var(--line)}
 .inp:focus{border-color:var(--aqua);box-shadow:0 0 0 3px rgba(45,212,191,.15)}
@@ -481,6 +482,25 @@ body.orb-alert .orbnav{border-color:rgba(251,146,60,.4)}
 .lock .logo{flex-direction:column;gap:12px;font-size:26px}
 .lock .logo .orb{width:76px;height:76px}
 .lock .box{background:none}
+/* big centred hero (patrimonio, investimenti, statistiche) */
+.bighero{padding-bottom:10px}
+.bh-top{text-align:center;padding:6px 0 4px}
+.bh-top .lbl{font-size:13px;color:var(--tx2)}
+.bh-top .big{font-family:var(--fd);font-weight:800;font-size:40px;letter-spacing:-.03em;line-height:1.1;margin:2px 0 6px}
+[data-theme=dark] .bh-top .big:not(.down),[data-theme=dark] .ringmid .big{background:linear-gradient(180deg,#fff 20%,#AEB9C9);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sens .bh-top .big{transition:filter .2s}
+body.hidebal .sens .bh-top .big{filter:blur(9px)}
+.compbar{display:flex;gap:3px;height:12px;border-radius:6px;overflow:hidden;margin:2px 0 8px}
+.compbar i{display:block;border-radius:3px}
+.legrows{display:flex;flex-direction:column;gap:9px;margin-top:4px}
+.legrows>div{display:flex;align-items:center;gap:10px;font-size:13px}
+.legrows i{width:10px;height:10px;border-radius:3px;flex:none}
+.legrows span:first-of-type{flex:1}
+.legrows .t2{width:78px;text-align:right;color:var(--mut)}
+.av.tick{background:color-mix(in srgb,var(--c) 14%,transparent);border:1px solid color-mix(in srgb,var(--c) 32%,transparent);color:var(--c);font-family:var(--fd);font-size:10.5px;font-weight:800;border-radius:12px}
+.statshero .sh-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.catpick{width:auto;max-width:70%;border-radius:999px!important;font-weight:600}
+.monthbars text{font-size:10px}.monthbars .avglbl{font-size:10px;fill:var(--tx)}
 /* movimenti: summary with daily bars */
 .tools+.hint{font-size:12px;color:var(--mut);line-height:1.5}
 .txsum{margin-bottom:14px}

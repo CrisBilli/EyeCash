@@ -249,25 +249,40 @@ function vPat() {
     net = liq + inv + ben - deb,
     att = liq + inv + ben;
   const parts = [
-    ['Liquidità', liq, 'var(--s-blue)'],
-    ['Investimenti', inv, 'var(--s-aqua)'],
-    ['Beni', ben, 'var(--s-orange)']
+    ['Liquidità', liq, '#60A5FA'],
+    ['Investimenti', inv, '#34D399'],
+    ['Beni', ben, '#A78BFA']
   ].filter(p => p[1] > 0);
   const A = S.assets || [],
     D = S.debts || [];
-  return `<div class="grid g4">
-    <div class="card kpi sens"><div class="lbl"><b style="background:rgba(59,108,255,.2)">◆</b>Patrimonio netto</div><div class="val num">${eur(net)}</div><div class="foot">attività − debiti</div></div>
-    <div class="card kpi"><div class="lbl">Attività</div><div class="val num">${eur(att)}</div><div class="foot">liquidità, investimenti, beni</div></div>
-    <div class="card kpi"><div class="lbl">Beni</div><div class="val num">${eur(ben)}</div><div class="foot">${A.length === 1 ? '1 bene' : A.length + ' beni'}</div></div>
-    <div class="card kpi"><div class="lbl">Debiti residui</div><div class="val num ${deb ? 'down' : ''}">${eur(deb)}</div><div class="foot">${D.length === 1 ? '1 finanziamento' : D.length + ' finanziamenti'}${cd ? ` + carta ${eur(cd)}` : ''}</div></div>
+  const h12 = lastMonths(12),
+    hv = h12.map(netAt);
+  hv[hv.length - 1] = net;
+  const d12 = net - hv[0],
+    accs = S.accounts.filter(a => a.type !== 'Carta'),
+    pos = (S.inv || []).length;
+  const srow = (ic, c, l, d, v, act) =>
+    `<div class="row" ${act ? `data-act="go" data-v="${act}"` : 'style="cursor:default"'}>${tile(ic, c)}<div class="main"><div class="t1">${l}</div><div class="t2">${d}</div></div><div class="amt num ${v < 0 ? 'down' : ''}">${eur(v)}</div></div>`;
+  return `<div class="grid g21">
+    <div class="card bighero sens">
+      <div class="bh-top"><div class="lbl">Patrimonio netto</div><div class="big num">${eur(net)}</div>${hv[0] ? `<span class="chip ${d12 >= 0 ? 'c-good' : 'c-crit'}">${d12 >= 0 ? '+' : '−'}${eur0(Math.abs(d12))} in 12 mesi</span>` : ''}</div>
+      ${heroChart(
+        hv,
+        h12.map(m => MESI[+m.slice(5) - 1]),
+        '#22D3EE'
+      )}
+    </div>
+    <div class="card"><div class="card-h"><div><h3>Da cosa è fatto</h3><div class="hint">Attività ${eur0(att)} · debiti ${eur0(deb)}</div></div></div>
+      ${att ? `<div class="compbar">${parts.map(p => `<i data-tip="${p[0]}: ${eur(p[1])} (${Math.round((p[1] / att) * 100)}%)" style="flex:${p[1]};background:${p[2]}"></i>`).join('')}</div>` : ''}
+      <div class="list">
+        ${srow('bank', '#60A5FA', 'Conti', accs.length === 1 ? '1 conto' : accs.length + ' conti', liq)}
+        ${cd ? srow('card', '#818CF8', 'Carta di credito', 'Da addebitare', -cd) : ''}
+        ${srow('trend', '#34D399', 'Investimenti', pos === 1 ? '1 posizione' : pos + ' posizioni', inv, 'investimenti')}
+        ${srow('house', '#A78BFA', 'Beni', A.length === 1 ? '1 bene' : A.length + ' beni', ben)}
+        ${D.length ? srow('doc', '#F472B6', 'Debiti residui', D.length === 1 ? '1 finanziamento' : D.length + ' finanziamenti', -debtsVal()) : ''}
+      </div>
+    </div>
   </div>
-  <div class="card" style="margin-top:14px"><div class="card-h"><div><h3>Composizione</h3><div class="hint">Da cosa è fatto il tuo patrimonio</div></div><div class="legend">${parts.map(p => `<span><i style="background:${p[2]}"></i>${p[0]}</span>`).join('')}${deb ? '<span><i style="background:var(--crit)"></i>Debiti</span>' : ''}</div></div>
-    ${
-      att
-        ? `<div style="display:flex;height:14px;border-radius:7px;overflow:hidden;gap:2px;background:var(--card)">${parts.map(p => `<div data-tip="${p[0]}: ${eur(p[1])} (${Math.round((p[1] / att) * 100)}%)" style="width:${(p[1] / att) * 100}%;background:${p[2]}"></div>`).join('')}</div>
-    ${deb ? `<div style="display:flex;height:14px;border-radius:7px;overflow:hidden;margin-top:6px;background:var(--card2)"><div data-tip="Debiti: ${eur(deb)} (${Math.round((deb / att) * 100)}% delle attività)" style="width:${Math.min(100, (deb / att) * 100)}%;background:var(--crit)"></div></div>` : ''}`
-        : '<div class="empty">Nessun dato</div>'
-    }</div>
   <div class="grid g2" style="margin-top:14px">
     <div class="card"><div class="card-h"><div><h3>Beni</h3><div class="hint">Auto, casa e altri beni di valore</div></div><button class="btn sm pri" data-act="asset-new">+ Bene</button></div>
       <div class="list">${

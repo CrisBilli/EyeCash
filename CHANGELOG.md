@@ -28,6 +28,16 @@
   - sotto, le categorie con il numero di movimenti, l'importo, la percentuale e una barretta colorata;
   - quando c'è qualcosa da leggere, compare una scheda arancione del consulente;
   - nuovo grafico **Giorno per giorno**, con le uscite di ogni giorno e la linea della media.
+- **Patrimonio:**
+  - in cima c'è il patrimonio netto in grande, con l'andamento degli ultimi 12 mesi e quanto è cambiato;
+  - accanto c'è "Da cosa è fatto", con una barra di composizione e le righe Conti, Carta, Investimenti, Beni e Debiti.
+- **Investimenti:**
+  - un anello mostra la ripartizione per tipo di strumento, con al centro il valore del portafoglio e il guadagno;
+  - una card Rendimento mostra capitale investito, valore attuale e guadagno o perdita;
+  - i ticker sono colorati per tipo.
+- **Statistiche:**
+  - puoi scegliere una categoria (o tutte le spese) e vedere la media al mese, le barre mese per mese con la linea della media (il mese in corso è tratteggiato) e i principali esercenti;
+  - sotto restano i dettagli: KPI, tabelle e mappa di calore.
 - **Movimenti:** in cima c'è un riepilogo con uscite ed entrate del mese e le barre per giorno. Segue i filtri di mese, categoria e ricerca. "Importa estratto conto" diventa un pulsante più discreto.
 
 ## 1.3.0 · Il consulente
