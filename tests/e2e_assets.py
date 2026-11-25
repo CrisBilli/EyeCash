@@ -52,6 +52,13 @@ with sync_playwright() as p:
     check('Home: spunti presenti', 'Spunti' in t and ('Tasso di risparmio' in t or 'Assicurazione' in t))
     pg.screenshot(path='/tmp/a_home.png')
     check('Home: anello delle spese (o nessuna spesa) e barre per giorno', (pg.locator('.ringwrap svg.ring circle[data-tip]').count() >= 1 or 'Nessuna spesa questo mese' in t) and pg.locator('.daybars rect').count() >= 28)
+    ov = pg.evaluate("""(()=>{const rows=[1601.9,87.11,37.59,3.95].map((v,i)=>({c:'c'+i,v,col:'#fff'}));
+      const d=new DOMParser().parseFromString(spendRing(rows,1730.55),'image/svg+xml');
+      const a=[...d.querySelectorAll('.ringarcs circle')].map(c=>({dash:+c.getAttribute('stroke-dasharray').split(' ')[0],off:-c.getAttribute('stroke-dashoffset')}));
+      const C=2*Math.PI*98,w=18;let ok=true;
+      for(let i=0;i<a.length;i++){const end=a[i].off+a[i].dash+w/2,next=i+1<a.length?a[i+1].off-w/2:C+a[0].off-w/2;if(end>next+0.01||a[i].dash<=0)ok=false}
+      return ok})()""")
+    check('Anello: le fette piccole restano visibili e non si sovrappongono', ov)
     check('Home: avviso del consulente in cima', pg.locator('.orbcard').count() == 1 and 'Assicurazione' in pg.inner_text('.orbcard'))
     pg.goto(B + '/#movimenti'); unlocked(pg)
     check('Movimenti: riepilogo con uscite del mese e barre', 'Uscite' in pg.inner_text('#txsum') and pg.locator('#txsum .daybars rect').count() >= 28)
@@ -64,7 +71,9 @@ with sync_playwright() as p:
     check('Stima AI spenta: pulsante nascosto', pg.locator('[data-act=asset-estimate]').count() == 0); pg.click('[data-act=close]')
     # mobile
     m = br.new_context(viewport={'width': 390, 'height': 844}); mp = m.new_page(); mp.goto(B); mp.wait_for_selector('#pw1'); mp.fill('#pw1', PW); mp.click('#lockbtn'); unlocked(mp)
-    check('Mobile: 5 pulsanti in basso con "Altro"', mp.locator('#tabbar button').count() == 5 and 'Altro' in mp.inner_text('#tabbar'))
+    check('Mobile: 6 pulsanti in basso con Investimenti, l\'occhio e "Altro"', mp.locator('#tabbar button').count() == 6 and 'Investimenti' in mp.inner_text('#tabbar') and 'Altro' in mp.inner_text('#tabbar'))
+    ob = mp.evaluate("document.querySelector('#tabbar .orb').getBoundingClientRect().width")
+    check('Mobile: occhio più piccolo', 44 <= ob <= 56, ob)
     mp.click('#tabbar [data-act=more]'); mp.click('[data-act=go-close][data-v=ricorrenti]'); mp.wait_for_timeout(300)
     check('Mobile: Altro → Ricorrenti funziona', mp.inner_text('#ttl') == 'Costi ricorrenti')
     # the consultant orb: alert while something is unread (insurance deadline), cleared once opened; thinks during AI calls

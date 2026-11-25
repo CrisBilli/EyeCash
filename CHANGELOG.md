@@ -1,5 +1,18 @@
 # EyeCash · Novità
 
+## 1.5.1
+- **Si vede sempre chi risponde.**
+  - In alto nell'Occhio c'è lo stato, con un pallino colorato: AI locale con il nome del modello, AI esterna con il servizio, oppure "Sul dispositivo".
+  - Sotto ogni risposta c'è "Risposto da", che può essere AI locale, AI esterna (solo la domanda), il telefono senza AI, oppure il telefono con l'AI di casa spenta.
+- **AI locale spenta:**
+  - l'Occhio controlla se il modello di casa risponde (al server basta un controllo rapido, senza contattare servizi esterni) e lo dice in alto;
+  - cifre, simulazioni e spese vengono risposte comunque sul telefono;
+  - le domande che richiedono il modello restano in coda, salvate cifrate, e partono da sole quando il PC si riaccende;
+  - una domanda in coda si può annullare.
+- **Barra in basso:** l'occhio è più piccolo e c'è anche Investimenti.
+- **Anello delle spese:** le categorie molto piccole (ad esempio 4 € su 1.700 €) si sovrapponevano alle vicine. Ora ogni fetta ha una lunghezza minima visibile e lo spazio viene preso dalle più grandi.
+- **"% della media"** si calcola solo sui mesi precedenti che hanno movimenti. Con pochi mesi importati, i mesi vuoti abbassavano la media e il confronto usciva gonfiato (ad esempio "310%").
+
 ## 1.5.0 · L'Occhio
 - **Tutta l'interazione con i dati è nell'Occhio.** Toccando il logo al centro della barra si apre un'unica conversazione, che prende il posto di "Chiedi ai tuoi dati" e di "Posso permettermelo?". Puoi:
   - chiedere cifre;

@@ -12,7 +12,7 @@
 /** Calls the server API. Throws an error with `.status`; switches to offline mode on network failure. */
 async function api(method, url, body) {
   if (OFFLINE && url !== '/api/status') throw offErr();
-  const ai = url.startsWith('/api/ai/');
+  const ai = url.startsWith('/api/ai/') && url !== '/api/ai/ping';
   if (!ai) return apiCall(method, url, body);
   orbBusy(1);
   try {

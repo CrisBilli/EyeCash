@@ -5,6 +5,11 @@ http
     let b = '';
     q.on('data', d => (b += d));
     q.on('end', () => {
+      // model list: used by the reachability check of a local model
+      if (q.method === 'GET') {
+        r.writeHead(200, { 'content-type': 'application/json' });
+        return r.end(JSON.stringify({ data: [{ id: 'mock' }] }));
+      }
       const j = JSON.parse(b);
       const last = j.messages[j.messages.length - 1];
       const u = last.content;
@@ -79,4 +84,4 @@ http
       r.end(JSON.stringify({ choices: [{ message: { content: out } }] }));
     });
   })
-  .listen(8099);
+  .listen(+process.env.MOCK_AI_PORT || 8099);

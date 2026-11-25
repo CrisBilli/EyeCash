@@ -105,6 +105,8 @@ Come risponde dipende dall'AI, ed è scritto sotto l'occhio:
 - **AI esterna**: esce solo la domanda, i numeri li calcola il telefono.
 - **Senza AI o offline**: domande rapide, cifre semplici, simulazioni e spese vengono capite sul telefono.
 
+In alto vedi sempre chi sta rispondendo, e sotto ogni risposta c'è *Risposto da*. Se usi l'AI locale e il PC di casa è spento, l'Occhio lo dice. Quello che può (cifre, simulazioni, spese) lo risponde sul telefono; le domande che richiedono il modello restano **in coda** e partono da sole quando il PC si riaccende.
+
 La conversazione è salvata cifrata insieme agli altri dati. *Nuova conversazione* la cancella.
 
 ## 5c. Posso permettermelo?

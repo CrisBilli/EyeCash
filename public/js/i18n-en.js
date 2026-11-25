@@ -194,8 +194,10 @@ I18N.en = {
   Aggiunto: 'Added',
   Ago: 'Aug',
   Agosto: 'August',
+  'AI esterna': 'External AI',
   'AI esterna, alla cieca': 'External AI, blind',
   'AI locale': 'Local AI',
+  'AI locale spenta': 'Local AI off',
   'AI non disponibile, uso il riconoscimento locale': 'AI not available, using local recognition',
   'al giorno per il resto del mese.': 'a day for the rest of the month.',
   'al mese': 'a month',
@@ -247,6 +249,7 @@ I18N.en = {
   'Anticipo (€)': 'Down payment (€)',
   'anticipo {0}': 'down payment {0}',
   'Anticipo e fondo pronti': 'Down payment and fund ready',
+  'API OpenAI-compatibile': 'OpenAI-compatible API',
   'App bloccata.': 'App locked.',
   'App bloccata. Sblocca con Face ID, impronta o il PIN del dispositivo.':
     'App locked. Unlock with Face ID, fingerprint or the device PIN.',
@@ -488,6 +491,7 @@ I18N.en = {
   'dal {0}': 'since {0}',
   'dal {0} al {1}': 'from {0} to {1}',
   'dal {a} al {b}': 'from {a} to {b}',
+  'dalla coda': 'from the queue',
   Data: 'Date',
   "Data d'acquisto": 'Purchase date',
   'Data prima erogazione': 'Date of first payment',
@@ -665,6 +669,8 @@ I18N.en = {
   'Il giorno più caro è il {a.top}: {a.top_value} negli ultimi 12 mesi.':
     'The most expensive day is {a.top}: {a.top_value} in the last 12 months.',
   'il mese scorso': 'last month',
+  'Il modello di casa non risponde (PC spento o non raggiungibile). Rispondo sul telefono a quello che posso; il resto lo metto in coda e lo mando appena torna disponibile.':
+    'The home model does not answer (PC off or unreachable). I answer what I can on the phone; the rest waits in a queue and goes out as soon as it is back.',
   'Il modello gira in casa tua e legge i tuoi dati per rispondere: nulla esce verso servizi esterni.':
     'The model runs in your home and reads your data to answer: nothing goes to outside services.',
   'Il modello non ha dato una risposta: riprova o riformula la domanda.':
@@ -705,6 +711,8 @@ I18N.en = {
   'In ascolto…': 'Listening…',
   'In attesa': 'Pending',
   'In che giorno della settimana spendo di più?': 'Which day of the week do I spend the most?',
+  'In coda: la mando al modello di casa appena torna disponibile. Intanto puoi chiudere l’app.':
+    'Queued: it goes to the home model as soon as it is back. You can close the app meanwhile.',
   'in contanti': 'cash',
   'In contanti': 'Cash',
   'In corso': 'In progress',
@@ -1235,6 +1243,7 @@ I18N.en = {
   'Risparmio mensile dopo': 'Monthly saving afterwards',
   'Rispetto al prezzo medio di carico': 'Against the average purchase price',
   Risposta: 'Answer',
+  'Risposto da': 'Answered by',
   Ristoranti: 'Restaurants',
   'ristrutturato, buono, da ristrutturare': 'renovated, good, to renovate',
   Risultato: 'Result',
@@ -1343,6 +1352,7 @@ I18N.en = {
   'solo Anthropic': 'Anthropic only',
   "Solo con un modello AI locale (Ollama sul tuo server o in rete): invia la conversazione e i risultati dei calcoli sui tuoi dati, che restano in casa. Con un'AI esterna il server la rifiuta.":
     'Only with a local AI model (Ollama on your server or network): sends the conversation and the results of the calculations on your data, which stay at home. With an external AI the server refuses it.',
+  'solo la domanda': 'only the question',
   'Solo sintesi': 'Summary only',
   'sotto il 15% le spese sono regolari': 'under 15% spending is regular',
   'sotto lo 0,3% è un buon livello': 'under 0.3% is a good level',
@@ -1402,6 +1412,8 @@ I18N.en = {
   'sui conti {list}': 'on accounts {list}',
   'sul dispositivo': 'on the device',
   'Sul dispositivo': 'On the device',
+  'Sul telefono · AI di casa spenta': 'On the phone · home AI off',
+  'Sul telefono, senza AI': 'On the phone, without AI',
   'Superficie m²': 'Floor area m²',
   Svago: 'Leisure',
   tagliando: 'service',

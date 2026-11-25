@@ -163,14 +163,24 @@ function spendRing(rows, total, size = 228) {
     w = 18,
     C = 2 * Math.PI * r,
     multi = rows.length > 1,
-    cut = multi ? w + 5 : 0;
+    cut = multi ? w + 6 : 0;
+  /* a slice shorter than its round caps would spill onto its neighbours: give every slice a
+     minimum length and take that room proportionally from the bigger ones */
+  const minL = cut + 5;
+  const raw = rows.map(x => (x.v / total) * C);
+  let L = raw;
+  if (multi && rows.length * minL < C) {
+    const small = raw.map(v => v < minL);
+    const big = raw.reduce((t, v, i) => t + (small[i] ? 0 : v), 0);
+    const k = (C - small.filter(Boolean).length * minL) / (big || 1);
+    L = raw.map((v, i) => (small[i] ? minL : v * k));
+  }
   let acc = 0;
   const arcs = rows
-    .map(x => {
-      const L = (x.v / total) * C,
-        dash = multi ? Math.max(0.5, L - cut) : C;
-      const el = `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${x.col}" stroke-width="${w}" stroke-linecap="${multi ? 'round' : 'butt'}" stroke-dasharray="${dash.toFixed(1)} ${C.toFixed(1)}" stroke-dashoffset="${(-acc - cut / 2).toFixed(1)}" transform="rotate(-90 ${c} ${c})" data-tip="${esc(x.c)}\n${eur(x.v)} · ${Math.round((x.v / total) * 100)}%"/>`;
-      acc += L;
+    .map((x, i) => {
+      const dash = multi ? Math.max(0.01, L[i] - cut) : C;
+      const el = `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${x.col}" stroke-width="${w}" stroke-linecap="${multi ? 'round' : 'butt'}" stroke-dasharray="${dash.toFixed(2)} ${C.toFixed(1)}" stroke-dashoffset="${(-acc - cut / 2).toFixed(2)}" transform="rotate(-90 ${c} ${c})" data-tip="${esc(x.c)}\n${eur(x.v)} · ${Math.round((x.v / total) * 100)}%"/>`;
+      acc += L[i];
       return el;
     })
     .join('');
@@ -490,18 +500,19 @@ function renderNav() {
     ).join('') +
     '<div class="navlbl">Account</div>' +
     `<button class="nav ${view === 'impostazioni' ? 'on' : ''}" data-act="go" data-v="impostazioni">${ico('set')}Impostazioni</button>`;
-  const TB = ['home', 'movimenti', 'patrimonio'];
+  const TB = ['home', 'movimenti', 'patrimonio', 'investimenti'];
   const inMore = !TB.includes(view) && view !== 'occhio';
   const tab = k => {
     const v = VIEWS.find(x => x[0] === k);
-    return `<button class="${view === k ? 'on' : ''}" data-act="go" data-v="${k}">${ico(v[2])}${v[3]}</button>`;
+    return `<button class="${view === k ? 'on' : ''}" data-act="go" data-v="${k}">${ico(v[2])}<span class="tl">${v[3]}</span></button>`;
   };
   $('#tabbar').innerHTML =
     tab('home') +
     tab('movimenti') +
     `<button class="orbtab ${view === 'occhio' ? 'on' : ''}" data-act="orb" aria-label="Occhio">${orbHTML()}<span class="sr">Occhio</span></button>` +
     tab('patrimonio') +
-    `<button class="${inMore ? 'on' : ''}" data-act="more">${ico('more')}Altro</button>`;
+    tab('investimenti') +
+    `<button class="${inMore ? 'on' : ''}" data-act="more">${ico('more')}<span class="tl">Altro</span></button>`;
   orbRefresh();
 }
 function renderSync() {

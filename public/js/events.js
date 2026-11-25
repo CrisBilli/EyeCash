@@ -66,6 +66,17 @@ const ACTIONS = {
   },
   'adv-planner': ({ el }) => affordAsk(el.dataset.q),
   'occ-suggest': ({ el }) => occSend(t(OCC_SUGGEST[+el.dataset.i])),
+  'occ-unqueue': ({ el }) => {
+    const i = (S.chat || []).findIndex(x => x.id === el.dataset.id);
+    if (i < 0) return;
+    // drop the question and its place in the queue
+    S.chat.splice(
+      S.chat[i - 1] && S.chat[i - 1].role === 'user' ? i - 1 : i,
+      S.chat[i - 1] && S.chat[i - 1].role === 'user' ? 2 : 1
+    );
+    save();
+    renderView();
+  },
   'occ-new': () => {
     S.chat = [];
     save();

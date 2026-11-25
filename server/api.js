@@ -7,6 +7,7 @@
  * helper receives only the minimum, already anonymised, data.
  */
 const crypto = require('node:crypto');
+let pingCache = null;
 const {
   AI_LOCAL,
   AI_MODEL,
@@ -14,6 +15,7 @@ const {
   AI_PDF,
   AI_PROVIDER,
   KEEP_HISTORY,
+  OPENAI_BASE,
   VERSION,
   localDate
 } = require('./config');
@@ -232,6 +234,23 @@ Scrivi "title", "answer" e "clarify" in ${lang}. Regole: nessun numero nella ris
     } catch (e) {
       return json(res, 502, { error: e.message });
     }
+  }
+  // Is the local model reachable right now (the home PC may be off)? Only for local models:
+  // with an external AI nothing is contacted. Cached for 15 seconds.
+  if (p === '/api/ai/ping' && m === 'GET') {
+    if (!AI_ON || !AI_LOCAL) return json(res, 200, { local: false, ok: AI_ON });
+    const now = Date.now();
+    if (!pingCache || now - pingCache.t > 15000) {
+      let ok = false;
+      try {
+        const r = await fetch(OPENAI_BASE + '/models', { signal: AbortSignal.timeout(3000) });
+        ok = r.ok;
+      } catch (e) {
+        ok = false;
+      }
+      pingCache = { t: now, ok };
+    }
+    return json(res, 200, { local: true, ok: pingCache.ok, model: AI_MODEL });
   }
   // The Eye with a local model. Here the model DOES see the results of the calculations on the
   // user's data, so it is refused unless the model is local (Ollama or another server on

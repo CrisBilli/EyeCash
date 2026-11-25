@@ -444,8 +444,10 @@ body.orb-alert .orbnav{border-color:rgba(251,146,60,.4)}
   .tabbar button{border-radius:20px;padding:6px 0;font-weight:500}
   .tabbar button.on{color:var(--tx)}
   .tabbar button.on svg{color:var(--aqua)}
-  .tabbar button.orbtab{flex:0 0 74px;padding:0;margin-top:-30px}
-  .tabbar .orbtab .orb{width:62px;height:62px;box-shadow:0 0 0 5px rgba(9,11,16,.85)}
+  .tabbar button.orbtab{flex:0 0 58px;padding:0;margin-top:-18px}
+  .tabbar .orbtab .orb{width:50px;height:50px;box-shadow:0 0 0 4px rgba(9,11,16,.85)}
+  .tabbar button{min-width:0}
+  .tabbar button span.tl{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .toast{bottom:calc(104px + var(--safe-b))}
 }
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -476,7 +478,7 @@ body.orb-alert .orbnav{border-color:rgba(251,146,60,.4)}
   [data-theme=light] .tabbar{background:rgba(255,255,255,.78);border:1px solid rgba(15,23,42,.06);box-shadow:0 16px 36px rgba(15,23,42,.14)}
   [data-theme=light] .tabbar button.on{color:#0F172A}
   [data-theme=light] .tabbar button.on svg{color:#0D9488}
-  [data-theme=light] .tabbar .orbtab .orb{box-shadow:0 0 0 5px rgba(243,245,249,.95)}
+  [data-theme=light] .tabbar .orbtab .orb{box-shadow:0 0 0 4px rgba(243,245,249,.95)}
 }
 .lock{background:radial-gradient(700px 480px at 50% -8%,rgba(45,212,191,.2),transparent 65%),radial-gradient(600px 460px at 100% 105%,rgba(139,92,246,.16),transparent 65%),var(--bg)}
 .lock .logo{flex-direction:column;gap:12px;font-size:26px}
@@ -550,6 +552,14 @@ body[data-view=occhio]{--g1:rgba(45,212,191,.2);--g2:rgba(37,99,235,.16)}
 .occ-card-w>.card{margin-top:0!important}
 .occ-card .aff-verdict{border:0;padding:0;box-shadow:none;background:none}
 .occ-card-w .grid.g3{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.occ-card-w .grid.g3 .card{padding:10px 12px}.occ-card-w .grid.g3 .val{font-size:16px!important}.occ-card-w .grid.g3 .lbl{font-size:11px}
+.occ-via{align-self:flex-start;font-size:11px;color:var(--mut);margin:-6px 0 0 6px}
+.occ-u+.occ-via{display:none}
+.occ-state{display:inline-flex;align-items:center;gap:7px}
+.occ-state .dot{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 25%,transparent)}
+.occ-q{display:flex;align-items:center;gap:10px;color:var(--tx2)}
+.occ-q>svg{width:18px;height:18px;flex:none;color:#FBBF24}
+.occ-q span{flex:1}
+.occ-head.small+.occ-modetxt{text-align:center;margin-top:-4px}
 .occ-sugg{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
 .occ-in{display:flex;gap:8px;align-items:center;position:fixed;bottom:18px;left:256px;right:24px;max-width:760px;margin:0 auto;z-index:30;padding:8px;border-radius:22px;background:rgba(22,26,36,.78);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--line2);box-shadow:0 14px 30px rgba(0,0,0,.35)}
 .occ-in .inp{flex:1;border:0;background-color:transparent}
@@ -559,7 +569,7 @@ body[data-view=occhio]{--g1:rgba(45,212,191,.2);--g2:rgba(37,99,235,.16)}
 @keyframes spin{to{transform:rotate(360deg)}}
 body.orb-listen .orb .halo{opacity:1;box-shadow:0 0 0 2px rgba(251,113,133,.55),0 0 24px rgba(251,113,133,.45);animation:orb-pulse 1.2s ease-in-out infinite}
 body.orb-listen #micbtn{color:#FB7185;border-color:rgba(251,113,133,.5)}
-.tabbar button.orbtab.on .orb{box-shadow:0 0 0 5px rgba(9,11,16,.85),0 0 0 7px rgba(45,212,191,.5)}
+.tabbar button.orbtab.on .orb{box-shadow:0 0 0 4px rgba(9,11,16,.85),0 0 0 6px rgba(45,212,191,.5)}
 [data-theme=light] .occ-in{background:rgba(255,255,255,.85)}
 [data-theme=light] .occ-a{background:#fff}
 .occ-head.small{display:flex;align-items:center;justify-content:center;gap:10px;padding:0}

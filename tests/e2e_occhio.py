@@ -34,6 +34,11 @@ def watch(pg):
 data = tempfile.mkdtemp()
 env = dict(os.environ, PORT=str(LPORT), DATA_DIR=data, AI_PROVIDER='ollama', OLLAMA_URL='http://127.0.0.1:8099', AI_MODEL='qwen3:8b')
 srv = subprocess.Popen(['node', 'server.js'], cwd=ROOT, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+# a second local server whose model is "off" (nothing listens on 8193 until the test starts it)
+OPORT = 8092; BO = f'http://localhost:{OPORT}'
+env2 = dict(env, PORT=str(OPORT), DATA_DIR=tempfile.mkdtemp(), OLLAMA_URL='http://127.0.0.1:8193')
+srv2 = subprocess.Popen(['node', 'server.js'], cwd=ROOT, env=env2, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+mock2 = None
 try:
     for _ in range(50):
         try: urllib.request.urlopen(BL + '/api/status', timeout=1); break
@@ -110,6 +115,34 @@ try:
         m = say(lp, 'ho speso 9 € pranzo')
         check('Agente: anche con l\'AI locale le spese diventano proposte', m['kind'] == 'tx' and m['tx']['amount'] < 0)
         lp.screenshot(path='/tmp/occhio_local.png', full_page=True)
+        check('Ogni risposta dice chi ha risposto', 'Risposto da: AI locale · qwen3:8b' in lp.inner_text('#view'))
+        # ---- local AI switched off: answers on the phone, the rest waits in a queue
+        op = br.new_page(viewport={'width': 390, 'height': 844}); watch(op)
+        for _ in range(50):
+            try: urllib.request.urlopen(BO + '/api/status', timeout=1); break
+            except Exception: time.sleep(0.2)
+        login(op, BO); op.wait_for_timeout(600)
+        t = op.inner_text('#view')
+        check('PC di casa spento: lo dice in alto', 'AI locale spenta' in t and 'in coda' in t, t[:120])
+        m = say(op, 'quanto ho speso in ristoranti negli ultimi 6 mesi?')
+        check('PC spento: le cifre arrivano dal telefono', m['kind'] == 'ask' and m['via'] == 'fallback' and 'AI di casa spenta' in op.inner_text('#view'))
+        m = say(op, 'Ho speso 7 € colazione')
+        check('PC spento: la spesa si registra lo stesso (senza AI)', m['kind'] == 'tx' and m['tx']['amount'] == -7 and m['via'] == 'device')
+        m = say(op, 'Secondo te sto gestendo bene i miei soldi?')
+        check('PC spento: domanda aperta messa in coda', m['kind'] == 'queued' and op.locator('.occ-q').count() == 1)
+        check('Coda salvata cifrata con la conversazione', op.evaluate("S.chat.filter(m=>m.kind==='queued').length") == 1)
+        mock2 = subprocess.Popen(['node', 'tests/mock_ai.js'], cwd=ROOT, env=dict(os.environ, MOCK_AI_PORT='8193'), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        time.sleep(16)  # the server remembers the last check for 15 s
+        op.evaluate("occPing(true)")
+        for _ in range(60):
+            if not op.evaluate("S.chat.some(m=>m.kind==='queued')"): break
+            op.wait_for_timeout(250)
+        op.wait_for_timeout(400)
+        last = op.evaluate("S.chat[S.chat.length-1]")
+        t = op.inner_text('#view')
+        check('PC riacceso: la domanda in coda parte da sola e trova risposta', last['kind'] == 'md' and last.get('late') and 'dalla coda' in t, last.get('kind'))
+        check('PC riacceso: lo stato torna "AI locale"', 'AI locale spenta' not in t and 'AI locale' in t)
+        op.screenshot(path='/tmp/occhio_off.png', full_page=True)
         # ---- mobile layout and English
         pg.evaluate("S.chat=[];renderView()"); say(pg, 'quanto ho speso questo mese?')
         check('Mobile: niente scorrimento orizzontale', pg.evaluate("document.documentElement.scrollWidth") <= 392)
@@ -123,5 +156,6 @@ try:
         check('Nessun errore JavaScript', not errs, errs[:3])
         br.close()
 finally:
-    srv.terminate()
+    srv.terminate(); srv2.terminate()
+    if mock2: mock2.terminate()
 print(f'RISULTATO: {sum(res)}/{len(res)} superati')
