@@ -217,6 +217,7 @@ function vTx() {
   <div class="card"><div class="list" id="txlist">${txListHTML()}</div></div>`;
 }
 
+const INVCOL = ['#34D399', '#60A5FA', '#FBBF24', '#A78BFA', '#FB7185'];
 function vInv() {
   if (invTab === 'hist') return invTabs() + vInvHist();
   if (invTab === 'alloc') return invTabs() + vAlloc();
@@ -234,11 +235,28 @@ function vInvPos() {
     const o = parts.slice(4).reduce((s, p) => s + p[1], 0);
     parts = [...parts.slice(0, 4), ['Altro', o]];
   }
-  parts = parts.map(([n, v], i) => ({ n, v, c: SERIES[i] }));
-  return `<div class="grid g3">
-    <div class="card kpi"><div class="lbl">Valore portafoglio</div><div class="val num">${eur(iv)}</div><div class="foot">${HS.length} posizioni</div></div>
-    <div class="card kpi"><div class="lbl">Capitale investito</div><div class="val num">${eur(ic)}</div><div class="foot">Prezzo medio di carico</div></div>
-    <div class="card kpi"><div class="lbl">Guadagno / perdita</div><div class="val num ${iv - ic >= 0 ? 'up' : 'down'}">${iv - ic >= 0 ? '+' : ''}${eur(iv - ic)}</div><div class="foot">${ic ? pct((iv - ic) / ic) : '—'}</div></div>
+  parts = parts.map(([n, v], i) => ({ n, v, c: INVCOL[i] }));
+  const tc = Object.fromEntries(parts.map(p => [p.n, p.c]));
+  const gain = iv - ic;
+  const st = (ic2, c, l, d, v, cls = '') =>
+    `<div class="row" style="cursor:default">${tile(ic2, c)}<div class="main"><div class="t1">${l}</div><div class="t2">${d}</div></div><div class="amt num ${cls}">${v}</div></div>`;
+  return `<div class="grid g21 sens">
+    <div class="card"><div class="card-h"><div><h3>Portafoglio</h3><div class="hint">${HS.length === 1 ? '1 posizione' : HS.length + ' posizioni'} · per tipo di strumento</div></div></div>
+      ${
+        parts.length
+          ? `<div class="ringwrap">${spendRing(
+              parts.map(p => ({ c: p.n, v: p.v, col: p.c })),
+              iv
+            )}<div class="ringmid"><div class="lbl">Valore portafoglio</div><div class="big num">${eur0(iv)}</div><span class="chip ${gain >= 0 ? 'c-good' : 'c-crit'}">${gain >= 0 ? '+' : '−'}${eur0(Math.abs(gain))} · ${ic ? pct(gain / ic) : '—'}</span></div></div>
+      <div class="legrows">${parts.map(p => `<div><i style="background:${p.c}"></i><span>${esc(p.n)}</span><b class="num">${Math.round((p.v / iv) * 100)}%</b><span class="num t2">${eur0(p.v)}</span></div>`).join('')}</div>`
+          : '<div class="empty">Aggiungi la tua prima posizione</div>'
+      }</div>
+    <div class="card"><div class="card-h"><div><h3>Rendimento</h3><div class="hint">Rispetto al prezzo medio di carico</div></div></div>
+      <div class="list">
+        ${st('coin', '#60A5FA', 'Capitale investito', 'Prezzo medio di carico', eur(ic))}
+        ${st('trend', '#34D399', 'Valore attuale', S.quotesAt ? 'Prezzi aggiornati ' + fmtTime(S.quotesAt) : 'Prezzi inseriti a mano', eur(iv))}
+        ${st(gain >= 0 ? 'up' : 'down', gain >= 0 ? '#4ADE80' : '#FB7185', 'Guadagno / perdita', ic ? pct(gain / ic) : '—', (gain >= 0 ? '+' : '') + eur(gain), gain >= 0 ? 'up' : 'down')}
+      </div></div>
   </div>
   <div class="grid g21" style="margin-top:14px">
     <div class="card"><div class="card-h"><div><h3>Posizioni</h3><div class="hint">${S.quotesAt ? 'Prezzi aggiornati ' + fmtTime(S.quotesAt) : 'Tocca una posizione per modificarla'}</div></div><div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${perm('quotes') ? '<button class="btn sm" data-act="q-refresh">↻ Prezzi</button><button class="btn sm" data-act="q-search">Cerca titolo</button>' : ''}<label class="btn sm">⇪ Importa<input type="file" id="pfcsv" accept=".xlsx,.xls,.csv,.txt" hidden></label><button class="btn sm pri" data-act="add-hold">+ Posizione</button></div></div>
@@ -251,13 +269,12 @@ function vInvPos() {
                 const v = h.qty * h.price,
                   c = h.qty * h.avg,
                   pl = c ? (v - c) / c : 0;
-                return `<div class="row" data-act="${h.pending || h.qErr ? 'q-review' : 'edit-hold'}" data-id="${h.id}"><div class="av" style="font-size:10.5px;font-weight:700">${esc(h.ticker.slice(0, 4))}</div><div class="main"><div class="t1">${esc(h.name)} ${quoteBadge(h)}</div><div class="t2 num">${String(h.qty).replace('.', DEC)} × ${eur(h.price)}</div><div class="t2">${quoteLine(h)}</div>${invPf == null && pfs().length ? `<div class="t2">📁 ${esc(pfName(h.pf || ''))}</div>` : ''}</div><div style="text-align:right"><div class="amt num">${eur(v)}</div><span class="chip ${pl >= 0 ? 'c-good' : 'c-crit'}" style="margin-top:3px">${pl >= 0 ? '▲' : '▼'} ${pct(pl)}</span></div></div>`;
+                return `<div class="row" data-act="${h.pending || h.qErr ? 'q-review' : 'edit-hold'}" data-id="${h.id}"><div class="av tick" style="--c:${tc[h.type] || tc.Altro || '#94A3B8'}">${esc(h.ticker.slice(0, 4))}</div><div class="main"><div class="t1">${esc(h.name)} ${quoteBadge(h)}</div><div class="t2 num">${String(h.qty).replace('.', DEC)} × ${eur(h.price)}</div><div class="t2">${quoteLine(h)}</div>${invPf == null && pfs().length ? `<div class="t2">📁 ${esc(pfName(h.pf || ''))}</div>` : ''}</div><div style="text-align:right"><div class="amt num">${eur(v)}</div><span class="chip ${pl >= 0 ? 'c-good' : 'c-crit'}" style="margin-top:3px">${pl >= 0 ? '▲' : '▼'} ${pct(pl)}</span></div></div>`;
               })
               .join('')
           : '<div class="empty">Aggiungi la tua prima posizione</div>'
       }</div></div>
-    <div class="card"><div class="card-h"><div><h3>Allocazione</h3><div class="hint">Per tipo di strumento</div></div></div>
-      ${parts.length ? `<div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">${donut(parts)}<div class="list" style="flex:1;min-width:140px">${parts.map(p => `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px"><i style="width:10px;height:10px;border-radius:3px;background:${p.c};flex:none"></i><span style="flex:1;color:var(--tx2)">${esc(p.n)}</span><span class="num">${((p.v / iv) * 100).toFixed(0)}%</span></div>`).join('')}</div></div>` : '<div class="empty">—</div>'}
+    <div class="card"><div class="card-h"><div><h3>Prezzi</h3><div class="hint">Da dove arrivano</div></div></div>
       <div class="hint" style="margin-top:14px;line-height:1.55">${perm('quotes') ? "Prezzi automatici per i titoli collegati: ETF e azioni da Yahoo Finance con controllo su Stooq, crypto da Kraken con controllo su CoinGecko, cambi ufficiali BCE. Si aggiornano all'apertura dell'app (al massimo una volta l'ora) o con ↻ Prezzi." : 'Prezzi inseriti a mano. Le quotazioni automatiche si attivano in Impostazioni → Privacy.'}</div></div>
   </div>`;
 }
@@ -351,7 +368,8 @@ function vGoals() {
 }
 
 /* ---------- statistics (all computed locally) ---------- */
-let stPer = '12m';
+let stPer = '12m',
+  stCat = '';
 function addM(k, n) {
   const [y, m] = k.split('-').map(Number);
   const d = new Date(y, m - 1 + n, 1);
@@ -508,9 +526,6 @@ function vStats() {
     mxM = P.months[vals.indexOf(Math.max(...vals))],
     pos = vals.filter(v => v > 0),
     mnM = P.months[vals.indexOf(pos.length ? Math.min(...pos) : 0)];
-  const merch = Object.values(A.merch)
-    .sort((a, b) => b.v - a.v)
-    .slice(0, 10);
   const freq = Object.values(A.merch)
     .sort((a, b) => b.c - a.c || b.v - a.v)
     .slice(0, 6);
@@ -527,8 +542,26 @@ function vStats() {
   const ys = Object.keys(years).sort().reverse();
   const kpi = (l, v, prev, cls = '') =>
     `<div class="card kpi"><div class="lbl">${l}</div><div class="val num ${cls}">${eur0(v)}</div><div class="hint">${B ? 'vs periodo prec. ' + pctTxt(v, prev) : 'al mese'}</div></div>`;
+  const cat = stCat && A.cat[stCat] ? stCat : '',
+    mv = P.months.map(k => (cat ? (A.catM[cat] || {})[k] || 0 : A.byM[k].out)),
+    tot = mv.reduce((x, y) => x + y, 0),
+    prevAvg = B ? (cat ? B.cat[cat] || 0 : B.out) / bn : 0,
+    mrows = Object.values(A.merch)
+      .filter(m => !cat || m.cat === cat)
+      .sort((a, b) => b.v - a.v)
+      .slice(0, 5);
+  const hero = `<div class="grid g21">
+    <div class="card statshero">
+      <div class="sh-top"><select class="inp catpick" id="stcat" aria-label="Categoria"><option value="">Tutte le spese</option>${cats.map(([c]) => `<option ${c === cat ? 'selected' : ''} value="${esc(c)}">${esc(c)}</option>`).join('')}</select>${cat ? catAv(cat) : tile('stats', '#8B5CF6')}</div>
+      <div class="bh-top"><div class="lbl">Media al mese · ${P.lbl.toLowerCase()}</div><div class="big num">${eur0(tot / n)}</div>${prevAvg ? `<span class="chip ${tot / n > prevAvg ? 'c-warn' : 'c-good'}">${tot / n > prevAvg ? '+' : '−'}${Math.abs(Math.round((tot / n / prevAvg - 1) * 100))}% rispetto al periodo prima</span>` : ''}</div>
+      ${monthBars(P.months, mv, cat ? { c1: catCol(cat), c2: `color-mix(in srgb,${catCol(cat)} 55%,#1E1B4B)` } : {})}
+    </div>
+    <div class="card"><div class="card-h"><div><h3>${cat ? 'Dove, in ' + esc(cat) : 'Dove spendi di più'}</h3><div class="hint">Esercenti e beneficiari del periodo</div></div></div>
+      <div class="list">${mrows.length ? mrows.map(m => `<div class="row" style="cursor:default">${catAv(m.cat)}<div class="main"><div class="t1">${esc(m.n)}</div><div class="t2">${m.c === 1 ? '1 volta' : m.c + ' volte'} · media ${eur0(m.v / m.c)}</div></div><div class="amt num">${eur0(m.v)}</div></div>`).join('') : '<div class="empty">Nessun esercente riconosciuto</div>'}</div></div>
+  </div>`;
   return (
-    seg +
+    hero +
+    `<div style="margin-top:14px">${seg}</div>` +
     `<div class="hint" style="margin:-4px 0 12px">${P.lbl} · ${P.months.length} mesi (${ymLabel(P.months[0])} – ${ymLabel(P.months[P.months.length - 1])}). Giroconti e investimenti esclusi.</div>
   <div class="grid g4">
     ${kpi('Entrate medie / mese', A.inc / n, B && B.inc / bn)}
@@ -561,11 +594,10 @@ function vStats() {
     A.catM
   )}</div>
   <div class="grid g2" style="margin-top:14px">
-    <div class="card"><h3>Dove spendi di più</h3><table class="tbl"><thead><tr><th>Esercente / beneficiario</th><th class="r">Volte</th><th class="r">Totale</th></tr></thead><tbody>${merch.map(m => `<tr><td>${esc(m.n)}<div class="hint">${esc(m.cat)} · media ${eur(m.v / m.c)}</div></td><td class="r num">${m.c}</td><td class="r num">${eur(m.v)}</td></tr>`).join('')}</tbody></table></div>
+    <div class="card"><h3>Spesa per giorno della settimana</h3><div class="hint">Media settimanale</div>${wdChart(A.wd, nWeeks)}</div>
     <div class="card"><h3>Spese più alte</h3><table class="tbl"><tbody>${A.big.map(x => `<tr><td class="num hint" style="white-space:nowrap">${dLabel(x.date)}</td><td>${esc(x.note || x.cat)}<div class="hint">${esc(x.cat)}</div></td><td class="r num">${eur(x.amount)}</td></tr>`).join('')}</tbody></table></div>
   </div>
   <div class="grid g2" style="margin-top:14px">
-    <div class="card"><h3>Spesa per giorno della settimana</h3><div class="hint">Media settimanale</div>${wdChart(A.wd, nWeeks)}</div>
     <div class="card"><h3>Abitudini</h3><table class="tbl"><thead><tr><th>Più frequenti</th><th class="r">Volte / mese</th><th class="r">Media</th></tr></thead><tbody>${freq.map(m => `<tr><td>${esc(m.n)}</td><td class="r num">${(m.c / n).toFixed(1).replace('.', DEC)}</td><td class="r num">${eur(m.v / m.c)}</td></tr>`).join('')}</tbody></table></div>
   </div>
   <div class="card" style="margin-top:14px"><h3>Anno per anno</h3><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Anno</th><th class="r">Mesi</th><th class="r">Entrate</th><th class="r">Uscite</th><th class="r">Uscite medie / mese</th><th class="r">Risparmio</th><th class="r">Tasso</th></tr></thead><tbody>${ys
@@ -588,7 +620,7 @@ const TITLES = {
   obiettivi: 'Obiettivi',
   report: 'Report',
   statistiche: 'Statistiche',
-  chiedi: 'Chiedi ai tuoi dati',
+  occhio: 'Occhio',
   permettermelo: 'Posso permettermelo?',
   patrimonio: 'Patrimonio',
   fire: 'Simulazione FIRE',
@@ -606,7 +638,7 @@ function renderView() {
       obiettivi: vGoals,
       report: vReport,
       statistiche: vStats,
-      chiedi: vAsk,
+      occhio: vOcchio,
       permettermelo: vAfford,
       patrimonio: vPat,
       fire: vFire,
@@ -614,6 +646,8 @@ function renderView() {
     }[view] || vHome;
   const V = $('#view');
   document.body.dataset.view = view;
+  if (view === 'occhio') orbMarkSeen();
+  $('#occbar').innerHTML = occBar();
   V.innerHTML = v();
   if (lastView !== view) {
     V.classList.remove('vin');
@@ -665,8 +699,6 @@ function moreSheet() {
       ['ricorrenti', 'rec', 'Costi ricorrenti'],
       ['obiettivi', 'goal', 'Obiettivi'],
       ['statistiche', 'stats', 'Statistiche'],
-      ['chiedi', 'ask', 'Chiedi'],
-      ['permettermelo', 'afford', 'Posso permettermelo?'],
       ['report', 'print', 'Report'],
       ['impostazioni', 'set', 'Impostazioni']
     ]
@@ -677,29 +709,4 @@ function moreSheet() {
       .join('')}</div>`
   );
   document.querySelector('#frm .btns').style.display = 'none';
-}
-/** The consultant sheet, opened from the orb: what is new to read, then the ways to ask. */
-function orbSheet() {
-  const news = orbNews(),
-    all = S ? insights() : [];
-  const rest = all.filter(i => !news.some(n => n.t === i.t));
-  const item = i =>
-    `<div class="row" style="cursor:default">${tile(...i.ic)}<div class="main"><div class="t1" style="white-space:normal">${esc(i.t)}</div><div class="t2" style="white-space:normal">${esc(i.d)}</div></div></div>`;
-  const go = (v, i, l, d) =>
-    `<div class="row" data-act="go-close" data-v="${v}"><div class="av">${ico(i)}</div><div class="main"><div class="t1">${l}</div><div class="t2">${d}</div></div></div>`;
-  openForm(
-    'Consulente',
-    [],
-    () => {},
-    null,
-    `<div class="orb-big">${orbHTML()}</div>
-    <div class="hint" style="text-align:center;margin:-4px 0 14px">Tutto calcolato sul dispositivo · nessun dato esce</div>
-    ${news.length ? `<div class="navlbl" style="padding-left:4px">Da leggere</div><div class="list">${news.map(item).join('')}</div>` : ''}
-    ${rest.length ? `<div class="navlbl" style="padding-left:4px">Spunti</div><div class="list">${rest.map(item).join('')}</div>` : ''}
-    ${all.length ? '' : '<div class="empty">Niente di nuovo da segnalare</div>'}
-    <div class="navlbl" style="padding-left:4px">Chiedi</div>
-    <div class="list">${go('chiedi', 'ask', 'Chiedi ai tuoi dati', 'Domande libere su spese e patrimonio')}${go('permettermelo', 'afford', 'Posso permettermelo?', 'Una spesa futura, mese per mese')}${go('fire', 'fire', 'Simulazione FIRE', 'Quando potresti smettere di lavorare')}</div>`
-  );
-  document.querySelector('#frm .btns').style.display = 'none';
-  orbMarkSeen();
 }

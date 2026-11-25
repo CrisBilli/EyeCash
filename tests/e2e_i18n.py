@@ -28,12 +28,12 @@ with sync_playwright() as p:
     check('Importi in formato inglese (€1,234.56)', pg.evaluate("eur(1234.5)") == '€1,234.50', pg.evaluate("eur(1234.5)"))
     check('Mesi in inglese', pg.evaluate("ymLabel('2026-01')") == 'January 2026')
     left = {}
-    for v in ['home', 'movimenti', 'patrimonio', 'investimenti', 'statistiche', 'report', 'impostazioni', 'chiedi', 'ricorrenti', 'obiettivi', 'fire']:
+    for v in ['home', 'movimenti', 'patrimonio', 'investimenti', 'statistiche', 'report', 'impostazioni', 'occhio', 'ricorrenti', 'obiettivi', 'fire']:
         pg.evaluate(f"go('{v}')"); pg.wait_for_timeout(400)
         it = italian_left(pg)
         if it: left[v] = it[:3]
     check('Nessun testo rimasto in italiano nelle schermate principali', not left, left)
-    pg.evaluate("(()=>{const x=quickAsks()[1];askCur={q:x[0],spec:x[1],ai:false};go('chiedi')})()"); pg.wait_for_timeout(500)
+    pg.evaluate("S.chat=[];go('occhio')"); pg.click('[data-act=ask-quick][data-i="1"]'); pg.wait_for_timeout(500)
     check('Risposta rapida in inglese', 'This month you have spent' in pg.inner_text('#view'))
     # a new expense chosen from the English category grid is stored with the Italian key
     pg.evaluate("txForm()"); pg.wait_for_selector('#frm')

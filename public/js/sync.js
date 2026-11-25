@@ -157,7 +157,8 @@ function mergeStates(B, R, L) {
     'debts',
     'zainetto',
     'trades',
-    'askHist'
+    'askHist',
+    'chat'
   ]) {
     const b = new Map((B[k] || []).map(x => [x.id, JSON.stringify(x)])),
       l = new Map((L[k] || []).map(x => [x.id, x])),
@@ -294,6 +295,7 @@ function normState() {
   S.trades = S.trades || [];
   S.trMap = S.trMap || {};
   S.askHist = S.askHist || [];
+  S.chat = S.chat || [];
 }
 function setSync(s) {
   sync = s;

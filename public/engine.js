@@ -1846,6 +1846,98 @@
     });
   }
 
+  /* ---------- chat advisor: the tools the model can call ----------
+     Run on the device by public/js/chat.js; the server only forwards them to a LOCAL model. */
+  const obj = (props, required = []) => ({ type: 'object', properties: props, required });
+  const tool = (name, description, parameters) => ({
+    type: 'function',
+    function: { name, description, parameters }
+  });
+  const EVENT = {
+    type: 'object',
+    properties: {
+      label: { type: 'string' },
+      amount: { type: 'number', description: 'euro; positive = expense, negative = income' },
+      month: { type: 'integer', description: 'months from now, 0 = this month' },
+      type: { type: 'string', enum: ['once', 'monthly'] },
+      months: { type: 'integer', description: 'for monthly: how many months' },
+      financed: obj({ months: { type: 'integer' }, ratePct: { type: 'number' }, down: { type: 'number' } })
+    },
+    required: ['label', 'amount', 'month']
+  };
+  const CHAT_TOOLS = [
+    tool(
+      'get_overview',
+      'Overall picture: average monthly income, spending and saving (last 12 complete months), cash, investments, net worth, debts, loan payments, fixed costs, emergency fund.',
+      obj({})
+    ),
+    tool(
+      'spending_by_category',
+      'Spending per category over a period, with the monthly average. Use months (last N complete months) or from/to (YYYY-MM).',
+      obj({ months: { type: 'integer' }, from: { type: 'string' }, to: { type: 'string' } })
+    ),
+    tool(
+      'monthly_trend',
+      'Income, spending and saving month by month.',
+      obj({ months: { type: 'integer', description: 'default 12' } })
+    ),
+    tool(
+      'search_transactions',
+      'Find transactions by text (description), category, dates (YYYY-MM-DD), amount range or kind. Returns count, total and up to 50 items.',
+      obj({
+        text: { type: 'string' },
+        category: { type: 'string' },
+        from: { type: 'string' },
+        to: { type: 'string' },
+        min_amount: { type: 'number' },
+        max_amount: { type: 'number' },
+        kind: { type: 'string', enum: ['expense', 'income'] },
+        limit: { type: 'integer' }
+      })
+    ),
+    tool(
+      'list_recurring',
+      'Recurring income and costs (subscriptions, rent, salary…) with their monthly amount.',
+      obj({})
+    ),
+    tool(
+      'list_goals',
+      'Savings goals: target, saved so far, deadline and how much per month is needed.',
+      obj({})
+    ),
+    tool(
+      'get_portfolio',
+      'Investments: total value, cost, gain, every position with weight, and the target allocation if set.',
+      obj({})
+    ),
+    tool(
+      'assets_and_debts',
+      'Assets (home, car…) with their value and debts (mortgages, loans) with residual, monthly payment and end date.',
+      obj({})
+    ),
+    tool(
+      'simulate_cashflow',
+      'Simulates cash month by month on the real numbers with future events (purchases, loans, bonuses). Returns the lowest cash, the first month in the red, months below the emergency fund and, for the target event, the earliest safe month.',
+      obj(
+        {
+          events: { type: 'array', items: EVENT },
+          target_index: { type: 'integer' },
+          emergency_months: { type: 'number' }
+        },
+        ['events']
+      )
+    ),
+    tool(
+      'loan_payment',
+      'Monthly payment and total interest of a loan.',
+      obj({ amount: { type: 'number' }, rate_pct: { type: 'number' }, months: { type: 'integer' } }, [
+        'amount',
+        'rate_pct',
+        'months'
+      ])
+    )
+  ];
+
   const API = {
     CLASSES,
     CK,
@@ -1890,6 +1982,7 @@
     sanitizeAdvice,
     runAdvice,
     renderAdvice,
+    CHAT_TOOLS,
     loanPayment,
     loanPrincipal,
     MEASURES,

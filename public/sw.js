@@ -1,6 +1,6 @@
 /* EyeCash – service worker: keeps a copy of the app (not of the data) so it opens without network.
    Data stays in the browser database, encrypted with your password: it never passes through here. */
-const CACHE = 'eyecash-shell-v7';
+const CACHE = 'eyecash-shell-v8';
 const SHELL = [
   '/',
   '/js/i18n.js',
@@ -21,6 +21,7 @@ const SHELL = [
   '/js/report.js',
   '/js/ai.js',
   '/js/advisor.js',
+  '/js/occhio.js',
   '/js/forms.js',
   '/js/import.js',
   '/js/offline.js',

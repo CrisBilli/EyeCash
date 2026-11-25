@@ -70,6 +70,7 @@ I18N.en = {
   '{0} · {1} mesi ({2} – {3}). Giroconti e investimenti esclusi.':
     '{0} · {1} months ({2} – {3}). Transfers and investments excluded.',
   '{0} · circa {1}/mese': '{0} · about {1}/month',
+  '{0} · per tipo di strumento': '{0} · by instrument type',
   '{0} · ricalcolata sui dati di oggi': "{0} · recalculated on today's data",
   '{0} · tocca una categoria per i movimenti': '{0} · tap a category to see its transactions',
   '{0} {1} da Claude': '{0} {1} from Claude',
@@ -82,6 +83,7 @@ I18N.en = {
   '{0} anni': '{0} years',
   '{0} delle posizioni{1}': '{0} of the holdings{1}',
   '{0} finanziamenti': '{0} loans',
+  '{0} in 12 mesi': '{0} in 12 months',
   "{0} l'anno": '{0} a year',
   '{0} mesi': '{0} months',
   '{0} movimenti': '{0} transactions',
@@ -98,6 +100,7 @@ I18N.en = {
     '{0} You can also use the microphone on the iPhone keyboard.',
   '{0} rate · interessi totali {1}': '{0} payments · total interest {1}',
   '{0} righe non di compravendita ignorate ·': '{0} rows that are not trades ignored ·',
+  '{0} rispetto al periodo prima': '{0} vs the previous period',
   '{0} su {1} investiti': '{0} on {1} invested',
   '{0} su quanto comprato': '{0} on what you bought',
   "{0} titoli dell'estratto conto non sono abbinati a una posizione: {1}.":
@@ -191,6 +194,8 @@ I18N.en = {
   Aggiunto: 'Added',
   Ago: 'Aug',
   Agosto: 'August',
+  'AI esterna, alla cieca': 'External AI, blind',
+  'AI locale': 'Local AI',
   'AI non disponibile, uso il riconoscimento locale': 'AI not available, using local recognition',
   'al giorno per il resto del mese.': 'a day for the rest of the month.',
   'al mese': 'a month',
@@ -199,6 +204,8 @@ I18N.en = {
   Alimentazione: 'Fuel',
   Aliquota: 'Tax rate',
   'aliquota media sui guadagni {p}%': 'average tax on gains {p}%',
+  "All'AI arriva solo la domanda: risponde con un calcolo che il dispositivo esegue sui tuoi dati. Importi e movimenti non escono.":
+    'The AI only receives the question: it answers with a calculation that the device runs on your data. Amounts and transactions never leave.',
   "All'AI è arrivata solo la domanda, con l'elenco delle categorie e il tipo dei conti. I numeri sono stati calcolati su questo dispositivo e non sono stati inviati.":
     'The AI only received the question, the list of categories and the account types. The numbers were computed on this device and were not sent.',
   "All'AI è arrivata solo la domanda. Ha scritto eventi e regole; i numeri sono stati calcolati su questo dispositivo e non sono stati inviati.":
@@ -223,6 +230,7 @@ I18N.en = {
   'Analisi automatiche · nessun dato esce dal server': 'Automatic insights · no data leaves the server',
   'Ancora nessun movimento': 'No transactions yet',
   Andamento: 'Trend',
+  'Andamento mese per mese': 'Month by month',
   anno: 'year',
   Anno: 'Year',
   'Anno {0}': 'Year {0}',
@@ -235,6 +243,7 @@ I18N.en = {
   Annua: 'Yearly',
   Annuale: 'Yearly',
   Annulla: 'Cancel',
+  Annullato: 'Cancelled',
   'Anticipo (€)': 'Down payment (€)',
   'anticipo {0}': 'down payment {0}',
   'Anticipo e fondo pronti': 'Down payment and fund ready',
@@ -264,6 +273,7 @@ I18N.en = {
     'Turn on automatic prices in Settings → Privacy',
   'Attivazione annullata': 'Activation cancelled',
   Attività: 'Assets',
+  'Attività {0} · debiti {1}': 'Assets {0} · debts {1}',
   'attività − debiti': 'assets − debts',
   Attivo: 'On',
   Attuale: 'Current',
@@ -306,7 +316,9 @@ I18N.en = {
     'Computed with the weighted average cost, fees included. Under the "regime amministrato" the bank withholds the taxes; losses from ETFs go to the loss carry-forward.',
   'Calcolati sugli ultimi 12 mesi completi · riferimenti usati dai consulenti, solo orientativi':
     'Computed on the last 12 complete months · rules of thumb used by advisors, indicative only',
+  'Calcolati sul dispositivo': 'Computed on the device',
   'Calcolato sul tuo dispositivo': 'Computed on your device',
+  'Calcolo della rata': 'Loan payment',
   'Calcolo informativo con le regole fiscali italiane 2026 (ETF 26% senza compensazione delle plusvalenze, titoli di Stato 12,5%, crypto 33%). Non è consulenza finanziaria o fiscale.':
     'Indicative calculation with the 2026 Italian tax rules (ETFs 26% with no offsetting of gains, government bonds 12.5%, crypto 33%). Not financial or tax advice.',
   'Calcolo informativo con le regole fiscali italiane 2026. Non è consulenza finanziaria o fiscale.':
@@ -351,6 +363,8 @@ I18N.en = {
   'Chiedi ai tuoi dati': 'Ask your data',
   "Chiedi cifre («quanto ho speso in ristoranti?») o un parere («tra un mese spendo 15.000 €: conviene un PC da 3.000 a gennaio?»). L'AI riceve solo la domanda e scrive il calcolo o le regole da verificare; i numeri li calcola il tuo dispositivo e non escono mai.":
     'Ask for figures (“how much did I spend on restaurants?”) or for an opinion (“I spend €15,000 next month: is a €3,000 PC in January a good idea?”). The AI receives only the question and writes the calculation or the rules to check; your device computes the numbers and they never leave it.',
+  'Chiedi o racconta una spesa…': 'Ask, or tell me an expense…',
+  'Chiedi, simula, registra': 'Ask, simulate, record',
   'Chiedilo a parole': 'Ask in plain words',
   Chilometri: 'Kilometres',
   Chiudi: 'Close',
@@ -372,6 +386,7 @@ I18N.en = {
   'Come è stato calcolato': 'How it was calculated',
   'come nuovo, buone…': 'as new, good…',
   'Come paghi': 'How you pay',
+  'Come sto andando questo mese?': 'How am I doing this month?',
   'Come vuoi dividere il portafoglio tra le classi di attivo':
     'How you want to split the portfolio between asset classes',
   'Commissioni annue stimate': 'Estimated yearly fees',
@@ -459,11 +474,14 @@ I18N.en = {
   'Crollo del 40% nel primo anno di pensione': '40% crash in the first year of retirement',
   Crypto: 'Crypto',
   'Cumulata giorno per giorno · {0}': 'Cumulative day by day · {0}',
+  da: 'from',
   'Da addebitare': 'To be debited',
   'da aggiornare (quantità e prezzo di carico)': 'to update (quantity and book cost)',
   'da Claude': 'from Claude',
   'Da controllare': 'To check',
+  'Da cosa è fatto': 'What it is made of',
   'Da cosa è fatto il tuo patrimonio': 'What your net worth is made of',
+  'Da dove arrivano': 'Where they come from',
   'Da leggere': 'To read',
   'da nessuno. Salvala in un password manager (es. Portachiavi iCloud).':
     'by anyone. Save it in a password manager (e.g. iCloud Keychain).',
@@ -474,6 +492,7 @@ I18N.en = {
   "Data d'acquisto": 'Purchase date',
   'Data prima erogazione': 'Date of first payment',
   'Dati cifrati con la tua password': 'Data encrypted with your password',
+  'Dati consultati: {0}': 'Data consulted: {0}',
   'dati di esempio': 'sample data',
   'Dati di esempio: non vengono salvati.': 'Sample data: not saved.',
   'Dati di esempio.': 'Sample data.',
@@ -514,8 +533,10 @@ I18N.en = {
   "Dopo quanto tempo fuori dall'app serve di nuovo {0}. Vale per questo dispositivo. Nel multitasking del telefono il contenuto è sempre nascosto.":
     "How long away from the app before {0} is needed again. Applies to this device. In the phone's app switcher the content is always hidden.",
   'dopo ti restano {0}': '{0} left afterwards',
+  'Dove posso risparmiare?': 'Where can I save?',
   'Dove spendi di più': 'Where you spend the most',
   "Dove spendo di più quest'anno?": 'Where do I spend the most this year?',
+  'Dove, in {0}': 'Where, in {0}',
   'Durata (anni)': 'Term (years)',
   'Durata in mesi': 'Length in months',
   'e a cifrare i tuoi dati': 'and to encrypt your data',
@@ -558,6 +579,7 @@ I18N.en = {
   Esempio: 'Example',
   esercente: 'merchant',
   'Esercente / beneficiario': 'Merchant / payee',
+  'Esercenti e beneficiari del periodo': 'Merchants and payees in the period',
   'Esercenti principali': 'Top merchants',
   'Esporta copia leggibile (JSON)': 'Export readable copy (JSON)',
   'estratto conto': 'bank statement',
@@ -627,6 +649,7 @@ I18N.en = {
   'Guadagno totale': 'Total gain',
   'Hai superato il budget di': 'You went over budget by',
   'Ho capito ({0}): {1}. Correggi i campi se serve.': 'Understood ({0}): {1}. Adjust the fields if needed.',
+  'Ho speso 12,50 € al bar': 'Spent €12.50 at the bar',
   'I controlli': 'The checks',
   'I dati di esempio verranno rimossi. Partirai con un conto vuoto: imposta saldo iniziale, budget e ricorrenti.':
     'The sample data will be removed. You will start with an empty account: set the opening balance, budgets and recurring items.',
@@ -641,6 +664,11 @@ I18N.en = {
   'Il conto ha movimenti: spostali prima': 'The account has transactions: move them first',
   'Il giorno più caro è il {a.top}: {a.top_value} negli ultimi 12 mesi.':
     'The most expensive day is {a.top}: {a.top_value} in the last 12 months.',
+  'il mese scorso': 'last month',
+  'Il modello gira in casa tua e legge i tuoi dati per rispondere: nulla esce verso servizi esterni.':
+    'The model runs in your home and reads your data to answer: nothing goes to outside services.',
+  'Il modello non ha dato una risposta: riprova o riformula la domanda.':
+    'The model gave no answer: try again or rephrase the question.',
   'Il modo migliore: importa i': 'The best way: import the',
   'Il modo più efficiente: non vendi, non paghi tasse':
     'The most efficient way: you sell nothing, you pay no taxes',
@@ -670,6 +698,7 @@ I18N.en = {
     'Set the target allocation to see drift and rebalancing.',
   Impostazioni: 'Settings',
   'imu (acconto/saldo)': 'property tax (IMU)',
+  'in {0} movimenti.': 'in {0} transactions.',
   'in 6 mesi': 'in 6 months',
   "In alternativa l'": 'Alternatively, the',
   'In arrivo': 'Coming in',
@@ -709,6 +738,7 @@ I18N.en = {
   Investimenti: 'Investments',
   'investimenti {v}': 'investments {v}',
   'Investito sul totale': 'Invested share',
+  Invia: 'Send',
   "Invia l'intero PDF dell'estratto conto (contiene anche saldo e intestatario). Sconsigliato: usa Excel/CSV.":
     'Sends the whole PDF statement (it also contains balance and account holder). Not recommended: use Excel/CSV.',
   'Invia le intestazioni e poche righe del file, con le cifre degli importi mascherate. Una volta per banca.':
@@ -721,6 +751,8 @@ I18N.en = {
     'Sends only the question you write, the category names and the account types (not their names). The AI returns a calculation that the device runs: amounts and results never leave.',
   "Invia solo la domanda che scrivi, i nomi delle categorie e il tipo dei conti (non i nomi). L'AI restituisce un calcolo che il dispositivo esegue: importi e risultati non escono mai. Vale anche per «Posso permettermelo?», dove esce solo la frase.":
     'Sends only the question you write, the category names and the account types (not their names). The AI returns a calculation that the device runs: amounts and results never leave. The same applies to “Can I afford it?”, where only the sentence leaves.',
+  "Invia solo la domanda che scrivi, i nomi delle categorie e il tipo dei conti (non i nomi). L'AI restituisce un calcolo che il dispositivo esegue: importi e risultati non escono mai. Vale anche per le simulazioni d'acquisto, dove esce solo la frase.":
+    'Sends only the question you write, the category names and the account types (not their names). The AI returns a calculation that the device runs: amounts and results never leave. The same goes for purchase simulations, where only the sentence leaves.',
   'Invia solo la frase che scrivi o detti (es. “23 € pizzeria ieri”).':
     'Sends only the sentence you type or dictate (e.g. “23 € pizzeria yesterday”).',
   "Invia solo le caratteristiche del bene: modello/anno/km dell'auto, comune/zona/m² della casa (mai l'indirizzo). Con Anthropic l'AI consulta annunci reali sul web.":
@@ -817,6 +849,7 @@ I18N.en = {
   'media {0}': 'average {0}',
   'Media / mese': 'Average / month',
   'Media al mese': 'Average per month',
+  'Media al mese · {0}': 'Monthly average · {0}',
   'Media degli ultimi {0} mesi completi': 'Average of the last {0} complete months',
   'Media mensile di tutti i ricorrenti': 'Monthly average of all recurring items',
   'Media per movimento': 'Average per transaction',
@@ -856,6 +889,7 @@ I18N.en = {
   Modifica: 'Edit',
   'Modifica conto': 'Edit account',
   'Modifica movimento': 'Edit transaction',
+  'Modifica nel simulatore': 'Edit in the simulator',
   'Modifica obiettivo': 'Edit goal',
   'Modifica ricorrente': 'Edit recurring item',
   'Modifiche non salvate recuperate': 'Unsaved changes recovered',
@@ -876,6 +910,7 @@ I18N.en = {
   'Movimenti dossier titoli → Esporta': 'Securities movements → Export',
   'movimenti ricategorizzati': 'transactions recategorised',
   Movimento: 'Transaction',
+  'Movimento registrato': 'Transaction recorded',
   'Mutui e prestiti: il residuo si aggiorna da solo ogni mese':
     'Mortgages and loans: the remaining debt updates itself every month',
   Mutuo: 'Mortgage',
@@ -883,6 +918,8 @@ I18N.en = {
   'Mutuo casa': 'Home mortgage',
   'Mutuo sul prezzo': 'Loan to price',
   'Nascondi saldi': 'Hide balances',
+  'negli ultimi {0} mesi': 'in the last {0} months',
+  'negli ultimi 12 mesi': 'in the last 12 months',
   'Negli ultimi 12 mesi chiusi spendi in media {a} al mese; la voce più pesante è {a.top} ({a.top_value} al mese).':
     'In the last 12 complete months you spend on average {a} a month; the biggest item is {a.top} ({a.top_value} a month).',
   'Negli ultimi 12 mesi chiusi: entrate {b}, uscite {a}, risparmio {diff:b-a} ({pct:a/b} delle entrate è andato in spese).':
@@ -892,6 +929,7 @@ I18N.en = {
   'Nessun dato nel periodo': 'No data in this period',
   'nessun debito': 'no debts',
   'Nessun debito': 'No debts',
+  'Nessun esercente riconosciuto': 'No merchant recognised',
   'Nessun invio finora.': 'Nothing sent so far.',
   'Nessun movimento': 'No transactions',
   'Nessun movimento trovato': 'No transactions found',
@@ -931,6 +969,8 @@ I18N.en = {
   'non conta nella liquidità': 'not counted in cash',
   'Non disponibile.': 'Not available.',
   'non finire i soldi prima dei {0} anni': 'not running out of money before {0}',
+  'Non ho trovato l’importo: scrivilo, ad esempio «ho speso 12,50 € al bar».':
+    'I could not find the amount: write it, for example "spent €12.50 at the bar".',
   'Non ho trovato un prezzo nella domanda: scrivilo, ad esempio «auto da 20.000 €».':
     "I couldn't find a price in the question: add it, e.g. “car for €20,000”.",
   'Non riuscito. Tocca di nuovo o usa la password.': 'Failed. Tap again or use the password.',
@@ -950,6 +990,7 @@ I18N.en = {
   'Numero FIRE {0}': 'FIRE number {0}',
   'numero FIRE raggiunto solo nel {0} dei casi entro i {1} anni: negli altri smetti a {2}':
     'FIRE number reached in only {0} of cases by {1}: in the others you stop at {2}',
+  'Nuova conversazione': 'New conversation',
   'Nuova minusvalenza': 'New capital loss',
   'Nuova operazione': 'New trade',
   'Nuova posizione': 'New holding',
@@ -972,6 +1013,9 @@ I18N.en = {
   'Obiettivo (Investimenti → Allocazione)': 'Target (Investments → Allocation)',
   'Obiettivo consigliato: almeno il 20% delle entrate': 'Suggested target: at least 20% of income',
   'Obiettivo salvato': 'Goal saved',
+  Occhio: 'Eye',
+  'Occhio con AI esterna': 'Eye with an external AI',
+  'Occhio con AI locale': 'Eye with a local AI',
   'Offline · copia del dispositivo': 'Offline · device copy',
   'Offline · modifiche in coda': 'Offline · changes queued',
   'Offline: copia del dispositivo con le modifiche in coda': 'Offline: device copy with queued changes',
@@ -1021,6 +1065,7 @@ I18N.en = {
   Peggiore: 'Worst',
   'Peggiore {0}': 'Worst {0}',
   'Pensione pubblica netta (€/anno, oggi)': 'Net state pension (€/year, today)',
+  per: 'on',
   'per {g}': 'by {g}',
   'Per classe di attivo': 'By asset class',
   "Per sicurezza i saldi restano oscurati: la password viene verificata sul dispositivo e restano visibili finché l'app è aperta (si nascondono se la chiudi o ne esci per più di 10 minuti).":
@@ -1047,12 +1092,15 @@ I18N.en = {
   Posizioni: 'Holdings',
   'Posizioni chiuse': 'Closed positions',
   'Posso permettermelo?': 'Can I afford it?',
+  "Posso permettermi un'auto da 20.000 € a marzo?": 'Can I afford a €20,000 car in March?',
   'Prestito personale': 'Personal loan',
   'Previsione a fine mese': 'End-of-month forecast',
+  Prezzi: 'Prices',
   'Prezzi aggiornati': 'Prices updated',
   "Prezzi automatici per i titoli collegati: ETF e azioni da Yahoo Finance con controllo su Stooq, crypto da Kraken con controllo su CoinGecko, cambi ufficiali BCE. Si aggiornano all'apertura dell'app (al massimo una volta l'ora) o con ↻ Prezzi.":
     'Automatic prices for linked holdings: ETFs and stocks from Yahoo Finance checked against Stooq, crypto from Kraken checked against CoinGecko, official ECB exchange rates. They update when the app opens (at most once an hour) or with ↻ Prices.',
   'prezzi da verificare': 'prices to check',
+  'Prezzi inseriti a mano': 'Prices entered by hand',
   'Prezzi inseriti a mano. Le quotazioni automatiche si attivano in Impostazioni → Privacy.':
     'Prices entered by hand. Automatic prices can be turned on in Settings → Privacy.',
   'Prezzi storici: {0} (+ titoli di copertura). Nessuna quantità o valore.':
@@ -1085,6 +1133,7 @@ I18N.en = {
     'You can go on with “what if I pay in instalments?” or “and in six months?”. An indicative simulation, not financial advice.',
   'Puoi spendere ancora': 'You can still spend',
   'Q.tà': 'Qty',
+  'Quadro generale': 'Overview',
   Quando: 'When',
   'quando fallisce, i soldi finiscono in media a {0} anni':
     'when it fails, the money runs out on average at {0}',
@@ -1101,6 +1150,7 @@ I18N.en = {
     'how much you could put towards a new mortgage or loan',
   'Quanto spendo in media al mese per categoria?': 'How much do I spend per month by category?',
   'Quasi fatto': 'Almost there',
+  "quest'anno": 'this year',
   "Quest'anno hai già speso {0} in {1}": 'This year you have already spent {0} on {1}',
   "Quest'anno il primo è {a.top} con {a.top_value}; in totale hai speso {a}.":
     'This year the top one is {a.top} with {a.top_value}; in total you spent {a}.',
@@ -1139,11 +1189,13 @@ I18N.en = {
   'Regime fiscale': 'Tax regime',
   Registra: 'Record',
   Registrato: 'Recorded',
+  'Registrato: {0} · {1}': 'Recorded: {0} · {1}',
   Registrazione: 'Registration',
   'Registro di ciò che è uscito': 'Log of what was sent',
   'Regola fissa:': 'Fixed rule:',
   'Regole imparate ({0})': 'Learned rules ({0})',
   'Regole verificate:': 'Rules checked:',
+  Rendimento: 'Return',
   'Rendimento annuo': 'Annual return',
   'Rendimento annuo investimenti': 'Annual return of investments',
   'Rendimento da dividendi/cedole (% annuo, facoltativo)': 'Dividend/coupon yield (% a year, optional)',
@@ -1157,6 +1209,7 @@ I18N.en = {
   Revoca: 'Revoke',
   Ribilanciamento: 'Rebalancing',
   'Ribilanciamento completo': 'Full rebalance',
+  'Ricerca nei movimenti': 'Transaction search',
   'Ricerca titolo': 'Find a listing',
   'Riconoscimento formato banca': 'Bank format recognition',
   'Riconoscimento locale: nessun dato esce dal server.': 'Local recognition: no data leaves the server.',
@@ -1180,6 +1233,7 @@ I18N.en = {
   'Risparmio medio / mese': 'Average saving / month',
   'Risparmio mensile': 'Monthly saving',
   'Risparmio mensile dopo': 'Monthly saving afterwards',
+  'Rispetto al prezzo medio di carico': 'Against the average purchase price',
   Risposta: 'Answer',
   Ristoranti: 'Restaurants',
   'ristrutturato, buono, da ristrutturare': 'renovated, good, to renovate',
@@ -1247,6 +1301,8 @@ I18N.en = {
   'Sei uscito da questo dispositivo.': 'You signed out of this device.',
   'Seleziona e copia il testo': 'Select and copy the text',
   'Senza acquisto': 'Without the purchase',
+  'Senza AI capisco le domande rapide, le simulazioni di acquisto («posso permettermi un’auto da 20.000 €?») e le spese da registrare («ho speso 12 € al bar»).':
+    'Without AI I understand quick questions, purchase simulations ("can I afford a €20,000 car?") and expenses to record ("spent €12 at the bar").',
   'Senza scadenza': 'No end date',
   'Serve almeno un mese di movimenti per conoscere entrate e spese: importa un estratto conto o aggiungi i movimenti.':
     'At least one month of transactions is needed to know your income and spending: import a bank statement or add transactions.',
@@ -1277,6 +1333,7 @@ I18N.en = {
     'Symbols requested: {0}{1} (+ common cover instruments). No quantities or values.',
   Simula: 'Simulate',
   'Simula un acquisto': 'Simulate a purchase',
+  'Simulazione della liquidità': 'Cash simulation',
   'Simulazione FIRE': 'FIRE simulation',
   "Simulazione orientativa calcolata sul tuo dispositivo con i tuoi dati: non è una consulenza finanziaria né un'offerta di finanziamento. Tassi e condizioni reali dipendono dalla banca.":
     'An indicative simulation computed on your device with your data: it is not financial advice or a loan offer. Real rates and terms depend on the bank.',
@@ -1284,6 +1341,8 @@ I18N.en = {
   'Situazione oggi': "Today's situation",
   'Soldi da versare subito': 'Money needed upfront',
   'solo Anthropic': 'Anthropic only',
+  "Solo con un modello AI locale (Ollama sul tuo server o in rete): invia la conversazione e i risultati dei calcoli sui tuoi dati, che restano in casa. Con un'AI esterna il server la rifiuta.":
+    'Only with a local AI model (Ollama on your server or network): sends the conversation and the results of the calculations on your data, which stay at home. With an external AI the server refuses it.',
   'Solo sintesi': 'Summary only',
   'sotto il 15% le spese sono regolari': 'under 15% spending is regular',
   'sotto lo 0,3% è un buon livello': 'under 0.3% is a good level',
@@ -1296,9 +1355,11 @@ I18N.en = {
   'Spesa per giorno della settimana': 'Spending by day of the week',
   'Spesa sostenibile al 90%': '90% sustainable spending',
   'Spesa/anno': 'Spending/year',
+  Spese: 'Spending',
   'Spese al mese': 'Spending per month',
   'Spese di {0}': 'Spending in {0}',
   'Spese di casa in più (€/mese)': 'Extra home costs (€/month)',
+  'Spese e entrate ricorrenti': 'Recurring costs and income',
   'Spese fisse sul reddito': 'Fixed costs on income',
   'Spese medie per categoria': 'Average spending by category',
   'Spese mensili dopo': 'Monthly spending afterwards',
@@ -1326,8 +1387,10 @@ I18N.en = {
   'Stima senza ricerca web: indicativa.': 'Estimate without web search: indicative.',
   'Stima valore dei beni': 'Asset value estimate',
   Stipendio: 'Salary',
+  'Sto pensando…': 'Thinking…',
   'Sto stimando…': 'Estimating…',
   Storico: 'History',
+  'Strumento di supporto: non è una consulenza finanziaria.': 'A support tool: not financial advice.',
   'Su quale conto?': 'Which account?',
   'Su questo dispositivo Face ID / impronta non è disponibile nel browser':
     'Face ID / fingerprint is not available in the browser on this device',
@@ -1338,6 +1401,7 @@ I18N.en = {
   'sui conti': 'on the accounts',
   'sui conti {list}': 'on accounts {list}',
   'sul dispositivo': 'on the device',
+  'Sul dispositivo': 'On the device',
   'Superficie m²': 'Floor area m²',
   Svago: 'Leisure',
   tagliando: 'service',
@@ -1390,6 +1454,7 @@ I18N.en = {
   Trovati: 'Found',
   'Tutte le categorie': 'All categories',
   'Tutte le operazioni sono abbinate per ISIN': 'All trades are matched by ISIN',
+  'Tutte le spese': 'All spending',
   Tutti: 'All',
   'Tutti i controlli sono a posto con le tue entrate e spese reali.':
     'Every check passes with your real income and spending.',
@@ -1402,6 +1467,7 @@ I18N.en = {
   'Tutto calcolato sul dispositivo · nessun dato esce': 'All computed on the device · no data leaves',
   'Tutto lo storico (mesi chiusi)': 'Whole history (complete months)',
   'Ultima stima': 'Latest estimate',
+  'ultimi {0} mesi': 'last {0} months',
   'Ultimi 12 mesi': 'Last 12 months',
   'ULTIMI 12 MESI': 'LAST 12 MONTHS',
   'Ultimi 12 mesi chiusi': 'Last 12 complete months',
@@ -1469,6 +1535,7 @@ I18N.en = {
   Volte: 'Times',
   'Volte / mese': 'Times / month',
   'vs media': 'vs average',
+  'Vuoi registrare questo movimento?': 'Record this transaction?',
   'Zainetto fiscale': 'Loss carry-forward',
   'zainetto non utilizzabile': 'carry-forward not usable',
   'Zona o quartiere (no indirizzo)': 'Area or neighbourhood (no address)'

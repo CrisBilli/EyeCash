@@ -40,7 +40,7 @@ function goOffline() {
   reconT = setInterval(tryReconnect, 10000);
   if (KEY && S) {
     toast('Sei offline: puoi continuare, le modifiche restano sul dispositivo');
-    if (['chiedi', 'investimenti', 'impostazioni'].includes(view)) renderView();
+    if (['occhio', 'investimenti', 'impostazioni'].includes(view)) renderView();
   }
 }
 /** Checks whether the server is back and syncs pending changes. */

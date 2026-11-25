@@ -10,7 +10,8 @@ def mocklog():
     try: return open('/tmp/mockai.log').read()
     except OSError: return ''
 def ask(pg, q):
-    pg.fill('#askq', q); pg.click('#askform button'); pg.wait_for_timeout(1500)
+    pg.fill('#occq', q); pg.click('#occform button[type=submit]'); pg.wait_for_timeout(1500)
+LAST = "[...S.chat].reverse().find(m=>m.role==='assistant')"
 with sync_playwright() as p:
     br = p.chromium.launch(executable_path=os.environ.get('CHROME') or ('/usr/bin/google-chrome' if os.path.exists('/usr/bin/google-chrome') else None))
     pg = br.new_page(viewport={'width': 1300, 'height': 950})
@@ -19,14 +20,14 @@ with sync_playwright() as p:
     if pg.locator('#pw2').count(): pg.fill('#pw1', PW); pg.fill('#pw2', PW)
     else: pg.fill('#pw1', PW)
     pg.click('#lockbtn'); unlocked(pg)
-    pg.evaluate("(()=>{S=Object.assign(demoState(),{privacy:S.privacy});normState();processRecurring();S.demo=false;S.hideBal=false;balShown=true;save();applyBalMask();go('chiedi')})()")
+    pg.evaluate("(()=>{S=Object.assign(demoState(),{privacy:S.privacy});normState();processRecurring();S.demo=false;S.hideBal=false;balShown=true;save();applyBalMask();go('occhio')})()")
     pg.wait_for_timeout(600)
     open('/tmp/mockai.log', 'a').close(); before = len(mocklog())
     ask(pg, 'Tra un mese dovrò spendere 15.000 €, il prossimo anno vorrei un PC da 3.000: conviene prendere il PC?')
     sent = mocklog()[before:]
     t = pg.inner_text('#view')
-    x = pg.evaluate("(()=>{const x=EN.runAdvice(askCur.advice,adviceBase());return {v:x.verdict,after:eur0(x.vars.cash_after_target),em:eur0(x.vars.emergency_target),best:adviceFmt('month',x.vars.best_month),inc:Math.round(adviceBase().income),cash:Math.round(adviceBase().cash)}})()")
-    check('Consulente: risposta con verdetto', pg.locator('#view .aff-verdict').count() == 1 and x['v'] in ('yes', 'careful', 'no'), x)
+    x = pg.evaluate("(()=>{const x=EN.runAdvice([...S.chat].reverse().find(m=>m.role==='assistant').advice,adviceBase());return {v:x.verdict,after:eur0(x.vars.cash_after_target),em:eur0(x.vars.emergency_target),best:adviceFmt('month',x.vars.best_month),inc:Math.round(adviceBase().income),cash:Math.round(adviceBase().cash)}})()")
+    check('Consulente: risposta con verdetto', pg.locator('#view .aff-verdict').count() >= 1 and x['v'] in ('yes', 'careful', 'no'), x)
     check('Motivi con i numeri veri calcolati sul dispositivo', x['em'] in t and (x['after'] in t or 'Dopo il PC resti' in t), [x['after'], x['em']])
     if x['v'] == 'careful': check('Mese consigliato nella risposta', x['best'] in t.lower(), x['best'])
     check('Grafico della liquidità e "come è stato calcolato"', pg.locator('#view svg path').count() >= 1 and 'Come è stato calcolato' in t)
@@ -37,17 +38,16 @@ with sync_playwright() as p:
     ask(pg, 'e se lo prendo a rate?')
     sent = mocklog()[before:]
     check('Domanda di seguito: va con la domanda precedente e la sua ricetta', 'Domanda precedente' in sent and 'conviene prendere il PC' in sent)
-    check('Domanda di seguito: PC a rate simulato', pg.evaluate("!!askCur.advice.events[1].financed") and 'a rate in 12 mesi' in pg.evaluate("document.querySelector('#view').textContent"))
+    check('Domanda di seguito: PC a rate simulato', pg.evaluate("!!(" + LAST + ").advice.events[1].financed") and 'a rate in 12 mesi' in pg.evaluate("document.querySelector('#view').textContent"))
     # history
-    pg.evaluate("go('home')"); pg.evaluate("go('chiedi')"); pg.wait_for_timeout(300)
-    pg.locator('[data-act=ask-hist]').first.click(); pg.wait_for_timeout(300)
-    check('Domande recenti: il parere si ricalcola sui dati di oggi', pg.locator('#view .aff-verdict').count() == 1)
+    pg.evaluate("go('home')"); pg.evaluate("go('occhio')"); pg.wait_for_timeout(300)
+    check('Conversazione conservata: i pareri si ricalcolano sui dati di oggi', pg.locator('#view .aff-verdict').count() == 2)
     # a question that is neither a figure nor a judgement
     ask(pg, 'che meteo fa domani?')
     check('Domanda fuori tema: chiede un chiarimento', 'Mi serve un chiarimento' in pg.inner_text('#view'))
     # figures still go to the query language
     ask(pg, "quanto ho speso in ristoranti quest'anno rispetto all'anno scorso?")
-    check('Domande di cifre: restano a "Chiedi ai tuoi dati"', pg.evaluate("!!(askCur&&askCur.spec)"))
+    check('Domande di cifre: ricetta di calcolo', pg.evaluate("!!(" + LAST + ").spec"))
     # mobile
     pg.set_viewport_size({'width': 390, 'height': 844})
     ask(pg, 'Tra un mese dovrò spendere 15.000 €, il prossimo anno vorrei un PC da 3.000: conviene prendere il PC?')
@@ -56,8 +56,7 @@ with sync_playwright() as p:
     # English
     pg.set_viewport_size({'width': 1300, 'height': 950})
     pg.evaluate("setLang('en')"); pg.wait_for_load_state('load'); unlocked(pg)
-    pg.evaluate("go('chiedi')"); pg.wait_for_timeout(300)
-    pg.locator('[data-act=ask-hist]').first.click(); pg.wait_for_timeout(400)
+    pg.evaluate("go('occhio')"); pg.wait_for_timeout(400)
     t = pg.inner_text('#view')
     check('Inglese: parere tradotto', 'How it was calculated' in t and 'Come è stato calcolato' not in t and 'emergency fund' in t.lower(), t[:200])
     pg.screenshot(path='/tmp/advisor_en.png', full_page=True)

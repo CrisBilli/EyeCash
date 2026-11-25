@@ -130,7 +130,7 @@ function smoothPath(P) {
   return d;
 }
 /** Net-worth line chart shown in the Home hero card. */
-function heroChart(vals, labels) {
+function heroChart(vals, labels, col = 'var(--aqua)') {
   const W = innerWidth < 820 ? 360 : 700,
     H = innerWidth < 820 ? 130 : 150,
     p = 8,
@@ -142,7 +142,8 @@ function heroChart(vals, labels) {
     H - 22 - ((H - 40) * (v - mn)) / rg
   ]);
   const d = smoothPath(P),
-    last = P[P.length - 1];
+    last = P[P.length - 1],
+    hid = 'hg' + gid++;
   const lb = labels
     .map((l, i) =>
       i % Math.ceil(labels.length / 6) === 0 || i === labels.length - 1
@@ -150,9 +151,9 @@ function heroChart(vals, labels) {
         : ''
     )
     .join('');
-  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" preserveAspectRatio="none" style="overflow:visible"><defs><linearGradient id="hg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity=".28"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>
-   <path class="fadein" d="${d}L${last[0]},${H - 22}L${P[0][0]},${H - 22}Z" fill="url(#hg2)"/><path class="draw" pathLength="1" d="${d}" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
-   <circle class="pop" style="animation-delay:1s" cx="${last[0]}" cy="${last[1]}" r="6" fill="var(--card)" stroke="var(--accent)" stroke-width="3"/>${lb}
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" preserveAspectRatio="none" style="overflow:visible"><defs><linearGradient id="${hid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${col}" stop-opacity=".32"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>
+   <path class="fadein" d="${d}L${last[0]},${H - 22}L${P[0][0]},${H - 22}Z" fill="url(#${hid})"/><path class="draw" pathLength="1" d="${d}" fill="none" stroke="${col}" stroke-width="2.6" stroke-linecap="round"/>
+   <circle class="pop" style="animation-delay:1s" cx="${last[0]}" cy="${last[1]}" r="5.5" fill="var(--bg)" stroke="${col}" stroke-width="2.6"/>${lb}
    ${P.map((q, i) => `<rect x="${q[0] - W / vals.length / 2}" y="0" width="${W / vals.length}" height="${H}" fill="transparent" data-tip="${labels[i]}\n${eur0(vals[i])}"/>`).join('')}</svg>`;
 }
 /** Big spending ring of the month: one rounded arc per category, with small gaps. */
@@ -174,6 +175,46 @@ function spendRing(rows, total, size = 228) {
     })
     .join('');
   return `<svg class="ring" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" aria-hidden="true"><circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="var(--ringtrack)" stroke-width="${w}"/><g class="ringarcs">${arcs}</g></svg>`;
+}
+/** Monthly bars with the average as a dashed line; the current month (partial) is hatched. */
+function monthBars(months, vals, opt = {}) {
+  const W = 360,
+    H = opt.h || 170,
+    pb = 20,
+    pt = 18,
+    n = vals.length,
+    mx = Math.max(...vals, 1) * 1.08,
+    bw = W / n,
+    cur = today().slice(0, 7),
+    full = vals.filter((v, i) => months[i] !== cur),
+    avg = full.length ? full.reduce((s, v) => s + v, 0) / full.length : 0,
+    y = v => H - pb - (v / mx) * (H - pb - pt),
+    id = 'mb' + gid++,
+    c1 = opt.c1 || '#C4B5FD',
+    c2 = opt.c2 || '#8B5CF6';
+  const bars = vals
+    .map((v, i) => {
+      const x = i * bw + bw * 0.14,
+        w = bw * 0.72,
+        top = Math.min(y(v), H - pb - 3),
+        part = months[i] === cur;
+      return `<path d="${barPath(x, top, w, H - pb - top, Math.min(7, w / 2))}" fill="url(#${part ? id + 'h' : id})" data-tip="${ymLabel(months[i])}${part ? ' (in corso)' : ''}\n${eur0(v)}"/>`;
+    })
+    .join('');
+  const step = Math.ceil(n / 12);
+  const lab = months
+    .map((m, i) =>
+      i % step === 0 || i === n - 1
+        ? `<text x="${(i * bw + bw / 2).toFixed(1)}" y="${H - 5}" text-anchor="middle">${MESI[+m.slice(5) - 1]}</text>`
+        : ''
+    )
+    .join('');
+  const ay = y(avg);
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" class="monthbars" preserveAspectRatio="none"><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient><pattern id="${id}h" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="${c2}" opacity=".55"/><rect width="3" height="6" fill="${c2}"/></pattern></defs>${bars}${
+    avg
+      ? `<line x1="0" x2="${W}" y1="${ay.toFixed(1)}" y2="${ay.toFixed(1)}" stroke="var(--tx)" stroke-opacity=".45" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/><text x="${W - 2}" y="${(ay - 5).toFixed(1)}" text-anchor="end" class="avglbl">media ${eur0(avg)}</text>`
+      : ''
+  }${lab}</svg>`;
 }
 /** Bars for each day of a month, with the daily average as a dashed line and today highlighted. */
 function dayBars(vals, opt = {}) {
@@ -378,7 +419,7 @@ const VIEWS = [
   ['ricorrenti', 'Costi ricorrenti', 'rec', 'Ricorrenti'],
   ['obiettivi', 'Obiettivi', 'goal', 'Obiettivi'],
   ['statistiche', 'Statistiche', 'stats', 'Statistiche'],
-  ['chiedi', 'Chiedi ai tuoi dati', 'ask', 'Chiedi'],
+  ['occhio', 'Occhio', 'ask', 'Occhio'],
   ['permettermelo', 'Posso permettermelo?', 'afford', 'Permettermelo?'],
   ['report', 'Report', 'print', 'Report']
 ];
@@ -430,14 +471,14 @@ function orbMarkSeen() {
 /* navigation grouped by area */
 const NAV_GROUPS = [
   ['Finanze', ['home', 'movimenti', 'patrimonio', 'investimenti']],
-  ['Pianifica', ['obiettivi', 'ricorrenti', 'permettermelo', 'fire']],
-  ['Analisi', ['statistiche', 'report', 'chiedi']]
+  ['Pianifica', ['obiettivi', 'ricorrenti', 'fire']],
+  ['Analisi', ['statistiche', 'report']]
 ];
 function renderNav() {
   const btn = v =>
     `<button class="nav ${view === v[0] ? 'on' : ''}" data-act="go" data-v="${v[0]}">${ico(v[2])}${v[1]}</button>`;
   $('#sidenav').innerHTML =
-    `<button class="nav orbnav" data-act="orb">${orbHTML()}<span class="main"><span style="display:block">Consulente</span><span class="t2">Spunti e domande sui tuoi dati</span></span></button>` +
+    `<button class="nav orbnav ${view === 'occhio' ? 'on' : ''}" data-act="orb">${orbHTML()}<span class="main"><span style="display:block">Occhio</span><span class="t2">Chiedi, simula, registra</span></span></button>` +
     NAV_GROUPS.map(
       ([g, ks]) =>
         `<div class="navlbl">${g}</div>` +
@@ -450,7 +491,7 @@ function renderNav() {
     '<div class="navlbl">Account</div>' +
     `<button class="nav ${view === 'impostazioni' ? 'on' : ''}" data-act="go" data-v="impostazioni">${ico('set')}Impostazioni</button>`;
   const TB = ['home', 'movimenti', 'patrimonio'];
-  const inMore = !TB.includes(view);
+  const inMore = !TB.includes(view) && view !== 'occhio';
   const tab = k => {
     const v = VIEWS.find(x => x[0] === k);
     return `<button class="${view === k ? 'on' : ''}" data-act="go" data-v="${k}">${ico(v[2])}${v[3]}</button>`;
@@ -458,7 +499,7 @@ function renderNav() {
   $('#tabbar').innerHTML =
     tab('home') +
     tab('movimenti') +
-    `<button class="orbtab" data-act="orb" aria-label="Consulente">${orbHTML()}<span class="sr">Consulente</span></button>` +
+    `<button class="orbtab ${view === 'occhio' ? 'on' : ''}" data-act="orb" aria-label="Occhio">${orbHTML()}<span class="sr">Occhio</span></button>` +
     tab('patrimonio') +
     `<button class="${inMore ? 'on' : ''}" data-act="more">${ico('more')}Altro</button>`;
   orbRefresh();
@@ -489,34 +530,6 @@ function barPath(x, y, w, h, r) {
   if (h <= 0) return '';
   return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`;
 }
-function donut(parts, size = 150) {
-  const tot = parts.reduce((s, p) => s + p.v, 0) || 1;
-  const R = size / 2,
-    rr = R - 16;
-  let a = -Math.PI / 2,
-    g = '';
-  for (const p of parts) {
-    const da = (p.v / tot) * Math.PI * 2;
-    const a2 = a + da;
-    const large = da > Math.PI ? 1 : 0;
-    const x1 = R + R * Math.cos(a),
-      y1 = R + R * Math.sin(a),
-      x2 = R + R * Math.cos(a2),
-      y2 = R + R * Math.sin(a2);
-    const x3 = R + rr * Math.cos(a2),
-      y3 = R + rr * Math.sin(a2),
-      x4 = R + rr * Math.cos(a),
-      y4 = R + rr * Math.sin(a);
-    const d =
-      parts.length === 1
-        ? `M${R},0A${R},${R} 0 1 1 ${R - 0.01},0ZM${R},${R - rr}A${rr},${rr} 0 1 0 ${R + 0.01},${R - rr}Z`
-        : `M${x1},${y1}A${R},${R} 0 ${large} 1 ${x2},${y2}L${x3},${y3}A${rr},${rr} 0 ${large} 0 ${x4},${y4}Z`;
-    g += `<path d="${d}" fill="${p.c}" stroke="var(--card)" stroke-width="2" data-tip="${esc(p.n)}\n${eur(p.v)} · ${((p.v / tot) * 100).toFixed(1).replace('.', DEC)}%"/>`;
-    a = a2;
-  }
-  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="flex:none">${g}</svg>`;
-}
-const SERIES = ['var(--s-blue)', 'var(--s-orange)', 'var(--s-aqua)', 'var(--s-yellow)', 'var(--s-violet)'];
 
 /* ---------- charts (dashboard style) ---------- */
 let gid = 0;

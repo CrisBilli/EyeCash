@@ -71,7 +71,9 @@ A single document keeps the server simple and blind. It comfortably handles year
 
 Every AI call goes through `server/ai.js`. Before anything is sent, `server/text.js` masks IBANs, card numbers and long digit sequences. Each feature has a privacy switch on the client and is written to a log you can inspect.
 
-**"Ask your data"** is the most interesting case:
+All the conversation with your data happens in **the Eye** (`js/occhio.js`), and what the model sees depends on where it runs. With an **external** AI it is blind, as below. With a **local** AI it is an agent, described after. Without AI, `occLocalSpec` and `EN.parseAffordText` understand simple figures and purchases on the device, and `localParse` handles expenses.
+
+**Figures with an external AI** are the most interesting case:
 
 1. The device sends only the **question**, the **category names** and **account aliases** (`conto_1 (Conto)`), never names, amounts or merchants.
 2. The AI answers with a *recipe* in a small closed language: which source, measure, period, grouping and filters to use, plus an answer template with placeholders such as `{a.top}`.
@@ -87,9 +89,15 @@ The AI never sees a single number, so even a cloud model learns only that you as
 
 For a follow-up, the previous question and its recipe (no numbers) are sent along.
 
-**"Can I afford it?"** works the same way. The sentence goes to `/api/ai/afford`, which returns only the purchase parameters, checked by `EN.sanitizeAfford`. Without AI, `EN.parseAffordText` understands the common phrasings on the device. `EN.affordability` then runs the checks on the real numbers locally.
+**"Can I afford it?"** works the same way, and its result is shown inside the conversation. The sentence goes to `/api/ai/afford`, which returns only the purchase parameters, checked by `EN.sanitizeAfford`. Without AI, `EN.parseAffordText` understands the common phrasings on the device. `EN.affordability` then runs the checks on the real numbers locally.
 
 **Local models** (Ollama, LM Studio, llama.cpp, vLLM) use the same OpenAI-compatible path; with `AI_PROVIDER=ollama|local` nothing leaves your network at all. See [AI.md](AI.md).
+
+**The Eye with a local model** is a real agent, because nothing leaves home:
+1. The device sends the conversation to `/api/ai/chat`. The server answers `403` unless the configured AI is local.
+2. The server adds the tool list (`EN.CHAT_TOOLS`: overview, spending by category, monthly trend, transaction search, recurring items, goals, portfolio, assets and debts, cash simulation, loan payment) and forwards everything to the model.
+3. When the model asks for a tool, the **device** runs it on the decrypted data (`OCC_RUN`) and sends back only that result. This repeats for up to six rounds, and then the model writes the answer.
+4. A sentence that records an expense never goes through the agent: it becomes a proposal the user confirms.
 
 ## Prices without exposing your portfolio
 
@@ -124,7 +132,8 @@ Plain scripts loaded in this order by `index.html`. They share the global scope,
 | `js/views.js` | Home, transactions, statistics; `render()` and `go()` |
 | `js/settings.js` | Settings (built from small card functions), privacy switches, MCP setup |
 | `js/report.js` | Printable report: periods, financial-health indicators, net worth, categories, investments |
-| `js/ai.js` | Quick entry, MCP inbox, "Ask your data" |
+| `js/ai.js` | Quick entry, MCP inbox, figures questions (quick questions, blind recipes) |
+| `js/occhio.js` | The Eye: modes (local agent, blind, device), the tools the local agent calls, on-device understanding, the conversation view |
 | `js/advisor.js` | The advisor: routing of opinion questions, the user's numbers for the recipe, verdict, reasons, cash chart |
 | `js/forms.js` | Bottom-sheet form engine and entity forms |
 | `js/import.js` | Bank statement and portfolio import, categorisation, dedupe |
